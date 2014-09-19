@@ -1479,7 +1479,7 @@ Example 104
 &#39;title&#39;
 
 [Foo bar]</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;my url&quot; title=&quot;title&quot;&gt;Foo bar&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;my%20url&quot; title=&quot;title&quot;&gt;Foo bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The title may be omitted:</p>
 <div id="example-105" class="example" data-section="Link reference definitions">
@@ -1541,7 +1541,7 @@ Example 110
 <pre class="markdown"><code>[ΑΓΩ]: /φου
 
 [αγω]</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/φου&quot;&gt;αγω&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/%CF%86%CE%BF%CF%85&quot;&gt;αγω&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here is a link reference definition with no corresponding link. It contributes nothing to the document.</p>
 <div id="example-111" class="example" data-section="Link reference definitions">
@@ -1756,12 +1756,12 @@ aaa
 <blockquote>
 <p>If X is a sequence of blocks, then the result of transforming X in such-and-such a way is a container of type Y with these blocks as its content.</p>
 </blockquote>
-<p>So, we explain what counts as a block quote or list item by explaining how these can be <em>generated</em> from their contents. This should suffice to define the syntax, although it does not give a recipe for <em>parsing</em> these constructions. (A recipe is provided below in the section entitled [A parsing strategy].)</p>
+<p>So, we explain what counts as a block quote or list item by explaining how these can be <em>generated</em> from their contents. This should suffice to define the syntax, although it does not give a recipe for <em>parsing</em> these constructions. (A recipe is provided below in the section entitled <a href="#appendix-a-a-parsing-strategy">A parsing strategy</a>.)</p>
 <h2 id="block-quotes"><span class="header-section-number">5.1</span> Block quotes</h2>
 <p>A <a href="#block-quote-marker">block quote marker</a> <a id="block-quote-marker"></a> consists of 0-3 spaces of initial indent, plus (a) the character <code>&gt;</code> together with a following space, or (b) a single character <code>&gt;</code> not followed by a space.</p>
 <p>The following rules define <a href="#block-quote">block quotes</a>: <a id="block-quote"></a></p>
 <ol style="list-style-type: decimal">
-<li><p><strong>Basic case.</strong> If a string of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em>, then the result of appending a [block quote marker] to the beginning of each line in <em>Ls</em> is a <a href="#block-quote">block quote</a> containing <em>Bs</em>.</p></li>
+<li><p><strong>Basic case.</strong> If a string of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em>, then the result of appending a <a href="#block-quote-marker">block quote marker</a> to the beginning of each line in <em>Ls</em> is a <a href="#block-quote">block quote</a> containing <em>Bs</em>.</p></li>
 <li><p><strong>Laziness.</strong> If a string of lines <em>Ls</em> constitute a <a href="#block-quote">block quote</a> with contents <em>Bs</em>, then the result of deleting the initial <a href="#block-quote-marker">block quote marker</a> from one or more lines in which the next non-space character after the <a href="#block-quote-marker">block quote marker</a> is <a href="#paragraph-continuation-text">paragraph continuation text</a> is a block quote with <em>Bs</em> as its content. <a id="paragraph-continuation-text"></a> <a href="#paragraph-continuation-text">Paragraph continuation text</a> is text that will be parsed as part of the content of a paragraph, but does not occur at the beginning of the paragraph.</p></li>
 <li><p><strong>Consecutiveness.</strong> A document cannot contain two <a href="#block-quote">block quotes</a> in a row unless there is a <a href="#blank-line">blank line</a> between them.</p></li>
 </ol>
@@ -3190,7 +3190,7 @@ Example 214
 Example 215
 </div>
 <pre class="markdown"><code>&lt;http://google.com?find=\*&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://google.com?find=\*&quot;&gt;http://google.com?find=\*&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://google.com?find=%5C*&quot;&gt;http://google.com?find=\*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-216" class="example" data-section="Backslash escapes">
 <div class="examplenum">
@@ -3227,40 +3227,42 @@ foo
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
 <h2 id="entities"><span class="header-section-number">6.2</span> Entities</h2>
-<p>Entities are parsed as entities, not as literal text, in all contexts except code spans and code blocks. Three kinds of entities are recognized.</p>
-<p><a href="#name-entities">Named entities</a> <a id="named-entities"></a> consist of <code>&amp;</code> + a string of 2-32 alphanumerics beginning with a letter + <code>;</code>.</p>
+<p>With the goal of making this standard as HTML-agnostic as possible, all HTML valid HTML Entities in any context are recognized as such and converted into their actual values (i.e. the UTF8 characters representing the entity itself) before they are stored in the AST.</p>
+<p>This allows implementations that target HTML output to trivially escape the entities when generating HTML, and simplifies the job of implementations targetting other languages, as these will only need to handle the UTF8 chars and need not be HTML-entity aware.</p>
+<p><a href="#name-entities">Named entities</a> <a id="named-entities"></a> consist of <code>&amp;</code> + any of the valid HTML5 entity names + <code>;</code>. The <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/entities.json">following document</a> is used as an authoritative source of the valid entity names and their corresponding codepoints.</p>
+<p>Conforming implementations that target Markdown don’t need to generate entities for all the valid named entities that exist, with the exception of <code>&quot;</code> (<code>&amp;quot;</code>), <code>&amp;</code> (<code>&amp;amp;</code>), <code>&lt;</code> (<code>&amp;lt;</code>) and <code>&gt;</code> (<code>&amp;gt;</code>), which always need to be written as entities for security reasons.</p>
 <div id="example-220" class="example" data-section="Entities">
 <div class="examplenum">
 Example 220
 </div>
 <pre class="markdown"><code>&amp;nbsp; &amp;amp; &amp;copy; &amp;AElig; &amp;Dcaron; &amp;frac34; &amp;HilbertSpace; &amp;DifferentialD; &amp;ClockwiseContourIntegral;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;nbsp; &amp;amp; &amp;copy; &amp;AElig; &amp;Dcaron; &amp;frac34; &amp;HilbertSpace; &amp;DifferentialD; &amp;ClockwiseContourIntegral;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;  &amp;amp; © Æ Ď ¾ ℋ ⅆ ∲&lt;/p&gt;</code></pre>
 </div>
-<p><a href="#decimal-entities">Decimal entities</a> <a id="decimal-entities"></a> consist of <code>&amp;#</code> + a string of 1–8 arabic digits + <code>;</code>.</p>
+<p><a href="#decimal-entities">Decimal entities</a> <a id="decimal-entities"></a> consist of <code>&amp;#</code> + a string of 1–8 arabic digits + <code>;</code>. Again, these entities need to be recognised and tranformed into their corresponding UTF8 codepoints. Invalid Unicode codepoints will be written as the “unknown codepoint” character (<code>0xFFFD</code>)</p>
 <div id="example-221" class="example" data-section="Entities">
 <div class="examplenum">
 Example 221
 </div>
-<pre class="markdown"><code>&amp;#1; &amp;#35; &amp;#1234; &amp;#992; &amp;#98765432;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;#1; &amp;#35; &amp;#1234; &amp;#992; &amp;#98765432;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&amp;#35; &amp;#1234; &amp;#992; &amp;#98765432;</code></pre>
+<pre class="html"><code>&lt;p&gt;# Ӓ Ϡ �&lt;/p&gt;</code></pre>
 </div>
-<p><a href="#hexadecimal-entities">Hexadecimal entities</a> <a id="hexadecimal-entities"></a> consist of <code>&amp;#</code> + either <code>X</code> or <code>x</code> + a string of 1-8 hexadecimal digits + <code>;</code>.</p>
+<p><a href="#hexadecimal-entities">Hexadecimal entities</a> <a id="hexadecimal-entities"></a> consist of <code>&amp;#</code> + either <code>X</code> or <code>x</code> + a string of 1-8 hexadecimal digits + <code>;</code>. They will also be parsed and turned into their corresponding UTF8 values in the AST.</p>
 <div id="example-222" class="example" data-section="Entities">
 <div class="examplenum">
 Example 222
 </div>
-<pre class="markdown"><code>&amp;#x1; &amp;#X22; &amp;#XD06; &amp;#xcab;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;#x1; &amp;#X22; &amp;#XD06; &amp;#xcab;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&amp;#X22; &amp;#XD06; &amp;#xcab;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;quot; ആ ಫ&lt;/p&gt;</code></pre>
 </div>
 <p>Here are some nonentities:</p>
 <div id="example-223" class="example" data-section="Entities">
 <div class="examplenum">
 Example 223
 </div>
-<pre class="markdown"><code>&amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;#123456789; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;amp;nbsp &amp;amp;x; &amp;amp;#; &amp;amp;#x; &amp;amp;#123456789; &amp;amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;amp;hi?;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;amp;nbsp &amp;amp;x; &amp;amp;#; &amp;amp;#x; &amp;amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;amp;hi?;&lt;/p&gt;</code></pre>
 </div>
-<p>Although HTML5 does accept some entities without a trailing semicolon (such as <code>&amp;copy</code>), these are not recognized as entities here:</p>
+<p>Although HTML5 does accept some entities without a trailing semicolon (such as <code>&amp;copy</code>), these are not recognized as entities here, because it makes the grammar too ambiguous:</p>
 <div id="example-224" class="example" data-section="Entities">
 <div class="examplenum">
 Example 224
@@ -3268,13 +3270,13 @@ Example 224
 <pre class="markdown"><code>&amp;copy</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;amp;copy&lt;/p&gt;</code></pre>
 </div>
-<p>On the other hand, many strings that are not on the list of HTML5 named entities are recognized as entities here:</p>
+<p>Strings that are not on the list of HTML5 named entities are not recognized as entities either:</p>
 <div id="example-225" class="example" data-section="Entities">
 <div class="examplenum">
 Example 225
 </div>
 <pre class="markdown"><code>&amp;MadeUpEntity;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;MadeUpEntity;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;amp;MadeUpEntity;&lt;/p&gt;</code></pre>
 </div>
 <p>Entities are recognized in any context besides code spans or code blocks, including raw HTML, URLs, <a href="#link-title">link titles</a>, and <a href="#fenced-code-block">fenced code block</a> info strings:</p>
 <div id="example-226" class="example" data-section="Entities">
@@ -3289,7 +3291,7 @@ Example 226
 Example 227
 </div>
 <pre class="markdown"><code>[foo](/f&amp;ouml;&amp;ouml; &quot;f&amp;ouml;&amp;ouml;&quot;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f&amp;ouml;&amp;ouml;&quot; title=&quot;f&amp;ouml;&amp;ouml;&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f%C3%B6%C3%B6&quot; title=&quot;föö&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-228" class="example" data-section="Entities">
 <div class="examplenum">
@@ -3298,7 +3300,7 @@ Example 228
 <pre class="markdown"><code>[foo]
 
 [foo]: /f&amp;ouml;&amp;ouml; &quot;f&amp;ouml;&amp;ouml;&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f&amp;ouml;&amp;ouml;&quot; title=&quot;f&amp;ouml;&amp;ouml;&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f%C3%B6%C3%B6&quot; title=&quot;föö&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-229" class="example" data-section="Entities">
 <div class="examplenum">
@@ -3307,7 +3309,7 @@ Example 229
 <pre class="markdown"><code>``` f&amp;ouml;&amp;ouml;
 foo
 ```</code></pre>
-<pre class="html"><code>&lt;pre&gt;&lt;code class=&quot;language-f&amp;ouml;&amp;ouml;&quot;&gt;foo
+<pre class="html"><code>&lt;pre&gt;&lt;code class=&quot;language-föö&quot;&gt;foo
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
 <p>Entities are treated as literal text in code spans and code blocks:</p>
@@ -3412,7 +3414,7 @@ Example 240
 Example 241
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar.`baz&gt;`</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.`baz&quot;&gt;http://foo.bar.`baz&lt;/a&gt;`&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.%60baz&quot;&gt;http://foo.bar.`baz&lt;/a&gt;`&lt;/p&gt;</code></pre>
 </div>
 <p>And this is an HTML tag:</p>
 <div id="example-242" class="example" data-section="Code span">
@@ -3466,7 +3468,7 @@ no emphasis: foo_bar_baz</code></pre>
 <ol style="list-style-type: lower-alpha">
 <li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
 <li>it is not followed by whitespace,</li>
-<li>is is not preceded by an ASCII alphanumeric character, and</li>
+<li>it is not preceded by an ASCII alphanumeric character, and</li>
 <li>either it is not followed by a <code>_</code> character or it is followed immediately by strong emphasis.</li>
 </ol></li>
 <li><p>A single <code>*</code> character <a href="#can-close-emphasis">can close emphasis</a> <a id="can-close-emphasis"></a> iff</p>
@@ -4186,7 +4188,7 @@ Example 331
 Example 332
 </div>
 <pre class="markdown"><code>[link](&lt;/my uri&gt;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/my uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/my%20uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The destination cannot contain line breaks, even with pointy braces:</p>
 <div id="example-333" class="example" data-section="Links">
@@ -4236,13 +4238,13 @@ Example 338
 <pre class="markdown"><code>[link](foo\)\:)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo):&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>URL-escaping and entities should be left alone inside the destination:</p>
+<p>URL-escaping and should be left alone inside the destination, as all URL-escaped characters are also valid URL characters. HTML entities in the destination will be parsed into their UTF8 codepoints, as usual, and optionally URL-escaped when written as HTML.</p>
 <div id="example-339" class="example" data-section="Links">
 <div class="examplenum">
 Example 339
 </div>
 <pre class="markdown"><code>[link](foo%20b&amp;auml;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo%20b&amp;auml;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo%20b%C3%A4&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that, because titles can often be parsed as destinations, if you try to omit the destination and keep the title, you’ll get unexpected results:</p>
 <div id="example-340" class="example" data-section="Links">
@@ -4250,7 +4252,7 @@ Example 339
 Example 340
 </div>
 <pre class="markdown"><code>[link](&quot;title&quot;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&amp;quot;title&amp;quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;%22title%22&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Titles may be in single quotes, double quotes, or parentheses:</p>
 <div id="example-341" class="example" data-section="Links">
