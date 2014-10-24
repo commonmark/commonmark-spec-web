@@ -1,13 +1,13 @@
 var Benchmark = require('benchmark').Benchmark;
 var suite = new Benchmark.Suite;
 var fs = require('fs');
-var sm = require('./stmd');
+var sm = require('./lib/index.js');
 // https://github.com/coreyti/showdown
 var showdown = require('../../showdown/src/showdown');
 // https://github.com/chjj/marked
 var marked = require('../../marked/marked.min.js');
 
-var benchfile = process.argv[2] || 'oldtests/Original/Markdown_Documentation_Syntax.markdown';
+var benchfile = process.argv[2];
 
 var contents = fs.readFileSync(benchfile, 'utf8');
 
