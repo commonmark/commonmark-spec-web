@@ -67,8 +67,8 @@ a.footnoteRef > sup {
 <div id="TOC">
 
 </div>
-<p>CommonMark is a <a href="http://jgm.github.io/stmd/spec.html">specification of Markdown syntax</a>, together with BSD3-licensed implementations (<code>stmd</code>) in C and JavaScript. The source for the spec and the two implementations can be found in <a href="http://github.com/jgm/stmd">this repository</a>.</p>
-<p>The C implementation provides both a library and a standalone program <code>stmd</code> that converts Markdown to HTML. It is written in standard C99 and has no library dependencies.</p>
+<p>CommonMark is a <a href="http://jgm.github.io/stmd/spec.html">specification of Markdown syntax</a>, together with BSD3-licensed implementations in C and JavaScript. The source for the spec and the two implementations can be found in <a href="http://github.com/jgm/stmd">this repository</a>.</p>
+<p>The C implementation provides both a library and a standalone program <code>cmark</code> that converts Markdown to HTML. It is written in standard C99 and has no library dependencies.</p>
 <p>The JavaScript implementation is a single JavaScript file, with no dependencies. <a href="http://jgm.github.io/stmd/js/">Try it now!</a></p>
 <p><a href="http://jgm.github.io/stmd/spec.html">The spec</a> contains over 400 embedded examples which serve as conformance tests. (The source contains a perl script that will run the tests against any Markdown program.)</p>
 <p>The spec is written from the point of view of the human writer, not the computer reader. It is not an algorithm—an English translation of a computer program—but a declarative description of what counts as a block quote, a code block, and each of the other structural elements that can make up a Markdown document. For the most part, the spec limits itself to the basic elements described in John Gruber’s <a href="http://daringfireball.net/projects/markdown/syntax">canonical syntax description</a>, eschewing extensions like footnotes and definition lists. It is important to get the core right before considering such things.</p>

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
-var stmd = require('./lib/index.js');
+var commonmark = require('./lib/index.js');
 var ansi = require('./ansi/ansi');
 var cursor = ansi(process.stdout);
 
-var writer = new stmd.HtmlRenderer();
-var reader = new stmd.DocParser();
+var writer = new commonmark.HtmlRenderer();
+var reader = new commonmark.DocParser();
 
 var passed = 0;
 var failed = 0;
@@ -30,13 +30,13 @@ fs.readFile('spec.txt', 'utf8', function(err, data) {
     .replace(/^<!-- END TESTS -->(.|[\n])*/m, '');
 
   tests.replace(/^\.\n([\s\S]*?)^\.\n([\s\S]*?)^\.$|^#{1,6} *(.*)$/gm,
-        function(_,x,y,z){
-          if (z) {
-            current_section = z;
+        function(_,markdownSubmatch,htmlSubmatch,sectionSubmatch){
+          if (sectionSubmatch) {
+            current_section = sectionSubmatch;
           } else {
             example_number++;
-            examples.push({markdown: x,
-                           html: y,
+            examples.push({markdown: markdownSubmatch,
+                           html: htmlSubmatch,
                            section: current_section,
                            number: example_number});
           }
