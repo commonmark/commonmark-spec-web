@@ -61,7 +61,7 @@ a.footnoteRef > sup {
 </head>
 <body>
 <h1 class="title">CommonMark Spec</h1>
-<div class="version">Version 0.4 (2014-10-24)</div>
+<div class="version">Version 0.5 (2014-10-25)</div>
 <div class="authors">
 <span class="author">John MacFarlane</span>
 </div>
@@ -382,7 +382,7 @@ bar</code></pre>
 &lt;hr /&gt;
 &lt;p&gt;bar&lt;/p&gt;</code></pre>
 </div>
-<p>Note, however, that this is a setext header, not a paragraph followed by a horizontal rule:</p>
+<p>If a line of dashes that meets the above conditions for being a horizontal rule could also be interpreted as the underline of a <a href="#setext-header">setext header</a>, the interpretation as a <a href="#setext-header">setext-header</a> takes precedence. Thus, for example, this is a setext header, not a paragraph followed by a horizontal rule:</p>
 <div id="example-20" class="example" data-section="Horizontal rules">
 <div class="examplenum">
 Example 20
@@ -2146,7 +2146,8 @@ Example 156
 <p>A <a href="#list-marker">list marker</a> <a id="list-marker"></a> is a <a href="#bullet-list-marker">bullet list marker</a> or an <a href="#ordered-list-marker">ordered list marker</a>.</p>
 <p>A <a href="#bullet-list-marker">bullet list marker</a> <a id="bullet-list-marker"></a> is a <code>-</code>, <code>+</code>, or <code>*</code> character.</p>
 <p>An <a href="#ordered-list-marker">ordered list marker</a> <a id="ordered-list-marker"></a> is a sequence of one of more digits (<code>0-9</code>), followed by either a <code>.</code> character or a <code>)</code> character.</p>
-<p>The following rules define <a href="#list-item">list items</a>:</p>
+<p>The following rules define <a href="#list-item">list items</a>:<a
+id="list-item"></a></p>
 <ol style="list-style-type: decimal">
 <li><strong>Basic case.</strong> If a sequence of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em> starting with a non-space character and not separated from each other by more than one blank line, and <em>M</em> is a list marker <em>M</em> of width <em>W</em> followed by 0 &lt; <em>N</em> &lt; 5 spaces, then the result of prepending <em>M</em> and the following spaces to the first line of <em>Ls</em>, and indenting subsequent lines of <em>Ls</em> by <em>W + N</em> spaces, is a list item with <em>Bs</em> as its contents. The type of the list item (bullet or ordered) is determined by the type of its list marker. If the list item is ordered, then it is also assigned a start number, based on the ordered list marker.</li>
 </ol>
@@ -2836,10 +2837,64 @@ Example 193
 &lt;li&gt;baz&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
-<p>There can be blank lines between items, but two blank lines end a list:</p>
+<p>In CommonMark, a list can interrupt a paragraph. That is, no blank line is needed to separate a paragraph from a following list:</p>
 <div id="example-194" class="example" data-section="Lists">
 <div class="examplenum">
 Example 194
+</div>
+<pre class="markdown"><code>Foo
+- bar
+- baz</code></pre>
+<pre class="html"><code>&lt;p&gt;Foo&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bar&lt;/li&gt;
+&lt;li&gt;baz&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+</div>
+<p><code>Markdown.pl</code> does not allow this, through fear of triggering a list via a numeral in a hard-wrapped line:</p>
+<div id="example-195" class="example" data-section="Lists">
+<div class="examplenum">
+Example 195
+</div>
+<pre class="markdown"><code>The number of windows in my house is
+14.  The number of doors is 6.</code></pre>
+<pre class="html"><code>&lt;p&gt;The number of windows in my house is&lt;/p&gt;
+&lt;ol start=&quot;14&quot;&gt;
+&lt;li&gt;The number of doors is 6.&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+</div>
+<p>Oddly, <code>Markdown.pl</code> <em>does</em> allow a blockquote to interrupt a paragraph, even though the same considerations might apply. We think that the two cases should be treated the same. Here are two reasons for allowing lists to interrupt paragraphs:</p>
+<p>First, it is natural and not uncommon for people to start lists without blank lines:</p>
+<pre><code>I need to buy
+- new shoes
+- a coat
+- a plane ticket</code></pre>
+<p>Second, we are attracted to a</p>
+<blockquote>
+<p><a href="#principle-of-uniformity">principle of uniformity</a>:<a
+id="principle-of-uniformity"></a> if a span of text has a certain meaning, it will continue to have the same meaning when put into a list item.</p>
+</blockquote>
+<p>(Indeed, the spec for <a href="#list-item">list items</a> presupposes this.) This principle implies that if</p>
+<pre><code>  * I need to buy
+    - new shoes
+    - a coat
+    - a plane ticket</code></pre>
+<p>is a list item containing a paragraph followed by a nested sublist, as all Markdown implementations agree it is (though the paragraph may be rendered without <code>&lt;p&gt;</code> tags, since the list is “tight”), then</p>
+<pre><code>I need to buy
+- new shoes
+- a coat
+- a plane ticket</code></pre>
+<p>by itself should be a paragraph followed by a nested sublist.</p>
+<p>Our adherence to the <a href="#principle-of-uniformity">principle of uniformity</a> thus inclines us to think that there are two coherent packages:</p>
+<ol style="list-style-type: decimal">
+<li><p>Require blank lines before <em>all</em> lists and blockquotes, including lists that occur as sublists inside other list items.</p></li>
+<li><p>Require blank lines in none of these places.</p></li>
+</ol>
+<p><a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> takes the first approach, for which there is much to be said. But the second seems more consistent with established practice with Markdown.</p>
+<p>There can be blank lines between items, but two blank lines end a list:</p>
+<div id="example-196" class="example" data-section="Lists">
+<div class="examplenum">
+Example 196
 </div>
 <pre class="markdown"><code>- foo
 
@@ -2856,9 +2911,9 @@ Example 194
 &lt;/ul&gt;</code></pre>
 </div>
 <p>As illustrated above in the section on <a href="#list-item">list items</a>, two blank lines between blocks <em>within</em> a list item will also end a list:</p>
-<div id="example-195" class="example" data-section="Lists">
+<div id="example-197" class="example" data-section="Lists">
 <div class="examplenum">
-Example 195
+Example 197
 </div>
 <pre class="markdown"><code>- foo
 
@@ -2874,9 +2929,9 @@ Example 195
 &lt;/ul&gt;</code></pre>
 </div>
 <p>Indeed, two blank lines will end <em>all</em> containing lists:</p>
-<div id="example-196" class="example" data-section="Lists">
+<div id="example-198" class="example" data-section="Lists">
 <div class="examplenum">
-Example 196
+Example 198
 </div>
 <pre class="markdown"><code>- foo
   - bar
@@ -2897,9 +2952,9 @@ Example 196
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
 <p>Thus, two blank lines can be used to separate consecutive lists of the same type, or to separate a list from an indented code block that would otherwise be parsed as a subparagraph of the final list item:</p>
-<div id="example-197" class="example" data-section="Lists">
+<div id="example-199" class="example" data-section="Lists">
 <div class="examplenum">
-Example 197
+Example 199
 </div>
 <pre class="markdown"><code>- foo
 - bar
@@ -2916,9 +2971,9 @@ Example 197
 &lt;li&gt;bim&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
-<div id="example-198" class="example" data-section="Lists">
+<div id="example-200" class="example" data-section="Lists">
 <div class="examplenum">
-Example 198
+Example 200
 </div>
 <pre class="markdown"><code>-   foo
 
@@ -2937,9 +2992,9 @@ Example 198
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
 <p>List items need not be indented to the same level. The following list items will be treated as items at the same list level, since none is indented enough to belong to the previous list item:</p>
-<div id="example-199" class="example" data-section="Lists">
+<div id="example-201" class="example" data-section="Lists">
 <div class="examplenum">
-Example 199
+Example 201
 </div>
 <pre class="markdown"><code>- a
  - b
@@ -2959,9 +3014,9 @@ Example 199
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This is a loose list, because there is a blank line between two of the list items:</p>
-<div id="example-200" class="example" data-section="Lists">
+<div id="example-202" class="example" data-section="Lists">
 <div class="examplenum">
-Example 200
+Example 202
 </div>
 <pre class="markdown"><code>- a
 - b
@@ -2974,9 +3029,9 @@ Example 200
 &lt;/ul&gt;</code></pre>
 </div>
 <p>So is this, with a empty second item:</p>
-<div id="example-201" class="example" data-section="Lists">
+<div id="example-203" class="example" data-section="Lists">
 <div class="examplenum">
-Example 201
+Example 203
 </div>
 <pre class="markdown"><code>* a
 *
@@ -2989,9 +3044,9 @@ Example 201
 &lt;/ul&gt;</code></pre>
 </div>
 <p>These are loose lists, even though there is no space between the items, because one of the items directly contains two block-level elements with a blank line between them:</p>
-<div id="example-202" class="example" data-section="Lists">
+<div id="example-204" class="example" data-section="Lists">
 <div class="examplenum">
-Example 202
+Example 204
 </div>
 <pre class="markdown"><code>- a
 - b
@@ -3005,9 +3060,9 @@ Example 202
 &lt;li&gt;&lt;p&gt;d&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
-<div id="example-203" class="example" data-section="Lists">
+<div id="example-205" class="example" data-section="Lists">
 <div class="examplenum">
-Example 203
+Example 205
 </div>
 <pre class="markdown"><code>- a
 - b
@@ -3021,9 +3076,9 @@ Example 203
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This is a tight list, because the blank lines are in a code block:</p>
-<div id="example-204" class="example" data-section="Lists">
+<div id="example-206" class="example" data-section="Lists">
 <div class="examplenum">
-Example 204
+Example 206
 </div>
 <pre class="markdown"><code>- a
 - ```
@@ -3042,9 +3097,9 @@ Example 204
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This is a tight list, because the blank line is between two paragraphs of a sublist. So the inner list is loose while the other list is tight:</p>
-<div id="example-205" class="example" data-section="Lists">
+<div id="example-207" class="example" data-section="Lists">
 <div class="examplenum">
-Example 205
+Example 207
 </div>
 <pre class="markdown"><code>- a
   - b
@@ -3061,9 +3116,9 @@ Example 205
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This is a tight list, because the blank line is inside the block quote:</p>
-<div id="example-206" class="example" data-section="Lists">
+<div id="example-208" class="example" data-section="Lists">
 <div class="examplenum">
-Example 206
+Example 208
 </div>
 <pre class="markdown"><code>* a
   &gt; b
@@ -3078,9 +3133,9 @@ Example 206
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This list is tight, because the consecutive block elements are not separated by blank lines:</p>
-<div id="example-207" class="example" data-section="Lists">
+<div id="example-209" class="example" data-section="Lists">
 <div class="examplenum">
-Example 207
+Example 209
 </div>
 <pre class="markdown"><code>- a
   &gt; b
@@ -3099,18 +3154,18 @@ Example 207
 &lt;/ul&gt;</code></pre>
 </div>
 <p>A single-paragraph list is tight:</p>
-<div id="example-208" class="example" data-section="Lists">
+<div id="example-210" class="example" data-section="Lists">
 <div class="examplenum">
-Example 208
+Example 210
 </div>
 <pre class="markdown"><code>- a</code></pre>
 <pre class="html"><code>&lt;ul&gt;
 &lt;li&gt;a&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
-<div id="example-209" class="example" data-section="Lists">
+<div id="example-211" class="example" data-section="Lists">
 <div class="examplenum">
-Example 209
+Example 211
 </div>
 <pre class="markdown"><code>- a
   - b</code></pre>
@@ -3122,9 +3177,9 @@ Example 209
 &lt;/ul&gt;</code></pre>
 </div>
 <p>Here the outer list is loose, the inner list tight:</p>
-<div id="example-210" class="example" data-section="Lists">
+<div id="example-212" class="example" data-section="Lists">
 <div class="examplenum">
-Example 210
+Example 212
 </div>
 <pre class="markdown"><code>* foo
   * bar
@@ -3138,9 +3193,9 @@ Example 210
 &lt;p&gt;baz&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
-<div id="example-211" class="example" data-section="Lists">
+<div id="example-213" class="example" data-section="Lists">
 <div class="examplenum">
-Example 211
+Example 213
 </div>
 <pre class="markdown"><code>- a
   - b
@@ -3164,9 +3219,9 @@ Example 211
 </div>
 <h1 id="inlines"><span class="header-section-number">6</span> Inlines</h1>
 <p>Inlines are parsed sequentially from the beginning of the character stream to the end (left to right, in left-to-right languages). Thus, for example, in</p>
-<div id="example-212" class="example" data-section="Inlines">
+<div id="example-214" class="example" data-section="Inlines">
 <div class="examplenum">
-Example 212
+Example 214
 </div>
 <pre class="markdown"><code>`hi`lo`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;hi&lt;/code&gt;lo`&lt;/p&gt;</code></pre>
@@ -3174,25 +3229,25 @@ Example 212
 <p><code>hi</code> is parsed as code, leaving the backtick at the end as a literal backtick.</p>
 <h2 id="backslash-escapes"><span class="header-section-number">6.1</span> Backslash escapes</h2>
 <p>Any ASCII punctuation character may be backslash-escaped:</p>
-<div id="example-213" class="example" data-section="Backslash escapes">
+<div id="example-215" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 213
+Example 215
 </div>
 <pre class="markdown"><code>\!\&quot;\#\$\%\&amp;\&#39;\(\)\*\+\,\-\.\/\:\;\&lt;\=\&gt;\?\@\[\\\]\^\_\`\{\|\}\~</code></pre>
 <pre class="html"><code>&lt;p&gt;!&amp;quot;#$%&amp;amp;&#39;()*+,-./:;&amp;lt;=&amp;gt;?@[\]^_`{|}~&lt;/p&gt;</code></pre>
 </div>
 <p>Backslashes before other characters are treated as literal backslashes:</p>
-<div id="example-214" class="example" data-section="Backslash escapes">
+<div id="example-216" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 214
+Example 216
 </div>
 <pre class="markdown"><code>\→\A\a\ \3\φ\«</code></pre>
 <pre class="html"><code>&lt;p&gt;\   \A\a\ \3\φ\«&lt;/p&gt;</code></pre>
 </div>
 <p>Escaped characters are treated as regular characters and do not have their usual Markdown meanings:</p>
-<div id="example-215" class="example" data-section="Backslash escapes">
+<div id="example-217" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 215
+Example 217
 </div>
 <pre class="markdown"><code>\*not emphasized*
 \&lt;br/&gt; not a tag
@@ -3212,17 +3267,17 @@ Example 215
 [foo]: /url &amp;quot;not a reference&amp;quot;&lt;/p&gt;</code></pre>
 </div>
 <p>If a backslash is itself escaped, the following character is not:</p>
-<div id="example-216" class="example" data-section="Backslash escapes">
+<div id="example-218" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 216
+Example 218
 </div>
 <pre class="markdown"><code>\\*emphasis*</code></pre>
 <pre class="html"><code>&lt;p&gt;\&lt;em&gt;emphasis&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>A backslash at the end of the line is a hard line break:</p>
-<div id="example-217" class="example" data-section="Backslash escapes">
+<div id="example-219" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 217
+Example 219
 </div>
 <pre class="markdown"><code>foo\
 bar</code></pre>
@@ -3230,24 +3285,24 @@ bar</code></pre>
 bar&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes do not work in code blocks, code spans, autolinks, or raw HTML:</p>
-<div id="example-218" class="example" data-section="Backslash escapes">
+<div id="example-220" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 218
+Example 220
 </div>
 <pre class="markdown"><code>`` \[\` ``</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;\[\`&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-219" class="example" data-section="Backslash escapes">
+<div id="example-221" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 219
+Example 221
 </div>
 <pre class="markdown"><code>    \[\]</code></pre>
 <pre class="html"><code>&lt;pre&gt;&lt;code&gt;\[\]
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
-<div id="example-220" class="example" data-section="Backslash escapes">
+<div id="example-222" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 220
+Example 222
 </div>
 <pre class="markdown"><code>~~~
 \[\]
@@ -3255,40 +3310,40 @@ Example 220
 <pre class="html"><code>&lt;pre&gt;&lt;code&gt;\[\]
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
-<div id="example-221" class="example" data-section="Backslash escapes">
+<div id="example-223" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 221
+Example 223
 </div>
 <pre class="markdown"><code>&lt;http://example.com?find=\*&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://example.com?find=%5C*&quot;&gt;http://example.com?find=\*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-222" class="example" data-section="Backslash escapes">
+<div id="example-224" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 222
+Example 224
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;/bar\/)&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/bar\/)&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>But they work in all other contexts, including URLs and link titles, link references, and info strings in <a href="#fenced-code-block">fenced code blocks</a>:</p>
-<div id="example-223" class="example" data-section="Backslash escapes">
+<div id="example-225" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 223
+Example 225
 </div>
 <pre class="markdown"><code>[foo](/bar\* &quot;ti\*tle&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/bar*&quot; title=&quot;ti*tle&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-224" class="example" data-section="Backslash escapes">
+<div id="example-226" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 224
+Example 226
 </div>
 <pre class="markdown"><code>[foo]
 
 [foo]: /bar\* &quot;ti\*tle&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/bar*&quot; title=&quot;ti*tle&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-225" class="example" data-section="Backslash escapes">
+<div id="example-227" class="example" data-section="Backslash escapes">
 <div class="examplenum">
-Example 225
+Example 227
 </div>
 <pre class="markdown"><code>``` foo\+bar
 foo
@@ -3301,80 +3356,80 @@ foo
 <p>This allows implementations that target HTML output to trivially escape the entities when generating HTML, and simplifies the job of implementations targetting other languages, as these will only need to handle the unicode chars and need not be HTML-entity aware.</p>
 <p><a href="#name-entities">Named entities</a> <a id="named-entities"></a> consist of <code>&amp;</code> + any of the valid HTML5 entity names + <code>;</code>. The <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/entities.json">following document</a> is used as an authoritative source of the valid entity names and their corresponding codepoints.</p>
 <p>Conforming implementations that target HTML don’t need to generate entities for all the valid named entities that exist, with the exception of <code>&quot;</code> (<code>&amp;quot;</code>), <code>&amp;</code> (<code>&amp;amp;</code>), <code>&lt;</code> (<code>&amp;lt;</code>) and <code>&gt;</code> (<code>&amp;gt;</code>), which always need to be written as entities for security reasons.</p>
-<div id="example-226" class="example" data-section="Entities">
+<div id="example-228" class="example" data-section="Entities">
 <div class="examplenum">
-Example 226
+Example 228
 </div>
 <pre class="markdown"><code>&amp;nbsp; &amp;amp; &amp;copy; &amp;AElig; &amp;Dcaron; &amp;frac34; &amp;HilbertSpace; &amp;DifferentialD; &amp;ClockwiseContourIntegral;</code></pre>
 <pre class="html"><code>&lt;p&gt;  &amp;amp; © Æ Ď ¾ ℋ ⅆ ∲&lt;/p&gt;</code></pre>
 </div>
 <p><a href="#decimal-entities">Decimal entities</a> <a id="decimal-entities"></a> consist of <code>&amp;#</code> + a string of 1–8 arabic digits + <code>;</code>. Again, these entities need to be recognised and tranformed into their corresponding UTF8 codepoints. Invalid Unicode codepoints will be written as the “unknown codepoint” character (<code>0xFFFD</code>)</p>
-<div id="example-227" class="example" data-section="Entities">
+<div id="example-229" class="example" data-section="Entities">
 <div class="examplenum">
-Example 227
+Example 229
 </div>
 <pre class="markdown"><code>&amp;#35; &amp;#1234; &amp;#992; &amp;#98765432;</code></pre>
 <pre class="html"><code>&lt;p&gt;# Ӓ Ϡ �&lt;/p&gt;</code></pre>
 </div>
 <p><a href="#hexadecimal-entities">Hexadecimal entities</a> <a id="hexadecimal-entities"></a> consist of <code>&amp;#</code> + either <code>X</code> or <code>x</code> + a string of 1-8 hexadecimal digits + <code>;</code>. They will also be parsed and turned into their corresponding UTF8 values in the AST.</p>
-<div id="example-228" class="example" data-section="Entities">
+<div id="example-230" class="example" data-section="Entities">
 <div class="examplenum">
-Example 228
+Example 230
 </div>
 <pre class="markdown"><code>&amp;#X22; &amp;#XD06; &amp;#xcab;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;quot; ആ ಫ&lt;/p&gt;</code></pre>
 </div>
 <p>Here are some nonentities:</p>
-<div id="example-229" class="example" data-section="Entities">
+<div id="example-231" class="example" data-section="Entities">
 <div class="examplenum">
-Example 229
+Example 231
 </div>
 <pre class="markdown"><code>&amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;amp;nbsp &amp;amp;x; &amp;amp;#; &amp;amp;#x; &amp;amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;amp;hi?;&lt;/p&gt;</code></pre>
 </div>
 <p>Although HTML5 does accept some entities without a trailing semicolon (such as <code>&amp;copy</code>), these are not recognized as entities here, because it makes the grammar too ambiguous:</p>
-<div id="example-230" class="example" data-section="Entities">
+<div id="example-232" class="example" data-section="Entities">
 <div class="examplenum">
-Example 230
+Example 232
 </div>
 <pre class="markdown"><code>&amp;copy</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;amp;copy&lt;/p&gt;</code></pre>
 </div>
 <p>Strings that are not on the list of HTML5 named entities are not recognized as entities either:</p>
-<div id="example-231" class="example" data-section="Entities">
+<div id="example-233" class="example" data-section="Entities">
 <div class="examplenum">
-Example 231
+Example 233
 </div>
 <pre class="markdown"><code>&amp;MadeUpEntity;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;amp;MadeUpEntity;&lt;/p&gt;</code></pre>
 </div>
 <p>Entities are recognized in any context besides code spans or code blocks, including raw HTML, URLs, <a href="#link-title">link titles</a>, and <a href="#fenced-code-block">fenced code block</a> info strings:</p>
-<div id="example-232" class="example" data-section="Entities">
+<div id="example-234" class="example" data-section="Entities">
 <div class="examplenum">
-Example 232
+Example 234
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;&amp;ouml;&amp;ouml;.html&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&amp;ouml;&amp;ouml;.html&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-233" class="example" data-section="Entities">
+<div id="example-235" class="example" data-section="Entities">
 <div class="examplenum">
-Example 233
+Example 235
 </div>
 <pre class="markdown"><code>[foo](/f&amp;ouml;&amp;ouml; &quot;f&amp;ouml;&amp;ouml;&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f%C3%B6%C3%B6&quot; title=&quot;föö&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-234" class="example" data-section="Entities">
+<div id="example-236" class="example" data-section="Entities">
 <div class="examplenum">
-Example 234
+Example 236
 </div>
 <pre class="markdown"><code>[foo]
 
 [foo]: /f&amp;ouml;&amp;ouml; &quot;f&amp;ouml;&amp;ouml;&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/f%C3%B6%C3%B6&quot; title=&quot;föö&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-235" class="example" data-section="Entities">
+<div id="example-237" class="example" data-section="Entities">
 <div class="examplenum">
-Example 235
+Example 237
 </div>
 <pre class="markdown"><code>``` f&amp;ouml;&amp;ouml;
 foo
@@ -3383,16 +3438,16 @@ foo
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
 </div>
 <p>Entities are treated as literal text in code spans and code blocks:</p>
-<div id="example-236" class="example" data-section="Entities">
+<div id="example-238" class="example" data-section="Entities">
 <div class="examplenum">
-Example 236
+Example 238
 </div>
 <pre class="markdown"><code>`f&amp;ouml;&amp;ouml;`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;f&amp;amp;ouml;&amp;amp;ouml;&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-237" class="example" data-section="Entities">
+<div id="example-239" class="example" data-section="Entities">
 <div class="examplenum">
-Example 237
+Example 239
 </div>
 <pre class="markdown"><code>    f&amp;ouml;f&amp;ouml;</code></pre>
 <pre class="html"><code>&lt;pre&gt;&lt;code&gt;f&amp;amp;ouml;f&amp;amp;ouml;
@@ -3402,33 +3457,33 @@ Example 237
 <p>A <a href="#backtick-string">backtick string</a> <a id="backtick-string"></a> is a string of one or more backtick characters (<code>`</code>) that is neither preceded nor followed by a backtick.</p>
 <p>A code span begins with a backtick string and ends with a backtick string of equal length. The contents of the code span are the characters between the two backtick strings, with leading and trailing spaces and newlines removed, and consecutive spaces and newlines collapsed to single spaces.</p>
 <p>This is a simple code span:</p>
-<div id="example-238" class="example" data-section="Code span">
+<div id="example-240" class="example" data-section="Code span">
 <div class="examplenum">
-Example 238
+Example 240
 </div>
 <pre class="markdown"><code>`foo`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;foo&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here two backticks are used, because the code contains a backtick. This example also illustrates stripping of leading and trailing spaces:</p>
-<div id="example-239" class="example" data-section="Code span">
+<div id="example-241" class="example" data-section="Code span">
 <div class="examplenum">
-Example 239
+Example 241
 </div>
 <pre class="markdown"><code>`` foo ` bar  ``</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;foo ` bar&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>This example shows the motivation for stripping leading and trailing spaces:</p>
-<div id="example-240" class="example" data-section="Code span">
+<div id="example-242" class="example" data-section="Code span">
 <div class="examplenum">
-Example 240
+Example 242
 </div>
 <pre class="markdown"><code>` `` `</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;``&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Newlines are treated like spaces:</p>
-<div id="example-241" class="example" data-section="Code span">
+<div id="example-243" class="example" data-section="Code span">
 <div class="examplenum">
-Example 241
+Example 243
 </div>
 <pre class="markdown"><code>``
 foo
@@ -3436,9 +3491,9 @@ foo
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;foo&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Interior spaces and newlines are collapsed into single spaces, just as they would be by a browser:</p>
-<div id="example-242" class="example" data-section="Code span">
+<div id="example-244" class="example" data-section="Code span">
 <div class="examplenum">
-Example 242
+Example 244
 </div>
 <pre class="markdown"><code>`foo   bar
   baz`</code></pre>
@@ -3446,65 +3501,65 @@ Example 242
 </div>
 <p>Q: Why not just leave the spaces, since browsers will collapse them anyway? A: Because we might be targeting a non-HTML format, and we shouldn’t rely on HTML-specific rendering assumptions.</p>
 <p>(Existing implementations differ in their treatment of internal spaces and newlines. Some, including <code>Markdown.pl</code> and <code>showdown</code>, convert an internal newline into a <code>&lt;br /&gt;</code> tag. But this makes things difficult for those who like to hard-wrap their paragraphs, since a line break in the midst of a code span will cause an unintended line break in the output. Others just leave internal spaces as they are, which is fine if only HTML is being targeted.)</p>
-<div id="example-243" class="example" data-section="Code span">
+<div id="example-245" class="example" data-section="Code span">
 <div class="examplenum">
-Example 243
+Example 245
 </div>
 <pre class="markdown"><code>`foo `` bar`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;foo `` bar&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that backslash escapes do not work in code spans. All backslashes are treated literally:</p>
-<div id="example-244" class="example" data-section="Code span">
+<div id="example-246" class="example" data-section="Code span">
 <div class="examplenum">
-Example 244
+Example 246
 </div>
 <pre class="markdown"><code>`foo\`bar`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;foo\&lt;/code&gt;bar`&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes are never needed, because one can always choose a string of <em>n</em> backtick characters as delimiters, where the code does not contain any strings of exactly <em>n</em> backtick characters.</p>
 <p>Code span backticks have higher precedence than any other inline constructs except HTML tags and autolinks. Thus, for example, this is not parsed as emphasized text, since the second <code>*</code> is part of a code span:</p>
-<div id="example-245" class="example" data-section="Code span">
+<div id="example-247" class="example" data-section="Code span">
 <div class="examplenum">
-Example 245
+Example 247
 </div>
 <pre class="markdown"><code>*foo`*`</code></pre>
 <pre class="html"><code>&lt;p&gt;*foo&lt;code&gt;*&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>And this is not parsed as a link:</p>
-<div id="example-246" class="example" data-section="Code span">
+<div id="example-248" class="example" data-section="Code span">
 <div class="examplenum">
-Example 246
+Example 248
 </div>
 <pre class="markdown"><code>[not a `link](/foo`)</code></pre>
 <pre class="html"><code>&lt;p&gt;[not a &lt;code&gt;link](/foo&lt;/code&gt;)&lt;/p&gt;</code></pre>
 </div>
 <p>But this is a link:</p>
-<div id="example-247" class="example" data-section="Code span">
+<div id="example-249" class="example" data-section="Code span">
 <div class="examplenum">
-Example 247
+Example 249
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar.`baz&gt;`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.%60baz&quot;&gt;http://foo.bar.`baz&lt;/a&gt;`&lt;/p&gt;</code></pre>
 </div>
 <p>And this is an HTML tag:</p>
-<div id="example-248" class="example" data-section="Code span">
+<div id="example-250" class="example" data-section="Code span">
 <div class="examplenum">
-Example 248
+Example 250
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;`&quot;&gt;`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;`&quot;&gt;`&lt;/p&gt;</code></pre>
 </div>
 <p>When a backtick string is not closed by a matching backtick string, we just have literal backticks:</p>
-<div id="example-249" class="example" data-section="Code span">
+<div id="example-251" class="example" data-section="Code span">
 <div class="examplenum">
-Example 249
+Example 251
 </div>
 <pre class="markdown"><code>```foo``</code></pre>
 <pre class="html"><code>&lt;p&gt;```foo``&lt;/p&gt;</code></pre>
 </div>
-<div id="example-250" class="example" data-section="Code span">
+<div id="example-252" class="example" data-section="Code span">
 <div class="examplenum">
-Example 250
+Example 252
 </div>
 <pre class="markdown"><code>`foo</code></pre>
 <pre class="html"><code>&lt;p&gt;`foo&lt;/p&gt;</code></pre>
@@ -3588,66 +3643,66 @@ no emphasis: foo_bar_baz</code></pre>
 </ol>
 <p>These rules can be illustrated through a series of examples.</p>
 <p>Simple emphasis:</p>
-<div id="example-251" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 251
-</div>
-<pre class="markdown"><code>*foo bar*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-252" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 252
-</div>
-<pre class="markdown"><code>_foo bar_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
-<p>Simple strong emphasis:</p>
 <div id="example-253" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 253
 </div>
-<pre class="markdown"><code>**foo bar**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-254" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 254
 </div>
+<pre class="markdown"><code>_foo bar_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+</div>
+<p>Simple strong emphasis:</p>
+<div id="example-255" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 255
+</div>
+<pre class="markdown"><code>**foo bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-256" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 256
+</div>
 <pre class="markdown"><code>__foo bar__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Emphasis can continue over line breaks:</p>
-<div id="example-255" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-257" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 255
+Example 257
 </div>
 <pre class="markdown"><code>*foo
 bar*</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-256" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-258" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 256
+Example 258
 </div>
 <pre class="markdown"><code>_foo
 bar_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-257" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-259" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 257
+Example 259
 </div>
 <pre class="markdown"><code>**foo
 bar**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo
 bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-258" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-260" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 258
+Example 260
 </div>
 <pre class="markdown"><code>__foo
 bar__</code></pre>
@@ -3655,545 +3710,545 @@ bar__</code></pre>
 bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Emphasis can contain other inline constructs:</p>
-<div id="example-259" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 259
-</div>
-<pre class="markdown"><code>*foo [bar](/url)*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-260" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 260
-</div>
-<pre class="markdown"><code>_foo [bar](/url)_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-261" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 261
 </div>
-<pre class="markdown"><code>**foo [bar](/url)**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo [bar](/url)*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-262" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 262
 </div>
-<pre class="markdown"><code>__foo [bar](/url)__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo [bar](/url)_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>Symbols contained in other inline constructs will not close emphasis:</p>
 <div id="example-263" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 263
 </div>
-<pre class="markdown"><code>*foo [bar*](/url)</code></pre>
-<pre class="html"><code>&lt;p&gt;*foo &lt;a href=&quot;/url&quot;&gt;bar*&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo [bar](/url)**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-264" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 264
 </div>
-<pre class="markdown"><code>_foo [bar_](/url)</code></pre>
-<pre class="html"><code>&lt;p&gt;_foo &lt;a href=&quot;/url&quot;&gt;bar_&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__foo [bar](/url)__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>Symbols contained in other inline constructs will not close emphasis:</p>
 <div id="example-265" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 265
 </div>
-<pre class="markdown"><code>**&lt;a href=&quot;**&quot;&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;**&lt;a href=&quot;**&quot;&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo [bar*](/url)</code></pre>
+<pre class="html"><code>&lt;p&gt;*foo &lt;a href=&quot;/url&quot;&gt;bar*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-266" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 266
 </div>
-<pre class="markdown"><code>__&lt;a href=&quot;__&quot;&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;__&lt;a href=&quot;__&quot;&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo [bar_](/url)</code></pre>
+<pre class="html"><code>&lt;p&gt;_foo &lt;a href=&quot;/url&quot;&gt;bar_&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-267" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 267
 </div>
-<pre class="markdown"><code>*a `*`*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;a &lt;code&gt;*&lt;/code&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**&lt;a href=&quot;**&quot;&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;**&lt;a href=&quot;**&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-268" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 268
 </div>
-<pre class="markdown"><code>_a `_`_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;a &lt;code&gt;_&lt;/code&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__&lt;a href=&quot;__&quot;&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;__&lt;a href=&quot;__&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-269" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 269
 </div>
-<pre class="markdown"><code>**a&lt;http://foo.bar?q=**&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;**a&lt;a href=&quot;http://foo.bar?q=**&quot;&gt;http://foo.bar?q=**&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*a `*`*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;a &lt;code&gt;*&lt;/code&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-270" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 270
 </div>
-<pre class="markdown"><code>__a&lt;http://foo.bar?q=__&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;__a&lt;a href=&quot;http://foo.bar?q=__&quot;&gt;http://foo.bar?q=__&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_a `_`_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;a &lt;code&gt;_&lt;/code&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>This is not emphasis, because the opening delimiter is followed by white space:</p>
 <div id="example-271" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 271
 </div>
-<pre class="markdown"><code>and * foo bar*</code></pre>
-<pre class="html"><code>&lt;p&gt;and * foo bar*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**a&lt;http://foo.bar?q=**&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;**a&lt;a href=&quot;http://foo.bar?q=**&quot;&gt;http://foo.bar?q=**&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-272" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 272
 </div>
-<pre class="markdown"><code>_ foo bar_</code></pre>
-<pre class="html"><code>&lt;p&gt;_ foo bar_&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__a&lt;http://foo.bar?q=__&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;__a&lt;a href=&quot;http://foo.bar?q=__&quot;&gt;http://foo.bar?q=__&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>This is not emphasis, because the opening delimiter is followed by white space:</p>
 <div id="example-273" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 273
 </div>
-<pre class="markdown"><code>and ** foo bar**</code></pre>
-<pre class="html"><code>&lt;p&gt;and ** foo bar**&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and * foo bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;and * foo bar*&lt;/p&gt;</code></pre>
 </div>
 <div id="example-274" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 274
 </div>
-<pre class="markdown"><code>__ foo bar__</code></pre>
-<pre class="html"><code>&lt;p&gt;__ foo bar__&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_ foo bar_</code></pre>
+<pre class="html"><code>&lt;p&gt;_ foo bar_&lt;/p&gt;</code></pre>
 </div>
-<p>This is not emphasis, because the closing delimiter is preceded by white space:</p>
 <div id="example-275" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 275
 </div>
-<pre class="markdown"><code>and *foo bar *</code></pre>
-<pre class="html"><code>&lt;p&gt;and *foo bar *&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and ** foo bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;and ** foo bar**&lt;/p&gt;</code></pre>
 </div>
 <div id="example-276" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 276
 </div>
-<pre class="markdown"><code>and _foo bar _</code></pre>
-<pre class="html"><code>&lt;p&gt;and _foo bar _&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__ foo bar__</code></pre>
+<pre class="html"><code>&lt;p&gt;__ foo bar__&lt;/p&gt;</code></pre>
 </div>
+<p>This is not emphasis, because the closing delimiter is preceded by white space:</p>
 <div id="example-277" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 277
 </div>
-<pre class="markdown"><code>and **foo bar **</code></pre>
-<pre class="html"><code>&lt;p&gt;and **foo bar **&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and *foo bar *</code></pre>
+<pre class="html"><code>&lt;p&gt;and *foo bar *&lt;/p&gt;</code></pre>
 </div>
 <div id="example-278" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 278
 </div>
-<pre class="markdown"><code>and __foo bar __</code></pre>
-<pre class="html"><code>&lt;p&gt;and __foo bar __&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and _foo bar _</code></pre>
+<pre class="html"><code>&lt;p&gt;and _foo bar _&lt;/p&gt;</code></pre>
 </div>
-<p>The rules imply that a sequence of four or more unescaped <code>*</code> or <code>_</code> characters will always be parsed as a literal string:</p>
 <div id="example-279" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 279
 </div>
-<pre class="markdown"><code>****hi****</code></pre>
-<pre class="html"><code>&lt;p&gt;****hi****&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and **foo bar **</code></pre>
+<pre class="html"><code>&lt;p&gt;and **foo bar **&lt;/p&gt;</code></pre>
 </div>
 <div id="example-280" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 280
 </div>
-<pre class="markdown"><code>_____hi_____</code></pre>
-<pre class="html"><code>&lt;p&gt;_____hi_____&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>and __foo bar __</code></pre>
+<pre class="html"><code>&lt;p&gt;and __foo bar __&lt;/p&gt;</code></pre>
 </div>
+<p>The rules imply that a sequence of four or more unescaped <code>*</code> or <code>_</code> characters will always be parsed as a literal string:</p>
 <div id="example-281" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 281
 </div>
-<pre class="markdown"><code>Sign here: _________</code></pre>
-<pre class="html"><code>&lt;p&gt;Sign here: _________&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>****hi****</code></pre>
+<pre class="html"><code>&lt;p&gt;****hi****&lt;/p&gt;</code></pre>
 </div>
-<p>The rules also imply that there can be no empty emphasis or strong emphasis:</p>
 <div id="example-282" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 282
 </div>
-<pre class="markdown"><code>** is not an empty emphasis</code></pre>
-<pre class="html"><code>&lt;p&gt;** is not an empty emphasis&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_____hi_____</code></pre>
+<pre class="html"><code>&lt;p&gt;_____hi_____&lt;/p&gt;</code></pre>
 </div>
 <div id="example-283" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 283
 </div>
-<pre class="markdown"><code>**** is not an empty strong emphasis</code></pre>
-<pre class="html"><code>&lt;p&gt;**** is not an empty strong emphasis&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>Sign here: _________</code></pre>
+<pre class="html"><code>&lt;p&gt;Sign here: _________&lt;/p&gt;</code></pre>
 </div>
-<p>To include <code>*</code> or <code>_</code> in emphasized sections, use backslash escapes or code spans:</p>
+<p>The rules also imply that there can be no empty emphasis or strong emphasis:</p>
 <div id="example-284" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 284
 </div>
-<pre class="markdown"><code>*here is a \**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;here is a *&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>** is not an empty emphasis</code></pre>
+<pre class="html"><code>&lt;p&gt;** is not an empty emphasis&lt;/p&gt;</code></pre>
 </div>
 <div id="example-285" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 285
 </div>
-<pre class="markdown"><code>__this is a double underscore (`__`)__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;this is a double underscore (&lt;code&gt;__&lt;/code&gt;)&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**** is not an empty strong emphasis</code></pre>
+<pre class="html"><code>&lt;p&gt;**** is not an empty strong emphasis&lt;/p&gt;</code></pre>
 </div>
-<p>Or use the other emphasis character:</p>
+<p>To include <code>*</code> or <code>_</code> in emphasized sections, use backslash escapes or code spans:</p>
 <div id="example-286" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 286
 </div>
-<pre class="markdown"><code>*_*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;_&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*here is a \**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;here is a *&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-287" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 287
 </div>
-<pre class="markdown"><code>_*_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;*&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__this is a double underscore (`__`)__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;this is a double underscore (&lt;code&gt;__&lt;/code&gt;)&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>Or use the other emphasis character:</p>
 <div id="example-288" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 288
 </div>
-<pre class="markdown"><code>*__*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;__&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*_*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;_&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-289" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 289
 </div>
-<pre class="markdown"><code>_**_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;**&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_*_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;*&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p><code>*</code> delimiters allow intra-word emphasis; <code>_</code> delimiters do not:</p>
 <div id="example-290" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 290
 </div>
-<pre class="markdown"><code>foo*bar*baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo&lt;em&gt;bar&lt;/em&gt;baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*__*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;__&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-291" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 291
 </div>
-<pre class="markdown"><code>foo_bar_baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo_bar_baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_**_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;**&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
+<p><code>*</code> delimiters allow intra-word emphasis; <code>_</code> delimiters do not:</p>
 <div id="example-292" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 292
 </div>
-<pre class="markdown"><code>foo__bar__baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo__bar__baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo*bar*baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo&lt;em&gt;bar&lt;/em&gt;baz&lt;/p&gt;</code></pre>
 </div>
 <div id="example-293" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 293
 </div>
-<pre class="markdown"><code>_foo_bar_baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo_bar_baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo_bar_baz&lt;/p&gt;</code></pre>
 </div>
 <div id="example-294" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 294
 </div>
-<pre class="markdown"><code>11*15*32</code></pre>
-<pre class="html"><code>&lt;p&gt;11&lt;em&gt;15&lt;/em&gt;32&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo__bar__baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo__bar__baz&lt;/p&gt;</code></pre>
 </div>
 <div id="example-295" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 295
 </div>
-<pre class="markdown"><code>11_15_32</code></pre>
-<pre class="html"><code>&lt;p&gt;11_15_32&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo_bar_baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>Internal underscores will be ignored in underscore-delimited emphasis:</p>
 <div id="example-296" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 296
 </div>
-<pre class="markdown"><code>_foo_bar_baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>11*15*32</code></pre>
+<pre class="html"><code>&lt;p&gt;11&lt;em&gt;15&lt;/em&gt;32&lt;/p&gt;</code></pre>
 </div>
 <div id="example-297" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 297
 </div>
-<pre class="markdown"><code>__foo__bar__baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo__bar__baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>11_15_32</code></pre>
+<pre class="html"><code>&lt;p&gt;11_15_32&lt;/p&gt;</code></pre>
 </div>
-<p>The rules are sufficient for the following nesting patterns:</p>
+<p>Internal underscores will be ignored in underscore-delimited emphasis:</p>
 <div id="example-298" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 298
 </div>
-<pre class="markdown"><code>***foo bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo_bar_baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-299" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 299
 </div>
-<pre class="markdown"><code>___foo bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__foo__bar__baz__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo__bar__baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>The rules are sufficient for the following nesting patterns:</p>
 <div id="example-300" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 300
 </div>
-<pre class="markdown"><code>***foo** bar*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-301" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 301
 </div>
-<pre class="markdown"><code>___foo__ bar_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>___foo bar___</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-302" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 302
 </div>
-<pre class="markdown"><code>***foo* bar**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo** bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-303" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 303
 </div>
-<pre class="markdown"><code>___foo_ bar__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>___foo__ bar_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-304" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 304
 </div>
-<pre class="markdown"><code>*foo **bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo* bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-305" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 305
 </div>
-<pre class="markdown"><code>_foo __bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>___foo_ bar__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-306" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 306
 </div>
-<pre class="markdown"><code>**foo *bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-307" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 307
 </div>
-<pre class="markdown"><code>__foo _bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo __bar___</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-308" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 308
 </div>
-<pre class="markdown"><code>*foo **bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo *bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-309" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 309
 </div>
-<pre class="markdown"><code>_foo __bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__foo _bar___</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-310" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 310
 </div>
-<pre class="markdown"><code>*foo *bar* baz*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-311" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 311
 </div>
-<pre class="markdown"><code>_foo _bar_ baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo __bar___</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-312" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 312
 </div>
-<pre class="markdown"><code>**foo **bar** baz**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo *bar* baz*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-313" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 313
 </div>
-<pre class="markdown"><code>__foo __bar__ baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo _bar_ baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-314" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 314
 </div>
-<pre class="markdown"><code>*foo **bar** baz*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo **bar** baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-315" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 315
 </div>
-<pre class="markdown"><code>_foo __bar__ baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__foo __bar__ baz__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-316" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 316
 </div>
-<pre class="markdown"><code>**foo *bar* baz**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar** baz*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-317" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 317
 </div>
-<pre class="markdown"><code>__foo _bar_ baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo __bar__ baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-318" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 318
 </div>
-<pre class="markdown"><code>**foo, *bar*, baz**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo *bar* baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-319" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 319
 </div>
-<pre class="markdown"><code>__foo, _bar_, baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>__foo _bar_ baz__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>But note:</p>
 <div id="example-320" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 320
 </div>
-<pre class="markdown"><code>*foo**bar**baz*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;&lt;em&gt;bar&lt;/em&gt;&lt;em&gt;baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo, *bar*, baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-321" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 321
+</div>
+<pre class="markdown"><code>__foo, _bar_, baz__</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+</div>
+<p>But note:</p>
+<div id="example-322" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 322
+</div>
+<pre class="markdown"><code>*foo**bar**baz*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;&lt;em&gt;bar&lt;/em&gt;&lt;em&gt;baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-323" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 323
 </div>
 <pre class="markdown"><code>**foo*bar*baz**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;bar&lt;/em&gt;baz**&lt;/p&gt;</code></pre>
 </div>
 <p>The difference is that in the two preceding cases, the internal delimiters <a href="#can-close-emphasis">can close emphasis</a>, while in the cases with spaces, they cannot.</p>
 <p>Note that you cannot nest emphasis directly inside emphasis using the same delimeter, or strong emphasis directly inside strong emphasis:</p>
-<div id="example-322" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 322
-</div>
-<pre class="markdown"><code>**foo**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-323" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 323
-</div>
-<pre class="markdown"><code>****foo****</code></pre>
-<pre class="html"><code>&lt;p&gt;****foo****&lt;/p&gt;</code></pre>
-</div>
-<p>For these nestings, you need to switch delimiters:</p>
 <div id="example-324" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 324
 </div>
-<pre class="markdown"><code>*_foo_*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-325" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 325
 </div>
-<pre class="markdown"><code>**__foo__**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>****foo****</code></pre>
+<pre class="html"><code>&lt;p&gt;****foo****&lt;/p&gt;</code></pre>
 </div>
-<p>Note that a <code>*</code> followed by a <code>*</code> can close emphasis, and a <code>**</code> followed by a <code>*</code> can close strong emphasis (and similarly for <code>_</code> and <code>__</code>):</p>
+<p>For these nestings, you need to switch delimiters:</p>
 <div id="example-326" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 326
 </div>
-<pre class="markdown"><code>*foo**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*_foo_*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-327" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 327
 </div>
-<pre class="markdown"><code>*foo *bar**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**__foo__**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>Note that a <code>*</code> followed by a <code>*</code> can close emphasis, and a <code>**</code> followed by a <code>*</code> can close strong emphasis (and similarly for <code>_</code> and <code>__</code>):</p>
 <div id="example-328" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 328
 </div>
-<pre class="markdown"><code>**foo***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;</code></pre>
 </div>
 <div id="example-329" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 329
 </div>
-<pre class="markdown"><code>***foo* bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo *bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-330" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 330
 </div>
+<pre class="markdown"><code>**foo***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+</div>
+<div id="example-331" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 331
+</div>
+<pre class="markdown"><code>***foo* bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+</div>
+<div id="example-332" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 332
+</div>
 <pre class="markdown"><code>***foo** bar***</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
 <p>The following contains no strong emphasis, because the opening delimiter is closed by the first <code>*</code> before <code>bar</code>:</p>
-<div id="example-331" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-333" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 331
+Example 333
 </div>
 <pre class="markdown"><code>*foo**bar***</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
 <p>However, a string of four or more <code>****</code> can never close emphasis:</p>
-<div id="example-332" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-334" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 332
+Example 334
 </div>
 <pre class="markdown"><code>*foo****</code></pre>
 <pre class="html"><code>&lt;p&gt;*foo****&lt;/p&gt;</code></pre>
 </div>
 <p>We retain symmetry in these cases:</p>
-<div id="example-333" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-335" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 333
+Example 335
 </div>
 <pre class="markdown"><code>*foo**
 
@@ -4201,9 +4256,9 @@ Example 333
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;
 &lt;p&gt;*&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-334" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-336" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-Example 334
+Example 336
 </div>
 <pre class="markdown"><code>*foo *bar**
 
@@ -4212,81 +4267,81 @@ Example 334
 &lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>More cases with mismatched delimiters:</p>
-<div id="example-335" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 335
-</div>
-<pre class="markdown"><code>*bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
-</div>
-<div id="example-336" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-Example 336
-</div>
-<pre class="markdown"><code>***foo*</code></pre>
-<pre class="html"><code>&lt;p&gt;**&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-337" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 337
 </div>
-<pre class="markdown"><code>**bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
 <div id="example-338" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 338
 </div>
-<pre class="markdown"><code>***foo**</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo*</code></pre>
+<pre class="html"><code>&lt;p&gt;**&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-339" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 339
 </div>
-<pre class="markdown"><code>***foo *bar*</code></pre>
-<pre class="html"><code>&lt;p&gt;***foo &lt;em&gt;bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
 </div>
-<p>The following cases illustrate rule 13:</p>
 <div id="example-340" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 340
 </div>
-<pre class="markdown"><code>*foo _bar* baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo _bar&lt;/em&gt; baz_&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-341" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 341
 </div>
-<pre class="markdown"><code>**foo bar* baz**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo bar&lt;/em&gt; baz&lt;/em&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo *bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;***foo &lt;em&gt;bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>The following cases illustrate rule 14:</p>
+<p>The following cases illustrate rule 13:</p>
 <div id="example-342" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 342
 </div>
-<pre class="markdown"><code>*[foo*](bar)</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;bar&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo _bar* baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo _bar&lt;/em&gt; baz_&lt;/p&gt;</code></pre>
 </div>
 <div id="example-343" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 343
 </div>
-<pre class="markdown"><code>*![foo*](bar)</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;bar&quot; alt=&quot;foo*&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo bar* baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo bar&lt;/em&gt; baz&lt;/em&gt;*&lt;/p&gt;</code></pre>
 </div>
+<p>The following cases illustrate rule 14:</p>
 <div id="example-344" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 344
 </div>
-<pre class="markdown"><code>*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*[foo*](bar)</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;bar&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-345" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 Example 345
+</div>
+<pre class="markdown"><code>*![foo*](bar)</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;bar&quot; alt=&quot;foo*&quot; /&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-346" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 346
+</div>
+<pre class="markdown"><code>*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-347" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+Example 347
 </div>
 <pre class="markdown"><code>*a`a*`</code></pre>
 <pre class="html"><code>&lt;p&gt;*a&lt;code&gt;a*&lt;/code&gt;&lt;/p&gt;</code></pre>
@@ -4318,55 +4373,55 @@ Example 345
 </ul>
 <p>An <a href="#inline-link">inline link</a> <a id="inline-link"></a> consists of a <a href="#link-label">link label</a> followed immediately by a left parenthesis <code>(</code>, optional whitespace, an optional <a href="#link-destination">link destination</a>, an optional <a href="#link-title">link title</a> separated from the link destination by whitespace, optional whitespace, and a right parenthesis <code>)</code>. The link’s text consists of the label (excluding the enclosing square brackets) parsed as inlines. The link’s URI consists of the link destination, excluding enclosing <code>&lt;...&gt;</code> if present, with backslash-escapes in effect as described above. The link’s title consists of the link title, excluding its enclosing delimiters, with backslash-escapes in effect as described above.</p>
 <p>Here is a simple inline link:</p>
-<div id="example-346" class="example" data-section="Links">
+<div id="example-348" class="example" data-section="Links">
 <div class="examplenum">
-Example 346
+Example 348
 </div>
 <pre class="markdown"><code>[link](/uri &quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The title may be omitted:</p>
-<div id="example-347" class="example" data-section="Links">
+<div id="example-349" class="example" data-section="Links">
 <div class="examplenum">
-Example 347
+Example 349
 </div>
 <pre class="markdown"><code>[link](/uri)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Both the title and the destination may be omitted:</p>
-<div id="example-348" class="example" data-section="Links">
-<div class="examplenum">
-Example 348
-</div>
-<pre class="markdown"><code>[link]()</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-349" class="example" data-section="Links">
-<div class="examplenum">
-Example 349
-</div>
-<pre class="markdown"><code>[link](&lt;&gt;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
-<p>If the destination contains spaces, it must be enclosed in pointy braces:</p>
 <div id="example-350" class="example" data-section="Links">
 <div class="examplenum">
 Example 350
 </div>
-<pre class="markdown"><code>[link](/my uri)</code></pre>
-<pre class="html"><code>&lt;p&gt;[link](/my uri)&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>[link]()</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-351" class="example" data-section="Links">
 <div class="examplenum">
 Example 351
 </div>
+<pre class="markdown"><code>[link](&lt;&gt;)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+</div>
+<p>If the destination contains spaces, it must be enclosed in pointy braces:</p>
+<div id="example-352" class="example" data-section="Links">
+<div class="examplenum">
+Example 352
+</div>
+<pre class="markdown"><code>[link](/my uri)</code></pre>
+<pre class="html"><code>&lt;p&gt;[link](/my uri)&lt;/p&gt;</code></pre>
+</div>
+<div id="example-353" class="example" data-section="Links">
+<div class="examplenum">
+Example 353
+</div>
 <pre class="markdown"><code>[link](&lt;/my uri&gt;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/my%20uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The destination cannot contain line breaks, even with pointy braces:</p>
-<div id="example-352" class="example" data-section="Links">
+<div id="example-354" class="example" data-section="Links">
 <div class="examplenum">
-Example 352
+Example 354
 </div>
 <pre class="markdown"><code>[link](foo
 bar)</code></pre>
@@ -4374,63 +4429,63 @@ bar)</code></pre>
 bar)&lt;/p&gt;</code></pre>
 </div>
 <p>One level of balanced parentheses is allowed without escaping:</p>
-<div id="example-353" class="example" data-section="Links">
+<div id="example-355" class="example" data-section="Links">
 <div class="examplenum">
-Example 353
+Example 355
 </div>
 <pre class="markdown"><code>[link]((foo)and(bar))</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;(foo)and(bar)&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>However, if you have parentheses within parentheses, you need to escape or use the <code>&lt;...&gt;</code> form:</p>
-<div id="example-354" class="example" data-section="Links">
+<div id="example-356" class="example" data-section="Links">
 <div class="examplenum">
-Example 354
+Example 356
 </div>
 <pre class="markdown"><code>[link](foo(and(bar)))</code></pre>
 <pre class="html"><code>&lt;p&gt;[link](foo(and(bar)))&lt;/p&gt;</code></pre>
 </div>
-<div id="example-355" class="example" data-section="Links">
+<div id="example-357" class="example" data-section="Links">
 <div class="examplenum">
-Example 355
+Example 357
 </div>
 <pre class="markdown"><code>[link](foo(and\(bar\)))</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo(and(bar))&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-356" class="example" data-section="Links">
+<div id="example-358" class="example" data-section="Links">
 <div class="examplenum">
-Example 356
+Example 358
 </div>
 <pre class="markdown"><code>[link](&lt;foo(and(bar))&gt;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo(and(bar))&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Parentheses and other symbols can also be escaped, as usual in Markdown:</p>
-<div id="example-357" class="example" data-section="Links">
+<div id="example-359" class="example" data-section="Links">
 <div class="examplenum">
-Example 357
+Example 359
 </div>
 <pre class="markdown"><code>[link](foo\)\:)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo):&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>URL-escaping should be left alone inside the destination, as all URL-escaped characters are also valid URL characters. HTML entities in the destination will be parsed into their UTF-8 codepoints, as usual, and optionally URL-escaped when written as HTML.</p>
-<div id="example-358" class="example" data-section="Links">
+<div id="example-360" class="example" data-section="Links">
 <div class="examplenum">
-Example 358
+Example 360
 </div>
 <pre class="markdown"><code>[link](foo%20b&amp;auml;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo%20b%C3%A4&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that, because titles can often be parsed as destinations, if you try to omit the destination and keep the title, you’ll get unexpected results:</p>
-<div id="example-359" class="example" data-section="Links">
+<div id="example-361" class="example" data-section="Links">
 <div class="examplenum">
-Example 359
+Example 361
 </div>
 <pre class="markdown"><code>[link](&quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;%22title%22&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Titles may be in single quotes, double quotes, or parentheses:</p>
-<div id="example-360" class="example" data-section="Links">
+<div id="example-362" class="example" data-section="Links">
 <div class="examplenum">
-Example 360
+Example 362
 </div>
 <pre class="markdown"><code>[link](/url &quot;title&quot;)
 [link](/url &#39;title&#39;)
@@ -4440,51 +4495,51 @@ Example 360
 &lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes and entities may be used in titles:</p>
-<div id="example-361" class="example" data-section="Links">
+<div id="example-363" class="example" data-section="Links">
 <div class="examplenum">
-Example 361
+Example 363
 </div>
 <pre class="markdown"><code>[link](/url &quot;title \&quot;&amp;quot;&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title &amp;quot;&amp;quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Nested balanced quotes are not allowed without escaping:</p>
-<div id="example-362" class="example" data-section="Links">
+<div id="example-364" class="example" data-section="Links">
 <div class="examplenum">
-Example 362
+Example 364
 </div>
 <pre class="markdown"><code>[link](/url &quot;title &quot;and&quot; title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;[link](/url &amp;quot;title &amp;quot;and&amp;quot; title&amp;quot;)&lt;/p&gt;</code></pre>
 </div>
 <p>But it is easy to work around this by using a different quote type:</p>
-<div id="example-363" class="example" data-section="Links">
+<div id="example-365" class="example" data-section="Links">
 <div class="examplenum">
-Example 363
+Example 365
 </div>
 <pre class="markdown"><code>[link](/url &#39;title &quot;and&quot; title&#39;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title &amp;quot;and&amp;quot; title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>(Note: <code>Markdown.pl</code> did allow double quotes inside a double-quoted title, and its test suite included a test demonstrating this. But it is hard to see a good rationale for the extra complexity this brings, since there are already many ways—backslash escaping, entities, or using a different quote type for the enclosing title—to write titles containing double quotes. <code>Markdown.pl</code>’s handling of titles has a number of other strange features. For example, it allows single-quoted titles in inline links, but not reference links. And, in reference links but not inline links, it allows a title to begin with <code>&quot;</code> and end with <code>)</code>. <code>Markdown.pl</code> 1.0.1 even allows titles with no closing quotation mark, though 1.0.2b8 does not. It seems preferable to adopt a simple, rational rule that works the same way in inline links and link reference definitions.)</p>
 <p>Whitespace is allowed around the destination and title:</p>
-<div id="example-364" class="example" data-section="Links">
+<div id="example-366" class="example" data-section="Links">
 <div class="examplenum">
-Example 364
+Example 366
 </div>
 <pre class="markdown"><code>[link](   /uri
   &quot;title&quot;  )</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>But it is not allowed between the link label and the following parenthesis:</p>
-<div id="example-365" class="example" data-section="Links">
+<div id="example-367" class="example" data-section="Links">
 <div class="examplenum">
-Example 365
+Example 367
 </div>
 <pre class="markdown"><code>[link] (/uri)</code></pre>
 <pre class="html"><code>&lt;p&gt;[link] (/uri)&lt;/p&gt;</code></pre>
 </div>
 <p>Note that this is not a link, because the closing <code>]</code> occurs in an HTML tag:</p>
-<div id="example-366" class="example" data-section="Links">
+<div id="example-368" class="example" data-section="Links">
 <div class="examplenum">
-Example 366
+Example 368
 </div>
 <pre class="markdown"><code>[foo &lt;bar attr=&quot;](baz)&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo &lt;bar attr=&quot;](baz)&quot;&gt;&lt;/p&gt;</code></pre>
@@ -4494,9 +4549,9 @@ Example 366
 <p>One label <a href="#matches">matches</a> <a id="matches"></a> another just in case their normalized forms are equal. To normalize a label, perform the <em>unicode case fold</em> and collapse consecutive internal whitespace to a single space. If there are multiple matching reference link definitions, the one that comes first in the document is used. (It is desirable in such cases to emit a warning.)</p>
 <p>The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching <a href="#link-reference-definition">link reference definition</a>.</p>
 <p>Here is a simple example:</p>
-<div id="example-367" class="example" data-section="Links">
+<div id="example-369" class="example" data-section="Links">
 <div class="examplenum">
-Example 367
+Example 369
 </div>
 <pre class="markdown"><code>[foo][bar]
 
@@ -4504,9 +4559,9 @@ Example 367
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The first label can contain inline content:</p>
-<div id="example-368" class="example" data-section="Links">
+<div id="example-370" class="example" data-section="Links">
 <div class="examplenum">
-Example 368
+Example 370
 </div>
 <pre class="markdown"><code>[*foo\!*][bar]
 
@@ -4514,9 +4569,9 @@ Example 368
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo!&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Matching is case-insensitive:</p>
-<div id="example-369" class="example" data-section="Links">
+<div id="example-371" class="example" data-section="Links">
 <div class="examplenum">
-Example 369
+Example 371
 </div>
 <pre class="markdown"><code>[foo][BaR]
 
@@ -4524,9 +4579,9 @@ Example 369
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Unicode case fold is used:</p>
-<div id="example-370" class="example" data-section="Links">
+<div id="example-372" class="example" data-section="Links">
 <div class="examplenum">
-Example 370
+Example 372
 </div>
 <pre class="markdown"><code>[Толпой][Толпой] is a Russian word.
 
@@ -4534,9 +4589,9 @@ Example 370
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;Толпой&lt;/a&gt; is a Russian word.&lt;/p&gt;</code></pre>
 </div>
 <p>Consecutive internal whitespace is treated as one space for purposes of determining matching:</p>
-<div id="example-371" class="example" data-section="Links">
+<div id="example-373" class="example" data-section="Links">
 <div class="examplenum">
-Example 371
+Example 373
 </div>
 <pre class="markdown"><code>[Foo
   bar]: /url
@@ -4545,18 +4600,18 @@ Example 371
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;Baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>There can be whitespace between the two labels:</p>
-<div id="example-372" class="example" data-section="Links">
+<div id="example-374" class="example" data-section="Links">
 <div class="examplenum">
-Example 372
+Example 374
 </div>
 <pre class="markdown"><code>[foo] [bar]
 
 [bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-373" class="example" data-section="Links">
+<div id="example-375" class="example" data-section="Links">
 <div class="examplenum">
-Example 373
+Example 375
 </div>
 <pre class="markdown"><code>[foo]
 [bar]
@@ -4565,9 +4620,9 @@ Example 373
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>When there are multiple matching <a href="#link-reference-definition">link reference definitions</a>, the first is used:</p>
-<div id="example-374" class="example" data-section="Links">
+<div id="example-376" class="example" data-section="Links">
 <div class="examplenum">
-Example 374
+Example 376
 </div>
 <pre class="markdown"><code>[foo]: /url1
 
@@ -4577,9 +4632,9 @@ Example 374
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url1&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that matching is performed on normalized strings, not parsed inline content. So the following does not match, even though the labels define equivalent inline content:</p>
-<div id="example-375" class="example" data-section="Links">
+<div id="example-377" class="example" data-section="Links">
 <div class="examplenum">
-Example 375
+Example 377
 </div>
 <pre class="markdown"><code>[bar][foo\!]
 
@@ -4587,18 +4642,18 @@ Example 375
 <pre class="html"><code>&lt;p&gt;[bar][foo!]&lt;/p&gt;</code></pre>
 </div>
 <p>A <a href="#collapsed-reference-link">collapsed reference link</a> <a id="collapsed-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document, optional whitespace, and the string <code>[]</code>. The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching reference link definition. Thus, <code>[foo][]</code> is equivalent to <code>[foo][foo]</code>.</p>
-<div id="example-376" class="example" data-section="Links">
+<div id="example-378" class="example" data-section="Links">
 <div class="examplenum">
-Example 376
+Example 378
 </div>
 <pre class="markdown"><code>[foo][]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-377" class="example" data-section="Links">
+<div id="example-379" class="example" data-section="Links">
 <div class="examplenum">
-Example 377
+Example 379
 </div>
 <pre class="markdown"><code>[*foo* bar][]
 
@@ -4606,9 +4661,9 @@ Example 377
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-378" class="example" data-section="Links">
+<div id="example-380" class="example" data-section="Links">
 <div class="examplenum">
-Example 378
+Example 380
 </div>
 <pre class="markdown"><code>[Foo][]
 
@@ -4616,9 +4671,9 @@ Example 378
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;Foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
-<div id="example-379" class="example" data-section="Links">
+<div id="example-381" class="example" data-section="Links">
 <div class="examplenum">
-Example 379
+Example 381
 </div>
 <pre class="markdown"><code>[foo] 
 []
@@ -4627,27 +4682,27 @@ Example 379
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>A <a href="#shortcut-reference-link">shortcut reference link</a> <a id="shortcut-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document and is not followed by <code>[]</code> or a link label. The contents of the first link label are parsed as inlines, which are used as the link’s text. the link’s URI and title are provided by the matching link reference definition. Thus, <code>[foo]</code> is equivalent to <code>[foo][]</code>.</p>
-<div id="example-380" class="example" data-section="Links">
+<div id="example-382" class="example" data-section="Links">
 <div class="examplenum">
-Example 380
+Example 382
 </div>
 <pre class="markdown"><code>[foo]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-381" class="example" data-section="Links">
+<div id="example-383" class="example" data-section="Links">
 <div class="examplenum">
-Example 381
+Example 383
 </div>
 <pre class="markdown"><code>[*foo* bar]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-382" class="example" data-section="Links">
+<div id="example-384" class="example" data-section="Links">
 <div class="examplenum">
-Example 382
+Example 384
 </div>
 <pre class="markdown"><code>[[*foo* bar]]
 
@@ -4655,9 +4710,9 @@ Example 382
 <pre class="html"><code>&lt;p&gt;[&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;]&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-383" class="example" data-section="Links">
+<div id="example-385" class="example" data-section="Links">
 <div class="examplenum">
-Example 383
+Example 385
 </div>
 <pre class="markdown"><code>[Foo]
 
@@ -4665,9 +4720,9 @@ Example 383
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;Foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:</p>
-<div id="example-384" class="example" data-section="Links">
+<div id="example-386" class="example" data-section="Links">
 <div class="examplenum">
-Example 384
+Example 386
 </div>
 <pre class="markdown"><code>\[foo]
 
@@ -4675,9 +4730,9 @@ Example 384
 <pre class="html"><code>&lt;p&gt;[foo]&lt;/p&gt;</code></pre>
 </div>
 <p>Note that this is a link, because link labels bind more tightly than emphasis:</p>
-<div id="example-385" class="example" data-section="Links">
+<div id="example-387" class="example" data-section="Links">
 <div class="examplenum">
-Example 385
+Example 387
 </div>
 <pre class="markdown"><code>[foo*]: /url
 
@@ -4685,9 +4740,9 @@ Example 385
 <pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;/url&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>However, this is not, because link labels bind less tightly than code backticks:</p>
-<div id="example-386" class="example" data-section="Links">
+<div id="example-388" class="example" data-section="Links">
 <div class="examplenum">
-Example 386
+Example 388
 </div>
 <pre class="markdown"><code>[foo`]: /url
 
@@ -4695,18 +4750,18 @@ Example 386
 <pre class="html"><code>&lt;p&gt;[foo&lt;code&gt;]&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Link labels can contain matched square brackets:</p>
-<div id="example-387" class="example" data-section="Links">
+<div id="example-389" class="example" data-section="Links">
 <div class="examplenum">
-Example 387
+Example 389
 </div>
 <pre class="markdown"><code>[[[foo]]]
 
 [[[foo]]]: /url</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;[[foo]]&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-388" class="example" data-section="Links">
+<div id="example-390" class="example" data-section="Links">
 <div class="examplenum">
-Example 388
+Example 390
 </div>
 <pre class="markdown"><code>[[[foo]]]
 
@@ -4715,9 +4770,9 @@ Example 388
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url1&quot;&gt;[[foo]]&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>For non-matching brackets, use backslash escapes:</p>
-<div id="example-389" class="example" data-section="Links">
+<div id="example-391" class="example" data-section="Links">
 <div class="examplenum">
-Example 389
+Example 391
 </div>
 <pre class="markdown"><code>[\[foo]
 
@@ -4725,9 +4780,9 @@ Example 389
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;[foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Full references take precedence over shortcut references:</p>
-<div id="example-390" class="example" data-section="Links">
+<div id="example-392" class="example" data-section="Links">
 <div class="examplenum">
-Example 390
+Example 392
 </div>
 <pre class="markdown"><code>[foo][bar]
 
@@ -4736,9 +4791,9 @@ Example 390
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>In the following case <code>[bar][baz]</code> is parsed as a reference, <code>[foo]</code> as normal text:</p>
-<div id="example-391" class="example" data-section="Links">
+<div id="example-393" class="example" data-section="Links">
 <div class="examplenum">
-Example 391
+Example 393
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4746,9 +4801,9 @@ Example 391
 <pre class="html"><code>&lt;p&gt;[foo]&lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here, though, <code>[foo][bar]</code> is parsed as a reference, since <code>[bar]</code> is defined:</p>
-<div id="example-392" class="example" data-section="Links">
+<div id="example-394" class="example" data-section="Links">
 <div class="examplenum">
-Example 392
+Example 394
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4757,9 +4812,9 @@ Example 392
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;a href=&quot;/url1&quot;&gt;baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here <code>[foo]</code> is not parsed as a shortcut reference, because it is followed by a link label (even though <code>[bar]</code> is not defined):</p>
-<div id="example-393" class="example" data-section="Links">
+<div id="example-395" class="example" data-section="Links">
 <div class="examplenum">
-Example 393
+Example 395
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4769,81 +4824,81 @@ Example 393
 </div>
 <h2 id="images"><span class="header-section-number">6.6</span> Images</h2>
 <p>An (unescaped) exclamation mark (<code>!</code>) followed by a reference or inline link will be parsed as an image. The link label will be used as the image’s alt text, and the link title, if any, will be used as the image’s title.</p>
-<div id="example-394" class="example" data-section="Images">
+<div id="example-396" class="example" data-section="Images">
 <div class="examplenum">
-Example 394
+Example 396
 </div>
 <pre class="markdown"><code>![foo](/url &quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-395" class="example" data-section="Images">
+<div id="example-397" class="example" data-section="Images">
 <div class="examplenum">
-Example 395
+Example 397
 </div>
 <pre class="markdown"><code>![foo *bar*]
 
 [foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-396" class="example" data-section="Images">
+<div id="example-398" class="example" data-section="Images">
 <div class="examplenum">
-Example 396
+Example 398
 </div>
 <pre class="markdown"><code>![foo *bar*][]
 
 [foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-397" class="example" data-section="Images">
+<div id="example-399" class="example" data-section="Images">
 <div class="examplenum">
-Example 397
+Example 399
 </div>
 <pre class="markdown"><code>![foo *bar*][foobar]
 
 [FOOBAR]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-398" class="example" data-section="Images">
-<div class="examplenum">
-Example 398
-</div>
-<pre class="markdown"><code>![foo](train.jpg)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-399" class="example" data-section="Images">
-<div class="examplenum">
-Example 399
-</div>
-<pre class="markdown"><code>My ![foo bar](/path/to/train.jpg  &quot;title&quot;   )</code></pre>
-<pre class="html"><code>&lt;p&gt;My &lt;img src=&quot;/path/to/train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-400" class="example" data-section="Images">
 <div class="examplenum">
 Example 400
 </div>
-<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>![foo](train.jpg)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-401" class="example" data-section="Images">
 <div class="examplenum">
 Example 401
 </div>
+<pre class="markdown"><code>My ![foo bar](/path/to/train.jpg  &quot;title&quot;   )</code></pre>
+<pre class="html"><code>&lt;p&gt;My &lt;img src=&quot;/path/to/train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-402" class="example" data-section="Images">
+<div class="examplenum">
+Example 402
+</div>
+<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-403" class="example" data-section="Images">
+<div class="examplenum">
+Example 403
+</div>
 <pre class="markdown"><code>![](/url)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Reference-style:</p>
-<div id="example-402" class="example" data-section="Images">
+<div id="example-404" class="example" data-section="Images">
 <div class="examplenum">
-Example 402
+Example 404
 </div>
 <pre class="markdown"><code>![foo] [bar]
 
 [bar]: /url</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-403" class="example" data-section="Images">
+<div id="example-405" class="example" data-section="Images">
 <div class="examplenum">
-Example 403
+Example 405
 </div>
 <pre class="markdown"><code>![foo] [bar]
 
@@ -4851,18 +4906,18 @@ Example 403
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Collapsed:</p>
-<div id="example-404" class="example" data-section="Images">
+<div id="example-406" class="example" data-section="Images">
 <div class="examplenum">
-Example 404
+Example 406
 </div>
 <pre class="markdown"><code>![foo][]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-405" class="example" data-section="Images">
+<div id="example-407" class="example" data-section="Images">
 <div class="examplenum">
-Example 405
+Example 407
 </div>
 <pre class="markdown"><code>![*foo* bar][]
 
@@ -4870,9 +4925,9 @@ Example 405
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The labels are case-insensitive:</p>
-<div id="example-406" class="example" data-section="Images">
+<div id="example-408" class="example" data-section="Images">
 <div class="examplenum">
-Example 406
+Example 408
 </div>
 <pre class="markdown"><code>![Foo][]
 
@@ -4880,9 +4935,9 @@ Example 406
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;Foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
-<div id="example-407" class="example" data-section="Images">
+<div id="example-409" class="example" data-section="Images">
 <div class="examplenum">
-Example 407
+Example 409
 </div>
 <pre class="markdown"><code>![foo] 
 []
@@ -4891,27 +4946,27 @@ Example 407
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Shortcut:</p>
-<div id="example-408" class="example" data-section="Images">
+<div id="example-410" class="example" data-section="Images">
 <div class="examplenum">
-Example 408
+Example 410
 </div>
 <pre class="markdown"><code>![foo]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-409" class="example" data-section="Images">
+<div id="example-411" class="example" data-section="Images">
 <div class="examplenum">
-Example 409
+Example 411
 </div>
 <pre class="markdown"><code>![*foo* bar]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-410" class="example" data-section="Images">
+<div id="example-412" class="example" data-section="Images">
 <div class="examplenum">
-Example 410
+Example 412
 </div>
 <pre class="markdown"><code>![[foo]]
 
@@ -4919,9 +4974,9 @@ Example 410
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;[foo]&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-411" class="example" data-section="Images">
+<div id="example-413" class="example" data-section="Images">
 <div class="examplenum">
-Example 411
+Example 413
 </div>
 <pre class="markdown"><code>![Foo]
 
@@ -4929,9 +4984,9 @@ Example 411
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;Foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If you just want bracketed text, you can backslash-escape the opening <code>!</code> and <code>[</code>:</p>
-<div id="example-412" class="example" data-section="Images">
+<div id="example-414" class="example" data-section="Images">
 <div class="examplenum">
-Example 412
+Example 414
 </div>
 <pre class="markdown"><code>\!\[foo]
 
@@ -4939,9 +4994,9 @@ Example 412
 <pre class="html"><code>&lt;p&gt;![foo]&lt;/p&gt;</code></pre>
 </div>
 <p>If you want a link after a literal <code>!</code>, backslash-escape the <code>!</code>:</p>
-<div id="example-413" class="example" data-section="Images">
+<div id="example-415" class="example" data-section="Images">
 <div class="examplenum">
-Example 413
+Example 415
 </div>
 <pre class="markdown"><code>\![foo]
 
@@ -4954,39 +5009,39 @@ Example 413
 <p>An <a href="#absolute-uri">absolute URI</a>, <a id="absolute-uri"></a> for these purposes, consists of a <a href="#scheme">scheme</a> followed by a colon (<code>:</code>) followed by zero or more characters other than ASCII whitespace and control characters, <code>&lt;</code>, and <code>&gt;</code>. If the URI includes these characters, you must use percent-encoding (e.g. <code>%20</code> for a space).</p>
 <p>The following <a href="#scheme">schemes</a> <a id="scheme"></a> are recognized (case-insensitive): <code>coap</code>, <code>doi</code>, <code>javascript</code>, <code>aaa</code>, <code>aaas</code>, <code>about</code>, <code>acap</code>, <code>cap</code>, <code>cid</code>, <code>crid</code>, <code>data</code>, <code>dav</code>, <code>dict</code>, <code>dns</code>, <code>file</code>, <code>ftp</code>, <code>geo</code>, <code>go</code>, <code>gopher</code>, <code>h323</code>, <code>http</code>, <code>https</code>, <code>iax</code>, <code>icap</code>, <code>im</code>, <code>imap</code>, <code>info</code>, <code>ipp</code>, <code>iris</code>, <code>iris.beep</code>, <code>iris.xpc</code>, <code>iris.xpcs</code>, <code>iris.lwz</code>, <code>ldap</code>, <code>mailto</code>, <code>mid</code>, <code>msrp</code>, <code>msrps</code>, <code>mtqp</code>, <code>mupdate</code>, <code>news</code>, <code>nfs</code>, <code>ni</code>, <code>nih</code>, <code>nntp</code>, <code>opaquelocktoken</code>, <code>pop</code>, <code>pres</code>, <code>rtsp</code>, <code>service</code>, <code>session</code>, <code>shttp</code>, <code>sieve</code>, <code>sip</code>, <code>sips</code>, <code>sms</code>, <code>snmp</code>,<code>soap.beep</code>, <code>soap.beeps</code>, <code>tag</code>, <code>tel</code>, <code>telnet</code>, <code>tftp</code>, <code>thismessage</code>, <code>tn3270</code>, <code>tip</code>, <code>tv</code>, <code>urn</code>, <code>vemmi</code>, <code>ws</code>, <code>wss</code>, <code>xcon</code>, <code>xcon-userid</code>, <code>xmlrpc.beep</code>, <code>xmlrpc.beeps</code>, <code>xmpp</code>, <code>z39.50r</code>, <code>z39.50s</code>, <code>adiumxtra</code>, <code>afp</code>, <code>afs</code>, <code>aim</code>, <code>apt</code>,<code>attachment</code>, <code>aw</code>, <code>beshare</code>, <code>bitcoin</code>, <code>bolo</code>, <code>callto</code>, <code>chrome</code>,<code>chrome-extension</code>, <code>com-eventbrite-attendee</code>, <code>content</code>, <code>cvs</code>,<code>dlna-playsingle</code>, <code>dlna-playcontainer</code>, <code>dtn</code>, <code>dvb</code>, <code>ed2k</code>, <code>facetime</code>, <code>feed</code>, <code>finger</code>, <code>fish</code>, <code>gg</code>, <code>git</code>, <code>gizmoproject</code>, <code>gtalk</code>, <code>hcp</code>, <code>icon</code>, <code>ipn</code>, <code>irc</code>, <code>irc6</code>, <code>ircs</code>, <code>itms</code>, <code>jar</code>, <code>jms</code>, <code>keyparc</code>, <code>lastfm</code>, <code>ldaps</code>, <code>magnet</code>, <code>maps</code>, <code>market</code>,<code>message</code>, <code>mms</code>, <code>ms-help</code>, <code>msnim</code>, <code>mumble</code>, <code>mvn</code>, <code>notes</code>, <code>oid</code>, <code>palm</code>, <code>paparazzi</code>, <code>platform</code>, <code>proxy</code>, <code>psyc</code>, <code>query</code>, <code>res</code>, <code>resource</code>, <code>rmi</code>, <code>rsync</code>, <code>rtmp</code>, <code>secondlife</code>, <code>sftp</code>, <code>sgn</code>, <code>skype</code>, <code>smb</code>, <code>soldat</code>, <code>spotify</code>, <code>ssh</code>, <code>steam</code>, <code>svn</code>, <code>teamspeak</code>, <code>things</code>, <code>udp</code>, <code>unreal</code>, <code>ut2004</code>, <code>ventrilo</code>, <code>view-source</code>, <code>webcal</code>, <code>wtai</code>, <code>wyciwyg</code>, <code>xfire</code>, <code>xri</code>, <code>ymsgr</code>.</p>
 <p>Here are some valid autolinks:</p>
-<div id="example-414" class="example" data-section="Autolinks">
+<div id="example-416" class="example" data-section="Autolinks">
 <div class="examplenum">
-Example 414
+Example 416
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar.baz&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz&quot;&gt;http://foo.bar.baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-415" class="example" data-section="Autolinks">
+<div id="example-417" class="example" data-section="Autolinks">
 <div class="examplenum">
-Example 415
+Example 417
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar.baz?q=hello&amp;id=22&amp;boolean&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&quot;&gt;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-416" class="example" data-section="Autolinks">
+<div id="example-418" class="example" data-section="Autolinks">
 <div class="examplenum">
-Example 416
+Example 418
 </div>
 <pre class="markdown"><code>&lt;irc://foo.bar:2233/baz&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;irc://foo.bar:2233/baz&quot;&gt;irc://foo.bar:2233/baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Uppercase is also fine:</p>
-<div id="example-417" class="example" data-section="Autolinks">
+<div id="example-419" class="example" data-section="Autolinks">
 <div class="examplenum">
-Example 417
+Example 419
 </div>
 <pre class="markdown"><code>&lt;MAILTO:FOO@BAR.BAZ&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;MAILTO:FOO@BAR.BAZ&quot;&gt;MAILTO:FOO@BAR.BAZ&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces are not allowed in autolinks:</p>
-<div id="example-418" class="example" data-section="Autolinks">
+<div id="example-420" class="example" data-section="Autolinks">
 <div class="examplenum">
-Example 418
+Example 420
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar/baz bim&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;http://foo.bar/baz bim&amp;gt;&lt;/p&gt;</code></pre>
@@ -4996,66 +5051,66 @@ Example 418
 <pre><code>/^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?
 (?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/</code></pre>
 <p>Examples of email autolinks:</p>
-<div id="example-419" class="example" data-section="Autolinks">
-<div class="examplenum">
-Example 419
-</div>
-<pre class="markdown"><code>&lt;foo@bar.example.com&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo@bar.example.com&quot;&gt;foo@bar.example.com&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-420" class="example" data-section="Autolinks">
-<div class="examplenum">
-Example 420
-</div>
-<pre class="markdown"><code>&lt;foo+special@Bar.baz-bar0.com&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo+special@Bar.baz-bar0.com&quot;&gt;foo+special@Bar.baz-bar0.com&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
-<p>These are not autolinks:</p>
 <div id="example-421" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 421
 </div>
-<pre class="markdown"><code>&lt;&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;foo@bar.example.com&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo@bar.example.com&quot;&gt;foo@bar.example.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-422" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 422
 </div>
-<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;foo+special@Bar.baz-bar0.com&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo+special@Bar.baz-bar0.com&quot;&gt;foo+special@Bar.baz-bar0.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>These are not autolinks:</p>
 <div id="example-423" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 423
 </div>
-<pre class="markdown"><code>&lt; http://foo.bar &gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt; http://foo.bar &amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-424" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 424
 </div>
-<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-425" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 425
 </div>
-<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt; http://foo.bar &gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt; http://foo.bar &amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-426" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 426
 </div>
-<pre class="markdown"><code>http://example.com</code></pre>
-<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-427" class="example" data-section="Autolinks">
 <div class="examplenum">
 Example 427
+</div>
+<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-428" class="example" data-section="Autolinks">
+<div class="examplenum">
+Example 428
+</div>
+<pre class="markdown"><code>http://example.com</code></pre>
+<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
+</div>
+<div id="example-429" class="example" data-section="Autolinks">
+<div class="examplenum">
+Example 429
 </div>
 <pre class="markdown"><code>foo@bar.example.com</code></pre>
 <pre class="html"><code>&lt;p&gt;foo@bar.example.com&lt;/p&gt;</code></pre>
@@ -5079,25 +5134,25 @@ Example 427
 <p>A <a href="#cdata-section">CDATA section</a> <a id="cdata-section"></a> consists of the string <code>&lt;![CDATA[</code>, a string of characters not including the string <code>]]&gt;</code>, and the string <code>]]&gt;</code>.</p>
 <p>An <a href="#html-tag">HTML tag</a> <a id="html-tag"></a> consists of an <a href="#open-tag">open tag</a>, a <a href="#closing-tag">closing tag</a>, an <a href="#html-comment">HTML comment</a>, a <a href="#processing-instruction">processing instruction</a>, an <a href="#element-type-declaration">element type declaration</a>, or a <a href="#cdata-section">CDATA section</a>.</p>
 <p>Here are some simple open tags:</p>
-<div id="example-428" class="example" data-section="Raw HTML">
+<div id="example-430" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 428
+Example 430
 </div>
 <pre class="markdown"><code>&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Empty elements:</p>
-<div id="example-429" class="example" data-section="Raw HTML">
+<div id="example-431" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 429
+Example 431
 </div>
 <pre class="markdown"><code>&lt;a/&gt;&lt;b2/&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a/&gt;&lt;b2/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Whitespace is allowed:</p>
-<div id="example-430" class="example" data-section="Raw HTML">
+<div id="example-432" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 430
+Example 432
 </div>
 <pre class="markdown"><code>&lt;a  /&gt;&lt;b2
 data=&quot;foo&quot; &gt;</code></pre>
@@ -5105,9 +5160,9 @@ data=&quot;foo&quot; &gt;</code></pre>
 data=&quot;foo&quot; &gt;&lt;/p&gt;</code></pre>
 </div>
 <p>With attributes:</p>
-<div id="example-431" class="example" data-section="Raw HTML">
+<div id="example-433" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 431
+Example 433
 </div>
 <pre class="markdown"><code>&lt;a foo=&quot;bar&quot; bam = &#39;baz &lt;em&gt;&quot;&lt;/em&gt;&#39;
 _boolean zoop:33=zoop:33 /&gt;</code></pre>
@@ -5115,33 +5170,33 @@ _boolean zoop:33=zoop:33 /&gt;</code></pre>
 _boolean zoop:33=zoop:33 /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal tag names, not parsed as HTML:</p>
-<div id="example-432" class="example" data-section="Raw HTML">
+<div id="example-434" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 432
+Example 434
 </div>
 <pre class="markdown"><code>&lt;33&gt; &lt;__&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;33&amp;gt; &amp;lt;__&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute names:</p>
-<div id="example-433" class="example" data-section="Raw HTML">
+<div id="example-435" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 433
+Example 435
 </div>
 <pre class="markdown"><code>&lt;a h*#ref=&quot;hi&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a h*#ref=&amp;quot;hi&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute values:</p>
-<div id="example-434" class="example" data-section="Raw HTML">
+<div id="example-436" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 434
+Example 436
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;hi&#39;&gt; &lt;a href=hi&#39;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&amp;quot;hi&#39;&amp;gt; &amp;lt;a href=hi&#39;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal whitespace:</p>
-<div id="example-435" class="example" data-section="Raw HTML">
+<div id="example-437" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 435
+Example 437
 </div>
 <pre class="markdown"><code>&lt; a&gt;&lt;
 foo&gt;&lt;bar/ &gt;</code></pre>
@@ -5149,17 +5204,17 @@ foo&gt;&lt;bar/ &gt;</code></pre>
 foo&amp;gt;&amp;lt;bar/ &amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Missing whitespace:</p>
-<div id="example-436" class="example" data-section="Raw HTML">
+<div id="example-438" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 436
+Example 438
 </div>
 <pre class="markdown"><code>&lt;a href=&#39;bar&#39;title=title&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&#39;bar&#39;title=title&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Closing tags:</p>
-<div id="example-437" class="example" data-section="Raw HTML">
+<div id="example-439" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 437
+Example 439
 </div>
 <pre class="markdown"><code>&lt;/a&gt;
 &lt;/foo &gt;</code></pre>
@@ -5167,82 +5222,82 @@ Example 437
 &lt;/foo &gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attributes in closing tag:</p>
-<div id="example-438" class="example" data-section="Raw HTML">
+<div id="example-440" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 438
+Example 440
 </div>
 <pre class="markdown"><code>&lt;/a href=&quot;foo&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;/a href=&amp;quot;foo&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Comments:</p>
-<div id="example-439" class="example" data-section="Raw HTML">
+<div id="example-441" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 439
+Example 441
 </div>
 <pre class="markdown"><code>foo &lt;!-- this is a
 comment - with hyphen --&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;!-- this is a
 comment - with hyphen --&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-440" class="example" data-section="Raw HTML">
+<div id="example-442" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 440
+Example 442
 </div>
 <pre class="markdown"><code>foo &lt;!-- not a comment -- two hyphens --&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &amp;lt;!-- not a comment -- two hyphens --&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Processing instructions:</p>
-<div id="example-441" class="example" data-section="Raw HTML">
+<div id="example-443" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 441
+Example 443
 </div>
 <pre class="markdown"><code>foo &lt;?php echo $a; ?&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;?php echo $a; ?&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Declarations:</p>
-<div id="example-442" class="example" data-section="Raw HTML">
+<div id="example-444" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 442
+Example 444
 </div>
 <pre class="markdown"><code>foo &lt;!ELEMENT br EMPTY&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;!ELEMENT br EMPTY&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>CDATA sections:</p>
-<div id="example-443" class="example" data-section="Raw HTML">
+<div id="example-445" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 443
+Example 445
 </div>
 <pre class="markdown"><code>foo &lt;![CDATA[&gt;&amp;&lt;]]&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;![CDATA[&gt;&amp;&lt;]]&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Entities are preserved in HTML attributes:</p>
-<div id="example-444" class="example" data-section="Raw HTML">
+<div id="example-446" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 444
+Example 446
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;&amp;ouml;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&amp;ouml;&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes do not work in HTML attributes:</p>
-<div id="example-445" class="example" data-section="Raw HTML">
+<div id="example-447" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 445
+Example 447
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;\*&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;\*&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-446" class="example" data-section="Raw HTML">
+<div id="example-448" class="example" data-section="Raw HTML">
 <div class="examplenum">
-Example 446
+Example 448
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;\&quot;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&amp;quot;&amp;quot;&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="hard-line-breaks"><span class="header-section-number">6.9</span> Hard line breaks</h2>
 <p>A line break (not in a code span or HTML tag) that is preceded by two or more spaces is parsed as a linebreak (rendered in HTML as a <code>&lt;br /&gt;</code> tag):</p>
-<div id="example-447" class="example" data-section="Hard line breaks">
+<div id="example-449" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 447
+Example 449
 </div>
 <pre class="markdown"><code>foo  
 baz</code></pre>
@@ -5250,9 +5305,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>For a more visible alternative, a backslash before the newline may be used instead of two spaces:</p>
-<div id="example-448" class="example" data-section="Hard line breaks">
+<div id="example-450" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 448
+Example 450
 </div>
 <pre class="markdown"><code>foo\
 baz</code></pre>
@@ -5260,9 +5315,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>More than two spaces can be used:</p>
-<div id="example-449" class="example" data-section="Hard line breaks">
+<div id="example-451" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 449
+Example 451
 </div>
 <pre class="markdown"><code>foo       
 baz</code></pre>
@@ -5270,18 +5325,18 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Leading spaces at the beginning of the next line are ignored:</p>
-<div id="example-450" class="example" data-section="Hard line breaks">
+<div id="example-452" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 450
+Example 452
 </div>
 <pre class="markdown"><code>foo  
      bar</code></pre>
 <pre class="html"><code>&lt;p&gt;foo&lt;br /&gt;
 bar&lt;/p&gt;</code></pre>
 </div>
-<div id="example-451" class="example" data-section="Hard line breaks">
+<div id="example-453" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 451
+Example 453
 </div>
 <pre class="markdown"><code>foo\
      bar</code></pre>
@@ -5289,18 +5344,18 @@ Example 451
 bar&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks can occur inside emphasis, links, and other constructs that allow inline content:</p>
-<div id="example-452" class="example" data-section="Hard line breaks">
+<div id="example-454" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 452
+Example 454
 </div>
 <pre class="markdown"><code>*foo  
 bar*</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;br /&gt;
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-453" class="example" data-section="Hard line breaks">
+<div id="example-455" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 453
+Example 455
 </div>
 <pre class="markdown"><code>*foo\
 bar*</code></pre>
@@ -5308,35 +5363,35 @@ bar*</code></pre>
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks do not occur inside code spans</p>
-<div id="example-454" class="example" data-section="Hard line breaks">
+<div id="example-456" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 454
+Example 456
 </div>
 <pre class="markdown"><code>`code  
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-455" class="example" data-section="Hard line breaks">
+<div id="example-457" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 455
+Example 457
 </div>
 <pre class="markdown"><code>`code\
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code\ span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>or HTML tags:</p>
-<div id="example-456" class="example" data-section="Hard line breaks">
+<div id="example-458" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 456
+Example 458
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;foo  
 bar&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo  
 bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-457" class="example" data-section="Hard line breaks">
+<div id="example-459" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-Example 457
+Example 459
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;foo\
 bar&quot;&gt;</code></pre>
@@ -5345,9 +5400,9 @@ bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="soft-line-breaks"><span class="header-section-number">6.10</span> Soft line breaks</h2>
 <p>A regular line break (not in a code span or HTML tag) that is not preceded by two or more spaces is parsed as a softbreak. (A softbreak may be rendered in HTML either as a newline or as a space. The result will be the same in browsers. In the examples here, a newline will be used.)</p>
-<div id="example-458" class="example" data-section="Soft line breaks">
+<div id="example-460" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-Example 458
+Example 460
 </div>
 <pre class="markdown"><code>foo
 baz</code></pre>
@@ -5355,9 +5410,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces at the end of the line and beginning of the next line are removed:</p>
-<div id="example-459" class="example" data-section="Soft line breaks">
+<div id="example-461" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-Example 459
+Example 461
 </div>
 <pre class="markdown"><code>foo 
  baz</code></pre>
@@ -5368,24 +5423,24 @@ baz&lt;/p&gt;</code></pre>
 <p>A renderer may also provide an option to render soft line breaks as hard line breaks.</p>
 <h2 id="strings"><span class="header-section-number">6.11</span> Strings</h2>
 <p>Any characters not given an interpretation by the above rules will be parsed as string content.</p>
-<div id="example-460" class="example" data-section="Strings">
+<div id="example-462" class="example" data-section="Strings">
 <div class="examplenum">
-Example 460
+Example 462
 </div>
 <pre class="markdown"><code>hello $.;&#39;there</code></pre>
 <pre class="html"><code>&lt;p&gt;hello $.;&#39;there&lt;/p&gt;</code></pre>
 </div>
-<div id="example-461" class="example" data-section="Strings">
+<div id="example-463" class="example" data-section="Strings">
 <div class="examplenum">
-Example 461
+Example 463
 </div>
 <pre class="markdown"><code>Foo χρῆν</code></pre>
 <pre class="html"><code>&lt;p&gt;Foo χρῆν&lt;/p&gt;</code></pre>
 </div>
 <p>Internal spaces are preserved verbatim:</p>
-<div id="example-462" class="example" data-section="Strings">
+<div id="example-464" class="example" data-section="Strings">
 <div class="examplenum">
-Example 462
+Example 464
 </div>
 <pre class="markdown"><code>Multiple     spaces</code></pre>
 <pre class="html"><code>&lt;p&gt;Multiple     spaces&lt;/p&gt;</code></pre>
