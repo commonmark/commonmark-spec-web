@@ -1,11 +1,4439 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>CommonMark Spec</title>
-    <meta http-equiv="refresh" content="0;URL='http://spec.commonmark.org/0.6/" >
-  </head>
-  <body>
-    <p>The most recent version of the CommonMark Spec can be found
-at <a href="http://spec.commonmark.org/0.6/">http://spec.commonmark.org/0.6/</a>.</p>
-  </body>
+<head>
+<meta charset="UTF-8">
+<title>CommonMark Spec</title>
+<style type="text/css">
+  body { font-family: Helvetica, arial, freesans, clean, sans-serif;
+    line-height: 1.4;
+    max-width: 48em;
+    margin: auto;
+    color: #333333;
+    background-color: #fff;
+    font-size: 13pt;
+  }
+div#TOC ul { list-style: none; }
+h1 { font-size: 140%; font-weight: bold; border-top: 1px solid gray; padding-top: 0.5em; }
+h2 { font-size: 120%; font-weight: bold; }
+h3 { font-size: 110%; font-weight: bold; }
+h4 { font-size: 100%; font-weight: bold; }
+span.space { position: relative; }
+span.space:after {
+  content: "";
+  position: absolute;
+  /* create a mark that indicates a space (trick from D. Greenspan) */
+  top: 3px; bottom: 3px; left: 1px; right: 1px;
+  border: 1px solid #999;
+}
+div.example { overflow: hidden; }
+p { text-align: justify; }
+pre { padding: 0.5em; margin-left: 0; margin-right: 0; margin-top: 0.2em;
+  margin-bottom: 0.5em; font-size: 88%; }
+pre {
+ white-space: pre-wrap;       /* css-3 */
+ white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+ white-space: -pre-wrap;      /* Opera 4-6 */
+ white-space: -o-pre-wrap;    /* Opera 7 */
+ word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+code { font-family: monospace; background-color: #D3E1E4; }
+pre > code { background-color: transparent; }
+div.example > pre { float:left; width: 48%; }
+div.example > pre.markdown { clear:left; }
+pre.tree { font-weight: bold; color: #777; }
+pre.markdown { background-color: #D3E1E4; }
+pre.html { background-color: #C9CaCE; }
+pre.html span.space:after {
+  border: 1px solid #666;
+}
+div.examplenum { font-size: 82%; text-align: left; }
+a.dingus { color: red; }
+a.footnoteRef > sup:before {
+  content: "[";
+}
+a.footnoteRef > sup:after {
+  content: "]";
+}
+a.footnoteRef > sup {
+  vertical-align: baseline;
+  font-size: 100%;
+}
+</style>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $("div.example").each(function(e) {
+    var t = $(this).find('pre.markdown > code').text();
+    $(this).find('a.dingus').click(function(f) {
+      window.open('/dingus.html?text=' + encodeURIComponent(t));
+    });
+  });
+  $("pre.markdown").dblclick(function(e) { window.open('/dingus.html?text=' +
+      encodeURIComponent($(this).find('code').text()));
+  });
+});
+</script>
+</head>
+<body>
+<h1 class="title">CommonMark Spec</h1>
+<div class="version">Version 0.6 (2014-10-26)</div>
+<div class="authors">
+<span class="author">John MacFarlane</span>
+</div>
+<div id="TOC">
+
+</div>
+<h1 id="introduction">Introduction</h1>
+<h2 id="what-is-markdown">What is Markdown?</h2>
+<p>Markdown is a plain text format for writing structured documents, based on conventions used for indicating formatting in email and usenet posts. It was developed in 2004 by John Gruber, who wrote the first Markdown-to-HTML converter in perl, and it soon became widely used in websites. By 2014 there were dozens of implementations in many languages. Some of them extended basic Markdown syntax with conventions for footnotes, definition lists, tables, and other constructs, and some allowed output not just in HTML but in LaTeX and many other formats.</p>
+<h2 id="why-is-a-spec-needed">Why is a spec needed?</h2>
+<p>John Gruber’s <a href="http://daringfireball.net/projects/markdown/syntax">canonical description of Markdown’s syntax</a> does not specify the syntax unambiguously. Here are some examples of questions it does not answer:</p>
+<ol type="1">
+<li><p>How much indentation is needed for a sublist? The spec says that continuation paragraphs need to be indented four spaces, but is not fully explicit about sublists. It is natural to think that they, too, must be indented four spaces, but <code>Markdown.pl</code> does not require that. This is hardly a “corner case,” and divergences between implementations on this issue often lead to surprises for users in real documents. (See <a href="http://article.gmane.org/gmane.text.markdown.general/1997">this comment by John Gruber</a>.)</p></li>
+<li><p>Is a blank line needed before a block quote or header? Most implementations do not require the blank line. However, this can lead to unexpected results in hard-wrapped text, and also to ambiguities in parsing (note that some implementations put the header inside the blockquote, while others do not). (John Gruber has also spoken <a href="http://article.gmane.org/gmane.text.markdown.general/2146">in favor of requiring the blank lines</a>.)</p></li>
+<li><p>Is a blank line needed before an indented code block? (<code>Markdown.pl</code> requires it, but this is not mentioned in the documentation, and some implementations do not require it.)</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">paragraph
+<span class="bn">    code?</span></code></pre></li>
+<li><p>What is the exact rule for determining when list items get wrapped in <code>&lt;p&gt;</code> tags? Can a list be partially “loose” and partially “tight”? What should we do with a list like this?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">1. <span class="fl">one</span>
+
+2. <span class="fl">two</span>
+3. <span class="fl">three</span></code></pre>
+<p>Or this?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">1. <span class="fl"> one</span>
+<span class="bn">    - a</span>
+
+<span class="bn">    - b</span>
+2. <span class="fl"> two</span></code></pre>
+<p>(There are some relevant comments by John Gruber <a href="http://article.gmane.org/gmane.text.markdown.general/2554">here</a>.)</p></li>
+<li><p>Can list markers be indented? Can ordered list markers be right-aligned?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown"> 8. item 1
+ 9. item 2
+10. <span class="fl">item 2a</span></code></pre></li>
+<li><p>Is this one list with a horizontal rule in its second item, or two lists separated by a horizontal rule?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">* <span class="fl">a</span>
+* * * * *
+* <span class="fl">b</span></code></pre></li>
+<li><p>When list markers change from numbers to bullets, do we have two lists or one? (The Markdown syntax description suggests two, but the perl scripts and many other implementations produce one.)</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">1. <span class="fl">fee</span>
+2. <span class="fl">fie</span>
+- <span class="fl"> foe</span>
+- <span class="fl"> fum</span></code></pre></li>
+<li><p>What are the precedence rules for the markers of inline structure? For example, is the following a valid link, or does the code span take precedence ?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown"><span class="ot">[a backtick (`)](/url)</span> and <span class="ot">[another backtick (`)](/url)</span>.</code></pre></li>
+<li><p>What are the precedence rules for markers of emphasis and strong emphasis? For example, how should the following be parsed?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">*foo *bar* baz*</code></pre></li>
+<li><p>What are the precedence rules between block-level and inline-level structure? For example, how should the following be parsed?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">- <span class="fl">`a long code span can contain a hyphen like this</span>
+  - and it can screw things up`</code></pre></li>
+<li><p>Can list items include headers? (<code>Markdown.pl</code> does not allow this, but headers can occur in blockquotes.)</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">- <span class="fl"># Heading</span></code></pre></li>
+<li><p>Can link references be defined inside block quotes or list items?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt"> Blockquote [foo].</span>
+&gt;
+&gt;<span class="dt"> </span><span class="ot">[foo]: /url</span></code></pre></li>
+<li><p>If there are multiple definitions for the same reference, which takes precedence?</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown"><span class="ot">[foo]: /url1</span>
+<span class="ot">[foo]: /url2</span>
+
+<span class="ot">[foo][]</span></code></pre></li>
+</ol>
+<p>In the absence of a spec, early implementers consulted <code>Markdown.pl</code> to resolve these ambiguities. But <code>Markdown.pl</code> was quite buggy, and gave manifestly bad results in many cases, so it was not a satisfactory replacement for a spec.</p>
+<p>Because there is no unambiguous spec, implementations have diverged considerably. As a result, users are often surprised to find that a document that renders one way on one system (say, a github wiki) renders differently on another (say, converting to docbook using pandoc). To make matters worse, because nothing in Markdown counts as a “syntax error,” the divergence often isn’t discovered right away.</p>
+<h2 id="about-this-document">About this document</h2>
+<p>This document attempts to specify Markdown syntax unambiguously. It contains many examples with side-by-side Markdown and HTML. These are intended to double as conformance tests. An accompanying script <code>runtests.pl</code> can be used to run the tests against any Markdown program:</p>
+<pre><code>perl runtests.pl spec.txt PROGRAM</code></pre>
+<p>Since this document describes how Markdown is to be parsed into an abstract syntax tree, it would have made sense to use an abstract representation of the syntax tree instead of HTML. But HTML is capable of representing the structural distinctions we need to make, and the choice of HTML for the tests makes it possible to run the tests against an implementation without writing an abstract syntax tree renderer.</p>
+<p>This document is generated from a text file, <code>spec.txt</code>, written in Markdown with a small extension for the side-by-side tests. The script <code>spec2md.pl</code> can be used to turn <code>spec.txt</code> into pandoc Markdown, which can then be converted into other formats.</p>
+<p>In the examples, the <code>→</code> character is used to represent tabs.</p>
+<h1 id="preprocessing">Preprocessing</h1>
+<p>A <a href="#line">line</a> <a id="line"></a> is a sequence of zero or more <a href="#character">characters</a> followed by a line ending (CR, LF, or CRLF) or by the end of file.</p>
+<p>A <a href="#character">character</a><a id="character"></a> is a unicode code point. This spec does not specify an encoding; it thinks of lines as composed of characters rather than bytes. A conforming parser may be limited to a certain encoding.</p>
+<p>Tabs in lines are expanded to spaces, with a tab stop of 4 characters:</p>
+. →foo→baz→→bim .
+<pre><code>foo baz     bim
+</code></pre>
+<p>.</p>
+. a→a ὐ→a .
+<pre><code>a   a
+ὐ   a
+</code></pre>
+<p>.</p>
+<p>Line endings are replaced by newline characters (LF).</p>
+<p>A line containing no characters, or a line containing only spaces (after tab expansion), is called a <a href="#blank-line">blank line</a>. <a id="blank-line"></a></p>
+<h1 id="blocks-and-inlines">Blocks and inlines</h1>
+<p>We can think of a document as a sequence of <a href="#block">blocks</a><a
+id="block"></a>—structural elements like paragraphs, block quotations, lists, headers, rules, and code blocks. Blocks can contain other blocks, or they can contain <a href="#inline">inline</a><a id="inline"></a> content: words, spaces, links, emphasized text, images, and inline code.</p>
+<h2 id="precedence">Precedence</h2>
+<p>Indicators of block structure always take precedence over indicators of inline structure. So, for example, the following is a list with two items, not a list with one item containing a code span:</p>
+. - <code>one - two</code> .
+<ul>
+<li>
+<code>one&lt;/li&gt; &lt;li&gt;two</code>
+</li>
+</ul>
+<p>.</p>
+<p>This means that parsing can proceed in two steps: first, the block structure of the document can be discerned; second, text lines inside paragraphs, headers, and other block constructs can be parsed for inline structure. The second step requires information about link reference definitions that will be available only at the end of the first step. Note that the first step requires processing lines in sequence, but the second can be parallelized, since the inline parsing of one block element does not affect the inline parsing of any other.</p>
+<h2 id="container-blocks-and-leaf-blocks">Container blocks and leaf blocks</h2>
+<p>We can divide blocks into two types: <a href="#container-block">container blocks</a>, <a id="container-block"></a> which can contain other blocks, and <a href="#leaf-block">leaf blocks</a>, <a id="leaf-block"></a> which cannot.</p>
+<h1 id="leaf-blocks">Leaf blocks</h1>
+<p>This section describes the different kinds of leaf block that make up a Markdown document.</p>
+<h2 id="horizontal-rules">Horizontal rules</h2>
+<p>A line consisting of 0-3 spaces of indentation, followed by a sequence of three or more matching <code>-</code>, <code>_</code>, or <code>*</code> characters, each followed optionally by any number of spaces, forms a <a href="#horizontal-rule">horizontal rule</a>. <a id="horizontal-rule"></a></p>
+. *** — ___ .
+<hr />
+<hr />
+<hr />
+<p>.</p>
+<p>Wrong characters:</p>
+. +++ .
+<p>
++++
+</p>
+<p>.</p>
+<h1 id="section">.</h1>
+.
+<p>
+===
+</p>
+<p>.</p>
+<p>Not enough characters:</p>
+<h2 id="section-1">.</h2>
+** __ .
+<p>
+<table>
+<colgroup>
+<col style="width: 2%" />
+<col style="width: 2%" />
+<col style="width: 2%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">* _&lt;</th>
+<th style="text-align: left;">/p</th>
+<th style="text-align: left;">&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">hr</td>
+<td style="text-align: left;">/</td>
+<td style="text-align: left;">&gt;</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">**</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">* ** * ** * **</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+.
+<hr />
+<p>.</p>
+<p>Spaces are allowed at the end:</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">.</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">&lt;h</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">/&gt;</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">.</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p>However, no other characters may occur in the line:</p>
+<p>. _ _ _ _ a</p>
+<p>a——</p>
+—a— .
+<p>
+_ _ _ _ a
+</p>
+<p>
+a——
+</p>
+<p>
+—a—
+</p>
+<p>.</p>
+<p>It is required that all of the non-space characters be the same. So, this is not a horizontal rule:</p>
+. <em>-</em> .
+<p>
+<em>-</em>
+</p>
+<p>.</p>
+<p>Horizontal rules do not need blank lines before or after:</p>
+. - foo *** - bar .
+<ul>
+<li>
+foo
+</li>
+</ul>
+<hr />
+<ul>
+<li>
+bar
+</li>
+</ul>
+<p>.</p>
+<p>Horizontal rules can interrupt a paragraph:</p>
+. Foo *** bar .
+<p>
+Foo
+</p>
+<hr />
+<p>
+bar
+</p>
+<p>.</p>
+<p>If a line of dashes that meets the above conditions for being a horizontal rule could also be interpreted as the underline of a <a href="#setext-header">setext header</a>, the interpretation as a <a href="#setext-header">setext-header</a> takes precedence. Thus, for example, this is a setext header, not a paragraph followed by a horizontal rule:</p>
+. Foo — bar .
+<h2>
+Foo
+</h2>
+<p>
+bar
+</p>
+<p>.</p>
+<p>When both a horizontal rule and a list item are possible interpretations of a line, the horizontal rule is preferred:</p>
+. * Foo * * <em> </em> Bar .
+<ul>
+<li>
+Foo
+</li>
+</ul>
+<hr />
+<ul>
+<li>
+Bar
+</li>
+</ul>
+<p>.</p>
+<p>If you want a horizontal rule in a list item, use a different bullet:</p>
+. - Foo - * * * .
+<ul>
+<li>
+Foo
+</li>
+<li>
+<hr />
+</li>
+</ul>
+<p>.</p>
+<h2 id="atx-headers">ATX headers</h2>
+<p>An <a href="#atx-header">ATX header</a> <a id="atx-header"></a> consists of a string of characters, parsed as inline content, between an opening sequence of 1–6 unescaped <code>#</code> characters and an optional closing sequence of any number of <code>#</code> characters. The opening sequence of <code>#</code> characters cannot be followed directly by a nonspace character. The optional closing sequence of <code>#</code>s must be preceded by a space and may be followed by spaces only. The opening <code>#</code> character may be indented 0-3 spaces. The raw contents of the header are stripped of leading and trailing spaces before being parsed as inline content. The header level is equal to the number of <code>#</code> characters in the opening sequence.</p>
+<p>Simple headers:</p>
+. # foo ## foo ### foo #### foo ##### foo ###### foo .
+<h1>
+foo
+</h1>
+<h2>
+foo
+</h2>
+<h3>
+foo
+</h3>
+<h4>
+foo
+</h4>
+<h5>
+foo
+</h5>
+<h6>
+foo
+</h6>
+<p>.</p>
+<p>More than six <code>#</code> characters is not a header:</p>
+. ####### foo .
+<p>
+####### foo
+</p>
+<p>.</p>
+<p>A space is required between the <code>#</code> characters and the header’s contents. Note that many implementations currently do not require the space. However, the space was required by the <a href="http://www.aaronsw.com/2002/atx/atx.py">original ATX implementation</a>, and it helps prevent things like the following from being parsed as headers:</p>
+. #5 bolt .
+<p>
+#5 bolt
+</p>
+<p>.</p>
+<p>This is not a header, because the first <code>#</code> is escaped:</p>
+. ## foo .
+<p>
+## foo
+</p>
+<p>.</p>
+<p>Contents are parsed as inlines:</p>
+. # foo <em>bar</em> *baz* .
+<h1>
+foo <em>bar</em> <em>baz</em>
+</h1>
+<p>.</p>
+<p>Leading and trailing blanks are ignored in parsing inline content:</p>
+. # foo<br />.
+<h1>
+foo
+</h1>
+<p>.</p>
+<p>One to three spaces indentation are allowed:</p>
+. ### foo ## foo # foo .
+<h3>
+foo
+</h3>
+<h2>
+foo
+</h2>
+<h1>
+foo
+</h1>
+<p>.</p>
+<p>Four spaces are too much:</p>
+. # foo .
+<pre><code># foo
+</code></pre>
+<p>.</p>
+. foo # bar .
+<p>
+foo # bar
+</p>
+<p>.</p>
+<p>A closing sequence of <code>#</code> characters is optional:</p>
+. ## foo ## ### bar ### .
+<h2>
+foo
+</h2>
+<h3>
+bar
+</h3>
+<p>.</p>
+<p>It need not be the same length as the opening sequence:</p>
+. # foo ################################## ##### foo ## .
+<h1>
+foo
+</h1>
+<h5>
+foo
+</h5>
+<p>.</p>
+<p>Spaces are allowed after the closing sequence:</p>
+. ### foo ###<br />.
+<h3>
+foo
+</h3>
+<p>.</p>
+<p>A sequence of <code>#</code> characters with a nonspace character following it is not a closing sequence, but counts as part of the contents of the header:</p>
+. ### foo ### b .
+<h3>
+foo ### b
+</h3>
+<p>.</p>
+<p>The closing sequence must be preceded by a space:</p>
+. # foo# .
+<h1>
+foo#
+</h1>
+<p>.</p>
+<p>Backslash-escaped <code>#</code> characters do not count as part of the closing sequence:</p>
+. ### foo ### ## foo ### # foo # .
+<h3>
+foo ###
+</h3>
+<h2>
+foo ###
+</h2>
+<h1>
+foo #
+</h1>
+<p>.</p>
+<p>ATX headers need not be separated from surrounding content by blank lines, and they can interrupt paragraphs:</p>
+. **** ## foo **** .
+<hr />
+<h2>
+foo
+</h2>
+<hr />
+<p>.</p>
+. Foo bar # baz Bar foo .
+<p>
+Foo bar
+</p>
+<h1>
+baz
+</h1>
+<p>
+Bar foo
+</p>
+<p>.</p>
+<p>ATX headers can be empty:</p>
+. ## # ### ### .
+<h2>
+</h2>
+<h1>
+</h1>
+<h3>
+</h3>
+<p>.</p>
+<h2 id="setext-headers">Setext headers</h2>
+<p>A <a href="#setext-header">setext header</a> <a id="setext-header"></a> consists of a line of text, containing at least one nonspace character, with no more than 3 spaces indentation, followed by a <a href="#setext-header-underline">setext header underline</a>. The line of text must be one that, were it not followed by the setext header underline, would be interpreted as part of a paragraph: it cannot be a code block, header, blockquote, horizontal rule, or list. A <a href="#setext-header-underline">setext header underline</a> <a id="setext-header-underline"></a> is a sequence of <code>=</code> characters or a sequence of <code>-</code> characters, with no more than 3 spaces indentation and any number of trailing spaces. The header is a level 1 header if <code>=</code> characters are used, and a level 2 header if <code>-</code> characters are used. The contents of the header are the result of parsing the first line as Markdown inline content.</p>
+<p>In general, a setext header need not be preceded or followed by a blank line. However, it cannot interrupt a paragraph, so when a setext header comes after a paragraph, a blank line is needed between them.</p>
+<p>Simple examples:</p>
+<p>. Foo <em>bar</em> =========</p>
+<h2 id="foo-bar">Foo <em>bar</em></h2>
+.
+<h1>
+Foo <em>bar</em>
+</h1>
+<h2>
+Foo <em>bar</em>
+</h2>
+<p>.</p>
+<p>The underlining can be any length:</p>
+<p>. Foo ————————-</p>
+<h1 id="foo">Foo</h1>
+.
+<h2>
+Foo
+</h2>
+<h1>
+Foo
+</h1>
+<p>.</p>
+<p>The header content can be indented up to three spaces, and need not line up with the underlining:</p>
+<p>. Foo —</p>
+<h2 id="foo-1">Foo</h2>
+Foo === .
+<h2>
+Foo
+</h2>
+<h2>
+Foo
+</h2>
+<h1>
+Foo
+</h1>
+<p>.</p>
+<p>Four spaces indent is too much:</p>
+<p>. Foo —</p>
+<h2 id="foo-2">Foo</h2>
+.
+<pre><code>Foo
+---
+
+Foo
+</code></pre>
+<hr />
+<p>.</p>
+<p>The setext header underline can be indented up to three spaces, and may have trailing spaces:</p>
+. Foo —-<br />.
+<h2>
+Foo
+</h2>
+<p>.</p>
+<p>Four spaces is too much:</p>
+. Foo — .
+<p>
+Foo —
+</p>
+<p>.</p>
+<p>The setext header underline cannot contain internal spaces:</p>
+<p>. Foo = =</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Foo</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">.</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">oo</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">= =&lt;</td>
+<td style="text-align: left;">/p&gt;</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">oo</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">&lt;hr</td>
+<td style="text-align: left;">/&gt;</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">.</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p>Trailing spaces in the content line do not cause a line break:</p>
+. Foo<br />—– .
+<h2>
+Foo
+</h2>
+<p>.</p>
+<p>Nor does a backslash at the end:</p>
+. Foo<br />—- .
+<h2>
+<p>Foo&lt;/h2&gt; .</p>
+<p>Since indicators of block structure take precedence over indicators of inline structure, the following are setext headers:</p>
+<p>. <code>Foo ----</code></p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">&lt;a title=“a lot</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">of dashes“/&gt;</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">.</td>
+</tr>
+</tbody>
+</table>
+<p>The setext header underline cannot be a <a href="#lazy-continuation-line">lazy continuation line</a> in a list item or block quote:</p>
+. &gt; Foo — .
+<blockquote>
+<p>
+Foo
+</p>
+</blockquote>
+<hr />
+<p>.</p>
+. - Foo — .
+<ul>
+<li>
+Foo
+</li>
+</ul>
+<hr />
+<p>.</p>
+<p>A setext header cannot interrupt a paragraph:</p>
+<p>. Foo Bar —</p>
+Foo Bar === .
+<p>
+Foo Bar
+</p>
+<hr />
+<p>
+Foo Bar ===
+</p>
+<p>.</p>
+<p>But in general a blank line is not required before or after:</p>
+<h2 id="section-2">.</h2>
+<h2 id="foo-3">Foo</h2>
+<h2 id="bar">Bar</h2>
+Baz .
+<hr />
+<h2>
+Foo
+</h2>
+<h2>
+Bar
+</h2>
+<p>
+Baz
+</p>
+<p>.</p>
+<p>Setext headers cannot be empty:</p>
+<p>.</p>
+==== .
+<p>
+====
+</p>
+<p>.</p>
+<p>Setext header text lines must not be interpretable as block constructs other than paragraphs. So, the line of dashes in these examples gets interpreted as a horizontal rule:</p>
+<h2 id="section-3">.</h2>
+.
+<pre><code>foo
+</code></pre>
+<hr />
+<p>.</p>
+. &gt; foo —– .
+<blockquote>
+<p>
+foo
+</p>
+</blockquote>
+<hr />
+<p>.</p>
+<p>If you want a header with <code>&gt; foo</code> as its literal text, you can use backslash escapes:</p>
+. &gt; foo —— .
+<h2>
+&gt; foo
+</h2>
+<p>.</p>
+<h2 id="indented-code-blocks">Indented code blocks</h2>
+<p>An <a href="#indented-code-block">indented code block</a> <a id="indented-code-block"></a> is composed of one or more <a href="#indented-chunk">indented chunks</a> separated by blank lines. An <a href="#indented-chunk">indented chunk</a> <a id="indented-chunk"></a> is a sequence of non-blank lines, each indented four or more spaces. An indented code block cannot interrupt a paragraph, so if it occurs before or after a paragraph, there must be an intervening blank line. The contents of the code block are the literal contents of the lines, including trailing newlines, minus four spaces of indentation. An indented code block has no attributes.</p>
+. a simple indented code block .
+<pre><code>a simple
+  indented code block
+</code></pre>
+<p>.</p>
+<p>The contents are literal text, and do not get parsed as Markdown:</p>
+<p>. <a/> <em>hi</em></p>
+<pre><code>- one</code></pre>
+.
+<pre><code>&lt;a/&gt;
+*hi*
+
+- one
+</code></pre>
+<p>.</p>
+<p>Here we have three chunks separated by blank lines:</p>
+<p>. chunk1</p>
+<pre><code>chunk2
+
+
+
+chunk3</code></pre>
+.
+<pre><code>chunk1
+
+chunk2
+
+
+
+chunk3
+</code></pre>
+<p>.</p>
+<p>Any initial spaces beyond four will be included in the content, even in interior blank lines:</p>
+<p>. chunk1</p>
+<pre><code>  chunk2</code></pre>
+.
+<pre><code>chunk1
+  
+  chunk2
+</code></pre>
+<p>.</p>
+<p>An indented code block cannot interrupt a paragraph. (This allows hanging indents and the like.)</p>
+<p>. Foo bar</p>
+.
+<p>
+Foo bar
+</p>
+<p>.</p>
+<p>However, any non-blank line with fewer than four leading spaces ends the code block immediately. So a paragraph may occur immediately after indented code:</p>
+. foo bar .
+<pre><code>foo
+</code></pre>
+<p>
+bar
+</p>
+<p>.</p>
+<p>And indented code can occur immediately before and after other kinds of blocks:</p>
+. # Header foo Header —— foo —- .
+<h1>
+Header
+</h1>
+<pre><code>foo
+</code></pre>
+<h2>
+Header
+</h2>
+<pre><code>foo
+</code></pre>
+<hr />
+<p>.</p>
+<p>The first line can be indented more than four spaces:</p>
+. foo bar .
+<pre><code>    foo
+bar
+</code></pre>
+<p>.</p>
+<p>Blank lines preceding or following an indented code block are not included in it:</p>
+<p>.</p>
+<pre><code>foo</code></pre>
+.
+<pre><code>foo
+</code></pre>
+<p>.</p>
+<p>Trailing spaces are included in the code block’s content:</p>
+. foo<br />.
+<pre><code>foo  
+</code></pre>
+<p>.</p>
+<h2 id="fenced-code-blocks">Fenced code blocks</h2>
+<p>A <a href="#code-fence">code fence</a> <a id="code-fence"></a> is a sequence of at least three consecutive backtick characters (<code>`</code>) or tildes (<code>~</code>). (Tildes and backticks cannot be mixed.) A <a href="#fenced-code-block">fenced code block</a> <a id="fenced-code-block"></a> begins with a code fence, indented no more than three spaces.</p>
+<p>The line with the opening code fence may optionally contain some text following the code fence; this is trimmed of leading and trailing spaces and called the <a href="#info-string">info string</a>. <a id="info-string"></a> The info string may not contain any backtick characters. (The reason for this restriction is that otherwise some inline code would be incorrectly interpreted as the beginning of a fenced code block.)</p>
+<p>The content of the code block consists of all subsequent lines, until a closing <a href="#code-fence">code fence</a> of the same type as the code block began with (backticks or tildes), and with at least as many backticks or tildes as the opening code fence. If the leading code fence is indented N spaces, then up to N spaces of indentation are removed from each line of the content (if present). (If a content line is not indented, it is preserved unchanged. If it is indented less than N spaces, all of the indentation is removed.)</p>
+<p>The closing code fence may be indented up to three spaces, and may be followed only by spaces, which are ignored. If the end of the containing block (or document) is reached and no closing code fence has been found, the code block contains all of the lines after the opening code fence until the end of the containing block (or document). (An alternative spec would require backtracking in the event that a closing code fence is not found. But this makes parsing much less efficient, and there seems to be no real down side to the behavior described here.)</p>
+<p>A fenced code block may interrupt a paragraph, and does not require a blank line either before or after.</p>
+<p>The content of a code fence is treated as literal text, not parsed as inlines. The first word of the info string is typically used to specify the language of the code sample, and rendered in the <code>class</code> attribute of the <code>code</code> tag. However, this spec does not mandate any particular treatment of the info string.</p>
+<p>Here is a simple example with backticks:</p>
+<p>.</p>
+<pre><code>&lt;
+ &gt;</code></pre>
+.
+<pre><code>&lt;
+ &gt;
+</code></pre>
+<p>.</p>
+<p>With tildes:</p>
+. <sub>~</sub> &lt; &gt; <sub>~</sub> .
+<pre><code>&lt;
+ &gt;
+</code></pre>
+<p>.</p>
+<p>The closing code fence must use the same character as the opening fence:</p>
+<p>.</p>
+<pre><code>aaa
+~~~</code></pre>
+.
+<pre><code>aaa
+~~~
+</code></pre>
+<p>.</p>
+<p>. <sub>~</sub> aaa</p>
+<pre><code>~~~
+.
+&lt;pre&gt;&lt;code&gt;aaa</code></pre>
+</code>
+</pre>
+<p>.</p>
+<p>The closing code fence must be at least as long as the opening fence:</p>
+<p>.</p>
+<pre><code>aaa
+```</code></pre>
+.
+<pre><code>aaa
+```
+</code></pre>
+<p>.</p>
+. <sub><sub><sub><sub> aaa </sub></sub></sub> ~</sub> .
+<pre><code>aaa
+~~~
+</code></pre>
+<p>.</p>
+<p>Unclosed code blocks are closed by the end of the document:</p>
+<p>.</p>
+<pre><code>.
+&lt;pre&gt;&lt;code&gt;&lt;/code&gt;&lt;/pre&gt;
+.
+
+.</code></pre>
+<pre><code>aaa
+.
+&lt;pre&gt;&lt;code&gt;</code></pre>
+aaa </code>
+</pre>
+<p>.</p>
+<p>A code block can have all empty lines as its content:</p>
+<p>.</p>
+<pre><code>
+  </code></pre>
+.
+<pre><code>
+  
+</code></pre>
+<p>.</p>
+<p>A code block can be empty:</p>
+<p>.</p>
+<pre><code></code></pre>
+.
+<pre><code></code></pre>
+<p>.</p>
+<p>Fences can be indented. If the opening fence is indented, content lines will have equivalent opening indentation removed, if present:</p>
+. <code>aaa aaa</code> .
+<pre><code>aaa
+aaa
+</code></pre>
+<p>.</p>
+. <code>aaa   aaa aaa</code> .
+<pre><code>aaa
+aaa
+aaa
+</code></pre>
+<p>.</p>
+. <code>aaa     aaa   aaa</code> .
+<pre><code>aaa
+ aaa
+aaa
+</code></pre>
+<p>.</p>
+<p>Four spaces indentation produces an indented code block:</p>
+. <code>aaa</code> .
+<pre><code>```
+aaa
+```
+</code></pre>
+<p>.</p>
+<p>Closing fences may be indented by 0-3 spaces, and their indentation need not match that of the opening fence:</p>
+<p>.</p>
+<pre><code>aaa
+  ```
+.
+&lt;pre&gt;&lt;code&gt;aaa
+&lt;/code&gt;&lt;/pre&gt;
+.
+
+.
+   ```
+aaa
+  ```
+.
+&lt;pre&gt;&lt;code&gt;aaa
+&lt;/code&gt;&lt;/pre&gt;
+.
+
+This is not a closing fence, because it is indented 4 spaces:
+
+.</code></pre>
+aaa <code>. &lt;pre&gt;&lt;code&gt;aaa</code> </code>
+</pre>
+<p>.</p>
+<p>Code fences (opening and closing) cannot contain internal spaces:</p>
+<p>.</p>
+<pre class="```"><code>aaa
+.
+&lt;p&gt;&lt;code&gt;&lt;/code&gt;
+aaa&lt;/p&gt;
+.
+
+.
+~~~~~~
+aaa
+~~~ ~~
+.
+&lt;pre&gt;&lt;code&gt;aaa
+~~~ ~~
+&lt;/code&gt;&lt;/pre&gt;
+.
+
+Fenced code blocks can interrupt paragraphs, and can be followed
+directly by paragraphs, without a blank line between:
+
+.
+foo</code></pre>
+bar ``` baz .
+<p>
+foo
+</p>
+<pre><code>bar
+</code></pre>
+<p>
+baz
+</p>
+<p>.</p>
+<p>Other blocks can also occur before and after fenced code blocks without an intervening blank line:</p>
+. foo — <sub><sub><sub> bar </sub></sub></sub> # baz .
+<h2>
+foo
+</h2>
+<pre><code>bar
+</code></pre>
+<h1>
+baz
+</h1>
+<p>.</p>
+<p>An <a href="#info-string">info string</a> can be provided after the opening code fence. Opening and closing spaces will be stripped, and the first word, prefixed with <code>language-</code>, is used as the value for the <code>class</code> attribute of the <code>code</code> element within the enclosing <code>pre</code> element.</p>
+<p>.</p>
+<pre class="sourceCode ruby"><code class="sourceCode ruby"><span class="kw">def</span> foo(x)
+  <span class="kw">return</span> <span class="dv">3</span>
+<span class="kw">end</span></code></pre>
+.
+<pre><code class="language-ruby">def foo(x)
+  return 3
+end
+</code></pre>
+<p>.</p>
+. ~<sub>~</sub> ruby startline=3 <span class="math"></span> def foo(x) return 3 end <sub><sub><sub>~</sub></sub></sub> .
+<pre><code class="language-ruby">def foo(x)
+  return 3
+end
+</code></pre>
+<p>.</p>
+<p>.</p>
+<pre class=";"><code></code></pre>
+.
+<pre><code class="language-;"></code></pre>
+<p>.</p>
+<p>Info strings for backtick code blocks cannot contain backticks:</p>
+. <code>aa</code> foo .
+<p>
+<code>aa</code> foo
+</p>
+<p>.</p>
+<p>Closing code fences cannot have info strings:</p>
+. <code></code> aaa <code>. &lt;pre&gt;&lt;code&gt;</code> aaa </code>
+</pre>
+<p>.</p>
+<h2 id="html-blocks">HTML blocks</h2>
+<p>An <a href="#html-block-tag">HTML block tag</a> <a id="html-block-tag"></a> is an <a href="#open-tag">open tag</a> or <a href="#closing-tag">closing tag</a> whose tag name is one of the following (case-insensitive): <code>article</code>, <code>header</code>, <code>aside</code>, <code>hgroup</code>, <code>blockquote</code>, <code>hr</code>, <code>iframe</code>, <code>body</code>, <code>li</code>, <code>map</code>, <code>button</code>, <code>object</code>, <code>canvas</code>, <code>ol</code>, <code>caption</code>, <code>output</code>, <code>col</code>, <code>p</code>, <code>colgroup</code>, <code>pre</code>, <code>dd</code>, <code>progress</code>, <code>div</code>, <code>section</code>, <code>dl</code>, <code>table</code>, <code>td</code>, <code>dt</code>, <code>tbody</code>, <code>embed</code>, <code>textarea</code>, <code>fieldset</code>, <code>tfoot</code>, <code>figcaption</code>, <code>th</code>, <code>figure</code>, <code>thead</code>, <code>footer</code>, <code>tr</code>, <code>form</code>, <code>ul</code>, <code>h1</code>, <code>h2</code>, <code>h3</code>, <code>h4</code>, <code>h5</code>, <code>h6</code>, <code>video</code>, <code>script</code>, <code>style</code>.</p>
+<p>An <a href="#html-block">HTML block</a> <a id="html-block"></a> begins with an <a href="#html-block-tag">HTML block tag</a>, <a href="#html-comment">HTML comment</a>, <a href="#processing-instruction">processing instruction</a>, <a href="#declaration">declaration</a>, or <a href="#cdata-section">CDATA section</a>. It ends when a <a href="#blank-line">blank line</a> or the end of the input is encountered. The initial line may be indented up to three spaces, and subsequent lines may have any indentation. The contents of the HTML block are interpreted as raw HTML, and will not be escaped in HTML output.</p>
+<p>Some simple examples:</p>
+.
+<table>
+<tr>
+<pre><code>&lt;td&gt;
+       hi
+&lt;/td&gt;</code></pre>
+</tr>
+</table>
+okay. .
+<table>
+<tr>
+<pre><code>&lt;td&gt;
+       hi
+&lt;/td&gt;</code></pre>
+</tr>
+</table>
+<p>
+okay.
+</p>
+<p>.</p>
+.
+<div>
+<em>hello</em> <foo><a> .
+<div>
+<p><em>hello</em> <foo><a> .</p>
+<p>Here we have two HTML blocks with a Markdown paragraph between them:</p>
+.
+<div class="foo">
+<p><em>Markdown</em></p>
+</div>
+.
+<div class="foo">
+<p>
+<em>Markdown</em>
+</p>
+</div>
+<p>.</p>
+<p>In the following example, what looks like a Markdown code block is actually part of the HTML block, which continues until a blank line or the end of the document is reached:</p>
+.
+<div>
+
+</div>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">int</span> x = <span class="dv">33</span>;</code></pre>
+.
+<div>
+
+</div>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="dt">int</span> x = <span class="dv">33</span>;</code></pre>
+<p>.</p>
+<p>A comment:</p>
+<p>. <!-- Foo
+bar
+   baz --> . <!-- Foo
+bar
+   baz --> .</p>
+<p>A processing instruction:</p>
+<p>. <?php
+  echo '>‘; ?&gt; . <?php
+  echo '>’; ?&gt; .</p>
+<p>CDATA:</p>
+<p>. &lt;[CDATA[ function matchwo(a,b) { if (a &lt; b &amp;&amp; a &lt; 0) then { return 1; } else { return 0; } }]]&gt; . &lt;[CDATA[ function matchwo(a,b) { if (a &lt; b &amp;&amp; a &lt; 0) then { return 1; } else { return 0; } }]]&gt; .</p>
+<p>The opening tag can be indented 1-3 spaces, but not 4:</p>
+<p>. <!-- foo --></p>
+<pre><code>&lt;!-- foo --&gt;</code></pre>
+. <!-- foo -->
+<pre><code>&lt;!-- foo --&gt;
+</code></pre>
+<p>.</p>
+<p>An HTML block can interrupt a paragraph, and need not be preceded by a blank line.</p>
+. Foo
+<div>
+bar
+</div>
+.
+<p>
+Foo
+</p>
+<div>
+bar
+</div>
+<p>.</p>
+<p>However, a following blank line is always needed, except at the end of a document:</p>
+.
+<div>
+bar
+</div>
+<em>foo</em> .
+<div>
+bar
+</div>
+<p><em>foo</em> .</p>
+<p>An incomplete HTML block tag may also start an HTML block:</p>
+.
+<div class
+foo
+.
+<div class
+foo
+.
+
+This rule differs from John Gruber's original Markdown syntax
+specification, which says:
+
+>
+<p>The only restrictions are that block-level HTML elements — &gt; e.g. <code>&lt;div&gt;</code>, <code>&lt;table&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;p&gt;</code>, etc. — must be separated from &gt; surrounding content by blank lines, and the start and end tags of the &gt; block should not be indented with tabs or spaces.</p>
+<p>In some ways Gruber’s rule is more restrictive than the one given here:</p>
+<ul>
+<li>It requires that an HTML block be preceded by a blank line.</li>
+<li>It does not allow the start tag to be indented.</li>
+<li>It requires a matching end tag, which it also does not allow to be indented.</li>
+</ul>
+<p>Indeed, most Markdown implementations, including some of Gruber’s own perl implementations, do not impose these restrictions.</p>
+<p>There is one respect, however, in which Gruber’s rule is more liberal than the one given here, since it allows blank lines to occur inside an HTML block. There are two reasons for disallowing them here. First, it removes the need to parse balanced tags, which is expensive and can require backtracking from the end of the document if no matching end tag is found. Second, it provides a very simple and flexible way of including Markdown content inside HTML tags: simply separate the Markdown from the HTML using blank lines:</p>
+.
+<div>
+<p><em>Emphasized</em> text.</p>
+</div>
+.
+<div>
+<p>
+<em>Emphasized</em> text.
+</p>
+</div>
+<p>.</p>
+<p>Compare:</p>
+.
+<div>
+<em>Emphasized</em> text.
+</div>
+.
+<div>
+<em>Emphasized</em> text.
+</div>
+<p>.</p>
+<p>Some Markdown implementations have adopted a convention of interpreting content inside tags as text if the open tag has the attribute <code>markdown=1</code>. The rule given above seems a simpler and more elegant way of achieving the same expressive power, which is also much simpler to parse.</p>
+<p>The main potential drawback is that one can no longer paste HTML blocks into Markdown documents with 100% reliability. However, <em>in most cases</em> this will work fine, because the blank lines in HTML are usually followed by HTML block tags. For example:</p>
+.
+<table>
+<tr>
+<td>
+Hi
+</td>
+</tr>
+</table>
+.
+<table>
+<tr>
+<td>
+Hi
+</td>
+</tr>
+</table>
+<p>.</p>
+<p>Moreover, blank lines are usually not necessary and can be deleted. The exception is inside <code>&lt;pre&gt;</code> tags; here, one can replace the blank lines with <code>&amp;#10;</code> entities.</p>
+<p>So there is no important loss of expressive power with the new rule.</p>
+<h2 id="link-reference-definitions">Link reference definitions</h2>
+<p>A <a href="#link-reference-definition">link reference definition</a> <a id="link-reference-definition"></a> consists of a <a href="#link-label">link label</a>, indented up to three spaces, followed by a colon (<code>:</code>), optional blank space (including up to one newline), a <a href="#link-destination">link destination</a>, optional blank space (including up to one newline), and an optional <a href="#link-title">link title</a>, which if it is present must be separated from the <a href="#link-destination">link destination</a> by whitespace. No further non-space characters may occur on the line.</p>
+<p>A <a href="#link-reference-definition">link reference-definition</a> does not correspond to a structural element of a document. Instead, it defines a label which can be used in <a href="#reference-link">reference links</a> and reference-style <a href="#image">images</a> elsewhere in the document. <a href="#link-reference-definitions">Link reference definitions</a> can come either before or after the links that use them.</p>
+<p>. <a href="/url" title="title">foo</a>: /url “title”</p>
+<a href="/url" title="title">foo</a> .
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url" title="title">foo</a>: /url<br /> ‘the title’</p>
+<a href="/url" title="title">foo</a> .
+<p>
+<a href="/url" title="the title">foo</a>
+</p>
+<p>.</p>
+<p>. [Foo*bar]]:my_(url) ‘title (with parens)’</p>
+[Foo*bar]] .
+<p>
+<a href="my_(url)" title="title (with parens)">Foo*bar]</a>
+</p>
+<p>.</p>
+<p>. [Foo bar]: <my url> ‘title’</p>
+[Foo bar] .
+<p>
+<a href="my%20url" title="title">Foo bar</a>
+</p>
+<p>.</p>
+<p>The title may be omitted:</p>
+<p>. <a href="/url" title="title">foo</a>: /url</p>
+<a href="/url" title="title">foo</a> .
+<p>
+<a href="/url">foo</a>
+</p>
+<p>.</p>
+<p>The link destination may not be omitted:</p>
+<p>. <a href="/url" title="title">foo</a>:</p>
+<a href="/url" title="title">foo</a> .
+<p>
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>A link can come before its corresponding definition:</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="url">foo</a>
+</p>
+<p>.</p>
+<p>If there are several matching definitions, the first one takes precedence:</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="first">foo</a>
+</p>
+<p>.</p>
+<p>As noted in the section on <a href="#links">Links</a>, matching of labels is case-insensitive (see <a href="#matches">matches</a>).</p>
+<p>. <a href="/url" title="title">FOO</a>: /url</p>
+<a href="/url" title="title">Foo</a> .
+<p>
+<a href="/url">Foo</a>
+</p>
+<p>.</p>
+<p>. [ΑΓΩ]: /φου</p>
+[αγω] .
+<p>
+<a href="/%CF%86%CE%BF%CF%85">αγω</a>
+</p>
+<p>.</p>
+<p>Here is a link reference definition with no corresponding link. It contributes nothing to the document.</p>
+<p>. <a href="/url" title="title">foo</a>: /url . .</p>
+<p>This is not a link reference definition, because there are non-space characters after the title:</p>
+. <a href="/url" title="title">foo</a>: /url “title” ok .
+<p>
+<p>.</p>
+<p>This is not a link reference definition, because it is indented four spaces:</p>
+<p>. <a href="/url" title="title">foo</a>: /url “title”</p>
+<a href="/url" title="title">foo</a> .
+<pre><code>[foo]: /url &quot;title&quot;
+</code></pre>
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>This is not a link reference definition, because it occurs inside a code block:</p>
+<p>.</p>
+<pre><code>[foo]: /url</code></pre>
+<a href="/url" title="title">foo</a> .
+<pre><code>[foo]: /url
+</code></pre>
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>A <a href="#link-reference-definition">link reference definition</a> cannot interrupt a paragraph.</p>
+<p>. Foo <a href="/url">bar</a>: /baz</p>
+<a href="/url">bar</a> .
+<p>
+Foo <a href="/url">bar</a>: /baz
+</p>
+<p>
+<a href="/url">bar</a>
+</p>
+<p>.</p>
+<p>However, it can directly follow other block elements, such as headers and horizontal rules, and it need not be followed by a blank line.</p>
+. # <a href="/url" title="title">Foo</a>: /url &gt; bar .
+<h1>
+<a href="/url">Foo</a>
+</h1>
+<blockquote>
+<p>
+bar
+</p>
+</blockquote>
+<p>.</p>
+<p>Several <a href="#link-reference">link references</a> can occur one after another, without intervening blank lines.</p>
+<p>. <a href="/url" title="title">foo</a>: /foo-url “foo” <a href="/url">bar</a>: /bar-url “bar” <a href="/url1">baz</a>: /baz-url</p>
+<a href="/url" title="title">foo</a>, <a href="/url">bar</a>, <a href="/url1">baz</a> .
+<p>
+<a href="/foo-url" title="foo">foo</a>, <a href="/bar-url" title="bar">bar</a>, <a href="/baz-url">baz</a>
+</p>
+<p>.</p>
+<p><a href="#link-reference-definition">Link reference definitions</a> can occur inside block containers, like lists and block quotations. They affect the entire document, not just the container in which they are defined:</p>
+<p>. <a href="/url" title="title">foo</a></p>
+<blockquote>
+.
+<p>
+<a href="/url">foo</a>
+</p>
+<blockquote>
+</blockquote>
+<p>.</p>
+</blockquote>
+<h2 id="paragraphs">Paragraphs</h2>
+<p>A sequence of non-blank lines that cannot be interpreted as other kinds of blocks forms a <a href="#paragraph">paragraph</a>.<a id="paragraph"></a> The contents of the paragraph are the result of parsing the paragraph’s raw content as inlines. The paragraph’s raw content is formed by concatenating the lines and removing initial and final spaces.</p>
+<p>A simple example with two paragraphs:</p>
+<p>. aaa</p>
+bbb .
+<p>
+aaa
+</p>
+<p>
+bbb
+</p>
+<p>.</p>
+<p>Paragraphs can contain multiple lines, but no blank lines:</p>
+<p>. aaa bbb</p>
+ccc ddd .
+<p>
+aaa bbb
+</p>
+<p>
+ccc ddd
+</p>
+<p>.</p>
+<p>Multiple blank lines between paragraph have no effect:</p>
+<p>. aaa</p>
+bbb .
+<p>
+aaa
+</p>
+<p>
+bbb
+</p>
+<p>.</p>
+<p>Leading spaces are skipped:</p>
+. aaa bbb .
+<p>
+aaa bbb
+</p>
+<p>.</p>
+<p>Lines after the first may be indented any amount, since indented code blocks cannot interrupt paragraphs.</p>
+. aaa bbb ccc .
+<p>
+aaa bbb ccc
+</p>
+<p>.</p>
+<p>However, the first line may be indented at most three spaces, or an indented code block will be triggered:</p>
+. aaa bbb .
+<p>
+aaa bbb
+</p>
+<p>.</p>
+. aaa bbb .
+<pre><code>aaa
+</code></pre>
+<p>
+bbb
+</p>
+<p>.</p>
+<p>Final spaces are stripped before inline parsing, so a paragraph that ends with two or more spaces will not end with a <a href="#hard-line-break">hard line break</a>:</p>
+. aaa<br />bbb<br />.
+<p>
+aaa<br /> bbb
+</p>
+<p>.</p>
+<h2 id="blank-lines">Blank lines</h2>
+<p><a href="#blank-line">Blank lines</a> between block-level elements are ignored, except for the role they play in determining whether a <a href="#list">list</a> is <a href="#tight">tight</a> or <a href="#loose">loose</a>.</p>
+<p>Blank lines at the beginning and end of the document are also ignored.</p>
+<p>.</p>
+<p>aaa</p>
+<h1 id="aaa">aaa</h1>
+.
+<p>
+aaa
+</p>
+<h1>
+aaa
+</h1>
+<p>.</p>
+<h1 id="container-blocks">Container blocks</h1>
+<p>A <a href="#container-block">container block</a> is a block that has other blocks as its contents. There are two basic kinds of container blocks: <a href="#block-quote">block quotes</a> and <a href="#list-item">list items</a>. <a href="#list">Lists</a> are meta-containers for <a href="#list-item">list items</a>.</p>
+<p>We define the syntax for container blocks recursively. The general form of the definition is:</p>
+<blockquote>
+<p>If X is a sequence of blocks, then the result of transforming X in such-and-such a way is a container of type Y with these blocks as its content.</p>
+</blockquote>
+<p>So, we explain what counts as a block quote or list item by explaining how these can be <em>generated</em> from their contents. This should suffice to define the syntax, although it does not give a recipe for <em>parsing</em> these constructions. (A recipe is provided below in the section entitled <a href="#appendix-a-a-parsing-strategy">A parsing strategy</a>.)</p>
+<h2 id="block-quotes">Block quotes</h2>
+<p>A <a href="#block-quote-marker">block quote marker</a> <a id="block-quote-marker"></a> consists of 0-3 spaces of initial indent, plus (a) the character <code>&gt;</code> together with a following space, or (b) a single character <code>&gt;</code> not followed by a space.</p>
+<p>The following rules define <a href="#block-quote">block quotes</a>: <a id="block-quote"></a></p>
+<ol type="1">
+<li><p><strong>Basic case.</strong> If a string of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em>, then the result of prepending a <a href="#block-quote-marker">block quote marker</a> to the beginning of each line in <em>Ls</em> is a <a href="#block-quote">block quote</a> containing <em>Bs</em>.</p></li>
+<li><p><strong>Laziness.</strong> If a string of lines <em>Ls</em> constitute a <a href="#block-quote">block quote</a> with contents <em>Bs</em>, then the result of deleting the initial <a href="#block-quote-marker">block quote marker</a> from one or more lines in which the next non-space character after the <a href="#block-quote-marker">block quote marker</a> is <a href="#paragraph-continuation-text">paragraph continuation text</a> is a block quote with <em>Bs</em> as its content. <a id="paragraph-continuation-text"></a> <a href="#paragraph-continuation-text">Paragraph continuation text</a> is text that will be parsed as part of the content of a paragraph, but does not occur at the beginning of the paragraph.</p></li>
+<li><p><strong>Consecutiveness.</strong> A document cannot contain two <a href="#block-quote">block quotes</a> in a row unless there is a <a href="#blank-line">blank line</a> between them.</p></li>
+</ol>
+<p>Nothing else counts as a <a href="#block-quote">block quote</a>.</p>
+<p>Here is a simple example:</p>
+. &gt; # Foo &gt; bar &gt; baz .
+<blockquote>
+<h1>
+Foo
+</h1>
+<p>
+bar baz
+</p>
+</blockquote>
+<p>.</p>
+<p>The spaces after the <code>&gt;</code> characters can be omitted:</p>
+. &gt;# Foo &gt;bar &gt; baz .
+<blockquote>
+<h1>
+Foo
+</h1>
+<p>
+bar baz
+</p>
+</blockquote>
+<p>.</p>
+<p>The <code>&gt;</code> characters can be indented 1-3 spaces:</p>
+. &gt; # Foo &gt; bar &gt; baz .
+<blockquote>
+<h1>
+Foo
+</h1>
+<p>
+bar baz
+</p>
+</blockquote>
+<p>.</p>
+<p>Four spaces gives us a code block:</p>
+. &gt; # Foo &gt; bar &gt; baz .
+<pre><code>&gt; # Foo
+&gt; bar
+&gt; baz
+</code></pre>
+<p>.</p>
+<p>The Laziness clause allows us to omit the <code>&gt;</code> before a paragraph continuation line:</p>
+. &gt; # Foo &gt; bar baz .
+<blockquote>
+<h1>
+Foo
+</h1>
+<p>
+bar baz
+</p>
+</blockquote>
+<p>.</p>
+<p>A block quote can contain some lazy and some non-lazy continuation lines:</p>
+. &gt; bar baz &gt; foo .
+<blockquote>
+<p>
+bar baz foo
+</p>
+</blockquote>
+<p>.</p>
+<p>Laziness only applies to lines that are continuations of paragraphs. Lines containing characters or indentation that indicate block structure cannot be lazy.</p>
+. &gt; foo — .
+<blockquote>
+<p>
+foo
+</p>
+</blockquote>
+<hr />
+<p>.</p>
+. &gt; - foo - bar .
+<blockquote>
+<ul>
+<li>
+foo
+</li>
+</ul>
+</blockquote>
+<ul>
+<li>
+bar
+</li>
+</ul>
+<p>.</p>
+. &gt; foo bar .
+<blockquote>
+<pre><code>foo
+</code></pre>
+</blockquote>
+<pre><code>bar
+</code></pre>
+<p>.</p>
+. &gt; <code>foo</code> .
+<blockquote>
+<pre><code></code></pre>
+</blockquote>
+<p>
+foo
+</p>
+<pre><code></code></pre>
+<p>.</p>
+<p>A block quote can be empty:</p>
+. &gt; .
+<blockquote>
+</blockquote>
+<p>.</p>
+. &gt; &gt;<br />&gt; .
+<blockquote>
+</blockquote>
+<p>.</p>
+<p>A block quote can have initial or final blank lines:</p>
+. &gt; &gt; foo &gt;<br />.
+<blockquote>
+<p>
+foo
+</p>
+</blockquote>
+<p>.</p>
+<p>A blank line always separates block quotes:</p>
+<p>. &gt; foo</p>
+<blockquote>
+bar .
+<blockquote>
+<p>
+foo
+</p>
+</blockquote>
+<blockquote>
+<p>
+bar
+</p>
+</blockquote>
+<p>.</p>
+</blockquote>
+<p>(Most current Markdown implementations, including John Gruber’s original <code>Markdown.pl</code>, will parse this example as a single block quote with two paragraphs. But it seems better to allow the author to decide whether two block quotes or one are wanted.)</p>
+<p>Consecutiveness means that if we put these block quotes together, we get a single block quote:</p>
+. &gt; foo &gt; bar .
+<blockquote>
+<p>
+foo bar
+</p>
+</blockquote>
+<p>.</p>
+<p>To get a block quote with two paragraphs, use:</p>
+. &gt; foo &gt; &gt; bar .
+<blockquote>
+<p>
+foo
+</p>
+<p>
+bar
+</p>
+</blockquote>
+<p>.</p>
+<p>Block quotes can interrupt paragraphs:</p>
+. foo &gt; bar .
+<p>
+foo
+</p>
+<blockquote>
+<p>
+bar
+</p>
+</blockquote>
+<p>.</p>
+<p>In general, blank lines are not needed before or after block quotes:</p>
+. &gt; aaa *** &gt; bbb .
+<blockquote>
+<p>
+aaa
+</p>
+</blockquote>
+<hr />
+<blockquote>
+<p>
+bbb
+</p>
+</blockquote>
+<p>.</p>
+<p>However, because of laziness, a blank line is needed between a block quote and a following paragraph:</p>
+. &gt; bar baz .
+<blockquote>
+<p>
+bar baz
+</p>
+</blockquote>
+<p>.</p>
+<p>. &gt; bar</p>
+baz .
+<blockquote>
+<p>
+bar
+</p>
+</blockquote>
+<p>
+baz
+</p>
+<p>.</p>
+. &gt; bar &gt; baz .
+<blockquote>
+<p>
+bar
+</p>
+</blockquote>
+<p>
+baz
+</p>
+<p>.</p>
+<p>It is a consequence of the Laziness rule that any number of initial <code>&gt;</code>s may be omitted on a continuation line of a nested block quote:</p>
+. &gt; &gt; &gt; foo bar .
+<blockquote>
+<blockquote>
+<blockquote>
+<p>
+foo bar
+</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>.</p>
+. &gt;&gt;&gt; foo &gt; bar &gt;&gt;baz .
+<blockquote>
+<blockquote>
+<blockquote>
+<p>
+foo bar baz
+</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>.</p>
+<p>When including an indented code block in a block quote, remember that the <a href="#block-quote-marker">block quote marker</a> includes both the <code>&gt;</code> and a following space. So <em>five spaces</em> are needed after the <code>&gt;</code>:</p>
+<p>. &gt; code</p>
+<blockquote>
+not code .
+<blockquote>
+<pre><code>code
+</code></pre>
+</blockquote>
+<blockquote>
+<p>
+not code
+</p>
+</blockquote>
+<p>.</p>
+</blockquote>
+<h2 id="list-items">List items</h2>
+<p>A <a href="#list-marker">list marker</a> <a id="list-marker"></a> is a <a href="#bullet-list-marker">bullet list marker</a> or an <a href="#ordered-list-marker">ordered list marker</a>.</p>
+<p>A <a href="#bullet-list-marker">bullet list marker</a> <a id="bullet-list-marker"></a> is a <code>-</code>, <code>+</code>, or <code>*</code> character.</p>
+<p>An <a href="#ordered-list-marker">ordered list marker</a> <a id="ordered-list-marker"></a> is a sequence of one of more digits (<code>0-9</code>), followed by either a <code>.</code> character or a <code>)</code> character.</p>
+<p>The following rules define <a href="#list-item">list items</a>:<a
+id="list-item"></a></p>
+<ol type="1">
+<li><strong>Basic case.</strong> If a sequence of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em> starting with a non-space character and not separated from each other by more than one blank line, and <em>M</em> is a list marker <em>M</em> of width <em>W</em> followed by 0 &lt; <em>N</em> &lt; 5 spaces, then the result of prepending <em>M</em> and the following spaces to the first line of <em>Ls</em>, and indenting subsequent lines of <em>Ls</em> by <em>W + N</em> spaces, is a list item with <em>Bs</em> as its contents. The type of the list item (bullet or ordered) is determined by the type of its list marker. If the list item is ordered, then it is also assigned a start number, based on the ordered list marker.</li>
+</ol>
+<p>For example, let <em>Ls</em> be the lines</p>
+<p>. A paragraph with two lines.</p>
+<pre><code>indented code</code></pre>
+<blockquote>
+A block quote. .
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+<p>.</p>
+</blockquote>
+<p>And let <em>M</em> be the marker <code>1.</code>, and <em>N</em> = 2. Then rule #1 says that the following is an ordered list item with start number 1, and the same contents as <em>Ls</em>:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>    indented code
+
+&gt; A block quote.</code></pre>
+.
+<ol>
+<li>
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<p>The most important thing to notice is that the position of the text after the list marker determines how much indentation is needed in subsequent blocks in the list item. If the list marker takes up two spaces, and there are three spaces between the list marker and the next nonspace character, then blocks must be indented five spaces in order to fall under the list item.</p>
+<p>Here are some examples showing how far content must be indented to be put under the list item:</p>
+<p>. - one</p>
+two .
+<ul>
+<li>
+one
+</li>
+</ul>
+<p>
+two
+</p>
+<p>.</p>
+<p>. - one</p>
+two .
+<ul>
+<li>
+<p>
+one
+</p>
+<p>
+two
+</p>
+</li>
+</ul>
+<p>.</p>
+<p>. - one</p>
+<pre><code> two</code></pre>
+.
+<ul>
+<li>
+one
+</li>
+</ul>
+<pre><code> two
+</code></pre>
+<p>.</p>
+<p>. - one</p>
+<pre><code>  two</code></pre>
+.
+<ul>
+<li>
+<p>
+one
+</p>
+<p>
+two
+</p>
+</li>
+</ul>
+<p>.</p>
+<p>It is tempting to think of this in terms of columns: the continuation blocks must be indented at least to the column of the first nonspace character after the list marker. However, that is not quite right. The spaces after the list marker determine how much relative indentation is needed. Which column this indentation reaches will depend on how the list item is embedded in other constructions, as shown by this example:</p>
+. &gt; &gt; 1. one &gt;&gt; &gt;&gt; two .
+<blockquote>
+<blockquote>
+<ol>
+<li>
+<p>
+one
+</p>
+<p>
+two
+</p>
+</li>
+</ol>
+</blockquote>
+</blockquote>
+<p>.</p>
+<p>Here <code>two</code> occurs in the same column as the list marker <code>1.</code>, but is actually contained in the list item, because there is sufficent indentation after the last containing blockquote marker.</p>
+<p>The converse is also possible. In the following example, the word <code>two</code> occurs far to the right of the initial text of the list item, <code>one</code>, but it is not considered part of the list item, because it is not indented far enough past the blockquote marker:</p>
+. &gt;&gt;- one &gt;&gt; &gt; &gt; two .
+<blockquote>
+<blockquote>
+<ul>
+<li>
+one
+</li>
+</ul>
+<p>
+two
+</p>
+</blockquote>
+</blockquote>
+<p>.</p>
+<p>A list item may not contain blocks that are separated by more than one blank line. Thus, two blank lines will end a list, unless the two blanks are contained in a <a href="#fenced-code-block">fenced code block</a>.</p>
+<p>. - foo</p>
+<p>bar</p>
+<ul>
+<li>foo</li>
+</ul>
+<p>bar</p>
+<ul>
+<li>``` foo</li>
+</ul>
+bar ``` .
+<ul>
+<li>
+<p>
+foo
+</p>
+<p>
+bar
+</p>
+</li>
+<li>
+<p>
+foo
+</p>
+</li>
+</ul>
+<p>
+bar
+</p>
+<ul>
+<li>
+<pre><code>foo
+
+
+bar
+</code></pre>
+</li>
+</ul>
+<p>.</p>
+<p>A list item may contain any kind of block:</p>
+<p>. 1. foo</p>
+<pre><code>```
+bar
+```
+
+baz
+
+&gt; bam</code></pre>
+.
+<ol>
+<li>
+<p>
+foo
+</p>
+<pre><code>bar
+</code></pre>
+<p>
+baz
+</p>
+<blockquote>
+<p>
+bam
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<ol start="2" type="1">
+<li><strong>Item starting with indented code.</strong> If a sequence of lines <em>Ls</em> constitute a sequence of blocks <em>Bs</em> starting with an indented code block and not separated from each other by more than one blank line, and <em>M</em> is a list marker <em>M</em> of width <em>W</em> followed by one space, then the result of prepending <em>M</em> and the following space to the first line of <em>Ls</em>, and indenting subsequent lines of <em>Ls</em> by <em>W + 1</em> spaces, is a list item with <em>Bs</em> as its contents. If a line is empty, then it need not be indented. The type of the list item (bullet or ordered) is determined by the type of its list marker. If the list item is ordered, then it is also assigned a start number, based on the ordered list marker.</li>
+</ol>
+<p>An indented code block will have to be indented four spaces beyond the edge of the region where text will be included in the list item. In the following case that is 6 spaces:</p>
+<p>. - foo</p>
+<pre><code>  bar</code></pre>
+.
+<ul>
+<li>
+<p>
+foo
+</p>
+<pre><code>bar
+</code></pre>
+</li>
+</ul>
+<p>.</p>
+<p>And in this case it is 11 spaces:</p>
+<p>. 10. foo</p>
+<pre><code>       bar</code></pre>
+.
+<ol start="10">
+<li>
+<p>
+foo
+</p>
+<pre><code>bar
+</code></pre>
+</li>
+</ol>
+<p>.</p>
+<p>If the <em>first</em> block in the list item is an indented code block, then by rule #2, the contents must be indented <em>one</em> space after the list marker:</p>
+<p>. indented code</p>
+<p>paragraph</p>
+<pre><code>more code</code></pre>
+.
+<pre><code>indented code
+</code></pre>
+<p>
+paragraph
+</p>
+<pre><code>more code
+</code></pre>
+<p>.</p>
+<p>. 1. indented code</p>
+<p>paragraph</p>
+<pre><code>   more code</code></pre>
+.
+<ol>
+<li>
+<pre><code>indented code
+</code></pre>
+<p>
+paragraph
+</p>
+<pre><code>more code
+</code></pre>
+</li>
+</ol>
+<p>.</p>
+<p>Note that an additional space indent is interpreted as space inside the code block:</p>
+<p>. 1. indented code</p>
+<p>paragraph</p>
+<pre><code>   more code</code></pre>
+.
+<ol>
+<li>
+<pre><code> indented code
+</code></pre>
+<p>
+paragraph
+</p>
+<pre><code>more code
+</code></pre>
+</li>
+</ol>
+<p>.</p>
+<p>Note that rules #1 and #2 only apply to two cases: (a) cases in which the lines to be included in a list item begin with a nonspace character, and (b) cases in which they begin with an indented code block. In a case like the following, where the first block begins with a three-space indent, the rules do not allow us to form a list item by indenting the whole thing and prepending a list marker:</p>
+<p>. foo</p>
+bar .
+<p>
+foo
+</p>
+<p>
+bar
+</p>
+<p>.</p>
+<p>. - foo</p>
+bar .
+<ul>
+<li>
+foo
+</li>
+</ul>
+<p>
+bar
+</p>
+<p>.</p>
+<p>This is not a significant restriction, because when a block begins with 1-3 spaces indent, the indentation can always be removed without a change in interpretation, allowing rule #1 to be applied. So, in the above case:</p>
+<p>. - foo</p>
+bar .
+<ul>
+<li>
+<p>
+foo
+</p>
+<p>
+bar
+</p>
+</li>
+</ul>
+<p>.</p>
+<ol start="3" type="1">
+<li><strong>Indentation.</strong> If a sequence of lines <em>Ls</em> constitutes a list item according to rule #1 or #2, then the result of indenting each line of <em>L</em> by 1-3 spaces (the same for each line) also constitutes a list item with the same contents and attributes. If a line is empty, then it need not be indented.</li>
+</ol>
+<p>Indented one space:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>     indented code
+
+ &gt; A block quote.</code></pre>
+.
+<ol>
+<li>
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<p>Indented two spaces:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>      indented code
+
+  &gt; A block quote.</code></pre>
+.
+<ol>
+<li>
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<p>Indented three spaces:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>       indented code
+
+   &gt; A block quote.</code></pre>
+.
+<ol>
+<li>
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<p>Four spaces indent gives a code block:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>        indented code
+
+    &gt; A block quote.</code></pre>
+.
+<pre><code>1.  A paragraph
+    with two lines.
+
+        indented code
+
+    &gt; A block quote.
+</code></pre>
+<p>.</p>
+<ol start="4" type="1">
+<li><strong>Laziness.</strong> If a string of lines <em>Ls</em> constitute a <a href="#list-item">list item</a> with contents <em>Bs</em>, then the result of deleting some or all of the indentation from one or more lines in which the next non-space character after the indentation is <a href="#paragraph-continuation-text">paragraph continuation text</a> is a list item with the same contents and attributes.<a
+id="lazy-continuation-line"></a></li>
+</ol>
+<p>Here is an example with <a href="#lazy-continuation-line">lazy continuation lines</a>:</p>
+<p>. 1. A paragraph with two lines.</p>
+<pre><code>      indented code
+
+  &gt; A block quote.</code></pre>
+.
+<ol>
+<li>
+<p>
+A paragraph with two lines.
+</p>
+<pre><code>indented code
+</code></pre>
+<blockquote>
+<p>
+A block quote.
+</p>
+</blockquote>
+</li>
+</ol>
+<p>.</p>
+<p>Indentation can be partially deleted:</p>
+. 1. A paragraph with two lines. .
+<ol>
+<li>
+A paragraph with two lines.
+</li>
+</ol>
+<p>.</p>
+<p>These examples show how laziness can work in nested structures:</p>
+. &gt; 1. &gt; Blockquote continued here. .
+<blockquote>
+<ol>
+<li>
+<blockquote>
+<p>
+Blockquote continued here.
+</p>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<p>.</p>
+. &gt; 1. &gt; Blockquote &gt; continued here. .
+<blockquote>
+<ol>
+<li>
+<blockquote>
+<p>
+Blockquote continued here.
+</p>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<p>.</p>
+<ol start="5" type="1">
+<li><strong>That’s all.</strong> Nothing that is not counted as a list item by rules #1–4 counts as a <a href="#list-item">list item</a>.</li>
+</ol>
+<p>The rules for sublists follow from the general rules above. A sublist must be indented the same number of spaces a paragraph would need to be in order to be included in the list item.</p>
+<p>So, in this case we need two spaces indent:</p>
+. - foo - bar - baz .
+<ul>
+<li>
+foo
+<ul>
+<li>
+bar
+<ul>
+<li>
+baz
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>.</p>
+<p>One is not enough:</p>
+. - foo - bar - baz .
+<ul>
+<li>
+foo
+</li>
+<li>
+bar
+</li>
+<li>
+baz
+</li>
+</ul>
+<p>.</p>
+<p>Here we need four, because the list marker is wider:</p>
+. 10) foo - bar .
+<ol start="10">
+<li>
+foo
+<ul>
+<li>
+bar
+</li>
+</ul>
+</li>
+</ol>
+<p>.</p>
+<p>Three is not enough:</p>
+. 10) foo - bar .
+<ol start="10">
+<li>
+foo
+</li>
+</ol>
+<ul>
+<li>
+bar
+</li>
+</ul>
+<p>.</p>
+<p>A list may be the first block in a list item:</p>
+. - - foo .
+<ul>
+<li>
+<ul>
+<li>
+foo
+</li>
+</ul>
+</li>
+</ul>
+<p>.</p>
+. 1. - 2. foo .
+<ol>
+<li>
+<ul>
+<li>
+<ol start="2">
+<li>
+foo
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<p>.</p>
+<p>A list item may be empty:</p>
+. - foo - - bar .
+<ul>
+<li>
+foo
+</li>
+<li>
+</li>
+<li>
+bar
+</li>
+</ul>
+<p>.</p>
+<h2 id="section-4">.</h2>
+.
+<ul>
+<li>
+</li>
+</ul>
+<p>.</p>
+<p>A list item can contain a header:</p>
+. - # Foo - Bar — baz .
+<ul>
+<li>
+<h1>
+Foo
+</h1>
+</li>
+<li>
+<h2>
+Bar
+</h2>
+<p>
+baz
+</p>
+</li>
+</ul>
+<p>.</p>
+<h3 id="motivation">Motivation</h3>
+<p>John Gruber’s Markdown spec says the following about list items:</p>
+<ol type="1">
+<li><p>“List markers typically start at the left margin, but may be indented by up to three spaces. List markers must be followed by one or more spaces or a tab.”</p></li>
+<li><p>“To make lists look nice, you can wrap items with hanging indents…. But if you don’t want to, you don’t have to.”</p></li>
+<li><p>“List items may consist of multiple paragraphs. Each subsequent paragraph in a list item must be indented by either 4 spaces or one tab.”</p></li>
+<li><p>“It looks nice if you indent every line of the subsequent paragraphs, but here again, Markdown will allow you to be lazy.”</p></li>
+<li><p>“To put a blockquote within a list item, the blockquote’s <code>&gt;</code> delimiters need to be indented.”</p></li>
+<li><p>“To put a code block within a list item, the code block needs to be indented twice — 8 spaces or two tabs.”</p></li>
+</ol>
+<p>These rules specify that a paragraph under a list item must be indented four spaces (presumably, from the left margin, rather than the start of the list marker, but this is not said), and that code under a list item must be indented eight spaces instead of the usual four. They also say that a block quote must be indented, but not by how much; however, the example given has four spaces indentation. Although nothing is said about other kinds of block-level content, it is certainly reasonable to infer that <em>all</em> block elements under a list item, including other lists, must be indented four spaces. This principle has been called the <em>four-space rule</em>.</p>
+<p>The four-space rule is clear and principled, and if the reference implementation <code>Markdown.pl</code> had followed it, it probably would have become the standard. However, <code>Markdown.pl</code> allowed paragraphs and sublists to start with only two spaces indentation, at least on the outer level. Worse, its behavior was inconsistent: a sublist of an outer-level list needed two spaces indentation, but a sublist of this sublist needed three spaces. It is not surprising, then, that different implementations of Markdown have developed very different rules for determining what comes under a list item. (Pandoc and python-Markdown, for example, stuck with Gruber’s syntax description and the four-space rule, while discount, redcarpet, marked, PHP Markdown, and others followed <code>Markdown.pl</code>’s behavior more closely.)</p>
+<p>Unfortunately, given the divergences between implementations, there is no way to give a spec for list items that will be guaranteed not to break any existing documents. However, the spec given here should correctly handle lists formatted with either the four-space rule or the more forgiving <code>Markdown.pl</code> behavior, provided they are laid out in a way that is natural for a human to read.</p>
+<p>The strategy here is to let the width and indentation of the list marker determine the indentation necessary for blocks to fall under the list item, rather than having a fixed and arbitrary number. The writer can think of the body of the list item as a unit which gets indented to the right enough to fit the list marker (and any indentation on the list marker). (The laziness rule, #4, then allows continuation lines to be unindented if needed.)</p>
+<p>This rule is superior, we claim, to any rule requiring a fixed level of indentation from the margin. The four-space rule is clear but unnatural. It is quite unintuitive that</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">- <span class="fl">foo</span>
+
+  bar
+
+  - baz</code></pre>
+<p>should be parsed as two lists with an intervening paragraph,</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;</span>foo<span class="kw">&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span>
+<span class="kw">&lt;p&gt;</span>bar<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;</span>baz<span class="kw">&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span></code></pre>
+<p>as the four-space rule demands, rather than a single list,</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;&lt;p&gt;</span>foo<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;p&gt;</span>bar<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;</span>baz<span class="kw">&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span></code></pre>
+<p>The choice of four spaces is arbitrary. It can be learned, but it is not likely to be guessed, and it trips up beginners regularly.</p>
+<p>Would it help to adopt a two-space rule? The problem is that such a rule, together with the rule allowing 1–3 spaces indentation of the initial list marker, allows text that is indented <em>less than</em> the original list marker to be included in the list item. For example, <code>Markdown.pl</code> parses</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">   - one
+
+  two</code></pre>
+<p>as a single list item, with <code>two</code> a continuation paragraph:</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;&lt;p&gt;</span>one<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;p&gt;</span>two<span class="kw">&lt;/p&gt;&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span></code></pre>
+<p>and similarly</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt">   - one</span>
+&gt;
+&gt;<span class="dt">  two</span></code></pre>
+<p>as</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;blockquote&gt;</span>
+<span class="kw">&lt;ul&gt;</span>
+<span class="kw">&lt;li&gt;&lt;p&gt;</span>one<span class="kw">&lt;/p&gt;</span>
+<span class="kw">&lt;p&gt;</span>two<span class="kw">&lt;/p&gt;&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span>
+<span class="kw">&lt;/blockquote&gt;</span></code></pre>
+<p>This is extremely unintuitive.</p>
+<p>Rather than requiring a fixed indent from the margin, we could require a fixed indent (say, two spaces, or even one space) from the list marker (which may itself be indented). This proposal would remove the last anomaly discussed. Unlike the spec presented above, it would count the following as a list item with a subparagraph, even though the paragraph <code>bar</code> is not indented as far as the first paragraph <code>foo</code>:</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown"> 10. foo
+
+   bar  </code></pre>
+<p>Arguably this text does read like a list item with <code>bar</code> as a subparagraph, which may count in favor of the proposal. However, on this proposal indented code would have to be indented six spaces after the list marker. And this would break a lot of existing Markdown, which has the pattern:</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">1. <span class="fl"> foo</span>
+
+<span class="bn">        indented code</span></code></pre>
+<p>where the code is indented eight spaces. The spec above, by contrast, will parse this text as expected, since the code block’s indentation is measured from the beginning of <code>foo</code>.</p>
+<p>The one case that needs special treatment is a list item that <em>starts</em> with indented code. How much indentation is required in that case, since we don’t have a “first paragraph” to measure from? Rule #2 simply stipulates that in such cases, we require one space indentation from the list marker (and then the normal four spaces for the indented code). This will match the four-space rule in cases where the list marker plus its initial indentation takes four spaces (a common case), but diverge in other cases.</p>
+<h2 id="lists">Lists</h2>
+<p>A <a href="#list">list</a> <a id="list"></a> is a sequence of one or more list items <a href="#of-the-same-type">of the same type</a>. The list items may be separated by single <a href="#blank-line">blank lines</a>, but two blank lines end all containing lists.</p>
+<p>Two list items are <a href="#of-the-same-type">of the same type</a> <a id="of-the-same-type"></a> if they begin with a <a href="#list-marker">list marker</a> of the same type. Two list markers are of the same type if (a) they are bullet list markers using the same character (<code>-</code>, <code>+</code>, or <code>*</code>) or (b) they are ordered list numbers with the same delimiter (either <code>.</code> or <code>)</code>).</p>
+<p>A list is an <a href="#ordered-list">ordered list</a> <a id="ordered-list"></a> if its constituent list items begin with <a href="#ordered-list-marker">ordered list markers</a>, and a <a href="#bullet-list">bullet list</a> <a id="bullet-list"></a> if its constituent list items begin with <a href="#bullet-list-marker">bullet list markers</a>.</p>
+<p>The <a href="#start-number">start number</a> <a id="start-number"></a> of an <a href="#ordered-list">ordered list</a> is determined by the list number of its initial list item. The numbers of subsequent list items are disregarded.</p>
+<p>A list is <a href="#loose">loose</a><a id="loose"></a> if it any of its constituent list items are separated by blank lines, or if any of its constituent list items directly contain two block-level elements with a blank line between them. Otherwise a list is <a href="#tight">tight</a>.<a id="tight"></a> (The difference in HTML output is that paragraphs in a loose list are wrapped in <code>&lt;p&gt;</code> tags, while paragraphs in a tight list are not.)</p>
+<p>Changing the bullet or ordered list delimiter starts a new list:</p>
+. - foo - bar + baz .
+<ul>
+<li>
+foo
+</li>
+<li>
+bar
+</li>
+</ul>
+<ul>
+<li>
+baz
+</li>
+</ul>
+<p>.</p>
+. 1. foo 2. bar 3) baz .
+<ol>
+<li>
+foo
+</li>
+<li>
+bar
+</li>
+</ol>
+<ol start="3">
+<li>
+baz
+</li>
+</ol>
+<p>.</p>
+<p>In CommonMark, a list can interrupt a paragraph. That is, no blank line is needed to separate a paragraph from a following list:</p>
+. Foo - bar - baz .
+<p>
+Foo
+</p>
+<ul>
+<li>
+bar
+</li>
+<li>
+baz
+</li>
+</ul>
+<p>.</p>
+<p><code>Markdown.pl</code> does not allow this, through fear of triggering a list via a numeral in a hard-wrapped line:</p>
+. The number of windows in my house is 14. The number of doors is 6. .
+<p>
+The number of windows in my house is
+</p>
+<ol start="14">
+<li>
+The number of doors is 6.
+</li>
+</ol>
+<p>.</p>
+<p>Oddly, <code>Markdown.pl</code> <em>does</em> allow a blockquote to interrupt a paragraph, even though the same considerations might apply. We think that the two cases should be treated the same. Here are two reasons for allowing lists to interrupt paragraphs:</p>
+<p>First, it is natural and not uncommon for people to start lists without blank lines:</p>
+<pre><code>I need to buy
+- new shoes
+- a coat
+- a plane ticket</code></pre>
+<p>Second, we are attracted to a</p>
+<blockquote>
+<p><a href="#principle-of-uniformity">principle of uniformity</a>:<a
+id="principle-of-uniformity"></a> if a span of text has a certain meaning, it will continue to have the same meaning when put into a list item.</p>
+</blockquote>
+<p>(Indeed, the spec for <a href="#list-item">list items</a> presupposes this.) This principle implies that if</p>
+<pre><code>  * I need to buy
+    - new shoes
+    - a coat
+    - a plane ticket</code></pre>
+<p>is a list item containing a paragraph followed by a nested sublist, as all Markdown implementations agree it is (though the paragraph may be rendered without <code>&lt;p&gt;</code> tags, since the list is “tight”), then</p>
+<pre><code>I need to buy
+- new shoes
+- a coat
+- a plane ticket</code></pre>
+<p>by itself should be a paragraph followed by a nested sublist.</p>
+<p>Our adherence to the <a href="#principle-of-uniformity">principle of uniformity</a> thus inclines us to think that there are two coherent packages:</p>
+<ol type="1">
+<li><p>Require blank lines before <em>all</em> lists and blockquotes, including lists that occur as sublists inside other list items.</p></li>
+<li><p>Require blank lines in none of these places.</p></li>
+</ol>
+<p><a href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> takes the first approach, for which there is much to be said. But the second seems more consistent with established practice with Markdown.</p>
+<p>There can be blank lines between items, but two blank lines end a list:</p>
+<p>. - foo</p>
+<ul>
+<li><p>bar</p></li>
+<li>baz .
+<ul>
+<li>
+<p>
+foo
+</p>
+</li>
+<li>
+<p>
+bar
+</p>
+</li>
+</ul>
+<ul>
+<li>
+baz
+</li>
+</ul>
+<p>.</p></li>
+</ul>
+<p>As illustrated above in the section on <a href="#list-item">list items</a>, two blank lines between blocks <em>within</em> a list item will also end a list:</p>
+<p>. - foo</p>
+bar - baz .
+<ul>
+<li>
+foo
+</li>
+</ul>
+<p>
+bar
+</p>
+<ul>
+<li>
+baz
+</li>
+</ul>
+<p>.</p>
+<p>Indeed, two blank lines will end <em>all</em> containing lists:</p>
+<p>. - foo - bar - baz</p>
+<pre><code>  bim</code></pre>
+.
+<ul>
+<li>
+foo
+<ul>
+<li>
+bar
+<ul>
+<li>
+baz
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>  bim
+</code></pre>
+<p>.</p>
+<p>Thus, two blank lines can be used to separate consecutive lists of the same type, or to separate a list from an indented code block that would otherwise be parsed as a subparagraph of the final list item:</p>
+<p>. - foo - bar</p>
+<ul>
+<li>baz</li>
+<li>bim .
+<ul>
+<li>
+foo
+</li>
+<li>
+bar
+</li>
+</ul>
+<ul>
+<li>
+baz
+</li>
+<li>
+bim
+</li>
+</ul>
+.</li>
+</ul>
+<p>. - foo</p>
+<pre><code>notcode</code></pre>
+<ul>
+<li><p>foo</p>
+code .
+<ul>
+<li>
+<p>
+foo
+</p>
+<p>
+notcode
+</p>
+</li>
+<li>
+<p>
+foo
+</p>
+</li>
+</ul>
+<pre><code>code
+</code></pre>
+<p>.</p></li>
+</ul>
+<p>List items need not be indented to the same level. The following list items will be treated as items at the same list level, since none is indented enough to belong to the previous list item:</p>
+. - a - b - c - d - e - f - g .
+<ul>
+<li>
+a
+</li>
+<li>
+b
+</li>
+<li>
+c
+</li>
+<li>
+d
+</li>
+<li>
+e
+</li>
+<li>
+f
+</li>
+<li>
+g
+</li>
+</ul>
+<p>.</p>
+<p>This is a loose list, because there is a blank line between two of the list items:</p>
+<p>. - a - b</p>
+<ul>
+<li>c .
+<ul>
+<li>
+<p>
+a
+</p>
+</li>
+<li>
+<p>
+b
+</p>
+</li>
+<li>
+<p>
+c
+</p>
+</li>
+</ul>
+.</li>
+</ul>
+<p>So is this, with a empty second item:</p>
+<p>. * a *</p>
+<ul>
+<li>c .
+<ul>
+<li>
+<p>
+a
+</p>
+</li>
+<li>
+</li>
+<li>
+<p>
+c
+</p>
+</li>
+</ul>
+.</li>
+</ul>
+<p>These are loose lists, even though there is no space between the items, because one of the items directly contains two block-level elements with a blank line between them:</p>
+<p>. - a - b</p>
+c - d .
+<ul>
+<li>
+<p>
+a
+</p>
+</li>
+<li>
+<p>
+b
+</p>
+<p>
+c
+</p>
+</li>
+<li>
+<p>
+d
+</p>
+</li>
+</ul>
+<p>.</p>
+<p>. - a - b</p>
+<ul>
+<li>d .
+<ul>
+<li>
+<p>
+a
+</p>
+</li>
+<li>
+<p>
+b
+</p>
+</li>
+<li>
+<p>
+d
+</p>
+</li>
+</ul>
+.</li>
+</ul>
+<p>This is a tight list, because the blank lines are in a code block:</p>
+<p>. - a - ``` b</p>
+``` - c .
+<ul>
+<li>
+a
+</li>
+<li>
+<pre><code>b
+
+
+</code></pre>
+</li>
+<li>
+c
+</li>
+</ul>
+<p>.</p>
+<p>This is a tight list, because the blank line is between two paragraphs of a sublist. So the sublist is loose while the outer list is tight:</p>
+<p>. - a - b</p>
+<pre><code>c</code></pre>
+<ul>
+<li>d .
+<ul>
+<li>
+a
+<ul>
+<li>
+<p>
+b
+</p>
+<p>
+c
+</p>
+</li>
+</ul>
+</li>
+<li>
+d
+</li>
+</ul>
+.</li>
+</ul>
+<p>This is a tight list, because the blank line is inside the block quote:</p>
+. * a &gt; b &gt; * c .
+<ul>
+<li>
+a
+<blockquote>
+<p>
+b
+</p>
+</blockquote>
+</li>
+<li>
+c
+</li>
+</ul>
+<p>.</p>
+<p>This list is tight, because the consecutive block elements are not separated by blank lines:</p>
+. - a &gt; b <code>c</code> - d .
+<ul>
+<li>
+a
+<blockquote>
+<p>
+b
+</p>
+</blockquote>
+<pre><code>c
+</code></pre>
+</li>
+<li>
+d
+</li>
+</ul>
+<p>.</p>
+<p>A single-paragraph list is tight:</p>
+. - a .
+<ul>
+<li>
+a
+</li>
+</ul>
+<p>.</p>
+. - a - b .
+<ul>
+<li>
+a
+<ul>
+<li>
+b
+</li>
+</ul>
+</li>
+</ul>
+<p>.</p>
+<p>Here the outer list is loose, the inner list tight:</p>
+<p>. * foo * bar</p>
+baz .
+<ul>
+<li>
+<p>
+foo
+</p>
+<ul>
+<li>
+bar
+</li>
+</ul>
+<p>
+baz
+</p>
+</li>
+</ul>
+<p>.</p>
+<p>. - a - b - c</p>
+<ul>
+<li>d</li>
+<li>e</li>
+<li>f .
+<ul>
+<li>
+<p>
+a
+</p>
+<ul>
+<li>
+b
+</li>
+<li>
+c
+</li>
+</ul>
+</li>
+<li>
+<p>
+d
+</p>
+<ul>
+<li>
+e
+</li>
+<li>
+f
+</li>
+</ul>
+</li>
+</ul>
+.</li>
+</ul>
+<h1 id="inlines">Inlines</h1>
+<p>Inlines are parsed sequentially from the beginning of the character stream to the end (left to right, in left-to-right languages). Thus, for example, in</p>
+. <code>hi</code>lo<code>. &lt;p&gt;&lt;code&gt;hi&lt;/code&gt;lo</code>
+</p>
+<p>.</p>
+<p><code>hi</code> is parsed as code, leaving the backtick at the end as a literal backtick.</p>
+<h2 id="backslash-escapes">Backslash escapes</h2>
+<p>Any ASCII punctuation character may be backslash-escaped:</p>
+. !&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~ .
+<p>
+!“#$%&amp;’()*+,-./:;&lt;=&gt;?@[]^_`{|}~
+</p>
+<p>.</p>
+<p>Backslashes before other characters are treated as literal backslashes:</p>
+. → « .
+<p>
+   «
+</p>
+<p>.</p>
+<p>Escaped characters are treated as regular characters and do not have their usual Markdown meanings:</p>
+. *not emphasized<em> &lt;br/&gt; not a tag [not a link](/foo) `not code<code>1\. not a list \* not a list \# not a header \[foo]: /url &quot;not a reference&quot; . &lt;p&gt;*not emphasized* &amp;lt;br/&amp;gt; not a tag [not a link](/foo)</code>not code` 1. not a list </em> not a list # not a header <a href="/url" title="title">foo</a>: /url “not a reference”
+</p>
+<p>.</p>
+<p>If a backslash is itself escaped, the following character is not:</p>
+. \<em>emphasis</em> .
+<p>
+&lt;em&gt;emphasis</em>
+</p>
+<p>.</p>
+<p>A backslash at the end of the line is a <a href="#hard-line-break">hard line break</a>:</p>
+. foo<br />bar .
+<p>
+foo<br /> bar
+</p>
+<p>.</p>
+<p>Backslash escapes do not work in code blocks, code spans, autolinks, or raw HTML:</p>
+. <code>\[\`</code> .
+<p>
+<code>[`</code>
+</p>
+<p>.</p>
+. [] .
+<pre><code>\[\]
+</code></pre>
+<p>.</p>
+. <sub><sub><sub> [] </sub></sub></sub> .
+<pre><code>\[\]
+</code></pre>
+<p>.</p>
+. <a href="http://example.com?find=\*" class="uri">http://example.com?find=\*</a> .
+<p>
+<a href="http://example.com?find=%5C*">http://example.com?find=*</a>
+</p>
+<p>.</p>
+. <a href="/bar\/)"> .
+<p>
+<a href="/bar\/)">
+</p>
+<p>.</p>
+<p>But they work in all other contexts, including URLs and link titles, link references, and info strings in <a href="#fenced-code-block">fenced code blocks</a>:</p>
+. <a href="/bar*" title="ti*tle">foo</a> .
+<p>
+<a href="/bar*" title="ti*tle">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="/bar*" title="ti*tle">foo</a>
+</p>
+<p>.</p>
+<p>.</p>
+<pre class="foo\+bar"><code>foo</code></pre>
+.
+<pre><code class="language-foo+bar">foo
+</code></pre>
+<p>.</p>
+<h2 id="entities">Entities</h2>
+<p>With the goal of making this standard as HTML-agnostic as possible, all valid HTML entities in any context are recognized as such and converted into unicode characters before they are stored in the AST.</p>
+<p>This allows implementations that target HTML output to trivially escape the entities when generating HTML, and simplifies the job of implementations targetting other languages, as these will only need to handle the unicode chars and need not be HTML-entity aware.</p>
+<p><a href="#name-entities">Named entities</a> <a id="named-entities"></a> consist of <code>&amp;</code> + any of the valid HTML5 entity names + <code>;</code>. The <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/entities.json">following document</a> is used as an authoritative source of the valid entity names and their corresponding codepoints.</p>
+<p>Conforming implementations that target HTML don’t need to generate entities for all the valid named entities that exist, with the exception of <code>&quot;</code> (<code>&amp;quot;</code>), <code>&amp;</code> (<code>&amp;amp;</code>), <code>&lt;</code> (<code>&amp;lt;</code>) and <code>&gt;</code> (<code>&amp;gt;</code>), which always need to be written as entities for security reasons.</p>
+.   &amp; © Æ Ď ¾ ℋ ⅆ ∲ .
+<p>
+  &amp; © Æ Ď ¾ ℋ ⅆ ∲
+</p>
+<p>.</p>
+<p><a href="#decimal-entities">Decimal entities</a> <a id="decimal-entities"></a> consist of <code>&amp;#</code> + a string of 1–8 arabic digits + <code>;</code>. Again, these entities need to be recognised and tranformed into their corresponding UTF8 codepoints. Invalid Unicode codepoints will be written as the “unknown codepoint” character (<code>0xFFFD</code>)</p>
+. # Ӓ Ϡ &amp;#98765432; .
+<p>
+# Ӓ Ϡ �
+</p>
+<p>.</p>
+<p><a href="#hexadecimal-entities">Hexadecimal entities</a> <a id="hexadecimal-entities"></a> consist of <code>&amp;#</code> + either <code>X</code> or <code>x</code> + a string of 1-8 hexadecimal digits + <code>;</code>. They will also be parsed and turned into their corresponding UTF8 values in the AST.</p>
+. &amp;#X22; &amp;#XD06; ಫ .
+<p>
+&quot; ആ ಫ
+</p>
+<p>.</p>
+<p>Here are some nonentities:</p>
+. &amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?; .
+<p>
+&amp;nbsp &amp;x; &amp;#; &amp;#x; &amp;ThisIsWayTooLongToBeAnEntityIsntIt; &amp;hi?;
+</p>
+<p>.</p>
+<p>Although HTML5 does accept some entities without a trailing semicolon (such as <code>&amp;copy</code>), these are not recognized as entities here, because it makes the grammar too ambiguous:</p>
+. &amp;copy .
+<p>
+&amp;copy
+</p>
+<p>.</p>
+<p>Strings that are not on the list of HTML5 named entities are not recognized as entities either:</p>
+. &amp;MadeUpEntity; .
+<p>
+&amp;MadeUpEntity;
+</p>
+<p>.</p>
+<p>Entities are recognized in any context besides code spans or code blocks, including raw HTML, URLs, <a href="#link-title">link titles</a>, and <a href="#fenced-code-block">fenced code block</a> info strings:</p>
+. <a href="&ouml;&ouml;.html"> .
+<p>
+<a href="&ouml;&ouml;.html">
+</p>
+<p>.</p>
+. <a href="/föö" title="föö">foo</a> .
+<p>
+<a href="/f%C3%B6%C3%B6" title="föö">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="/f%C3%B6%C3%B6" title="föö">foo</a>
+</p>
+<p>.</p>
+<p>.</p>
+<pre class="f&amp;ouml;&amp;ouml;"><code>foo</code></pre>
+.
+<pre><code class="language-föö">foo
+</code></pre>
+<p>.</p>
+<p>Entities are treated as literal text in code spans and code blocks:</p>
+. <code>f&amp;ouml;&amp;ouml;</code> .
+<p>
+<code>f&amp;ouml;&amp;ouml;</code>
+</p>
+<p>.</p>
+. föfö .
+<pre><code>f&amp;ouml;f&amp;ouml;
+</code></pre>
+<p>.</p>
+<h2 id="code-span">Code span</h2>
+<p>A <a href="#backtick-string">backtick string</a> <a id="backtick-string"></a> is a string of one or more backtick characters (<code>`</code>) that is neither preceded nor followed by a backtick.</p>
+<p>A code span begins with a backtick string and ends with a backtick string of equal length. The contents of the code span are the characters between the two backtick strings, with leading and trailing spaces and newlines removed, and consecutive spaces and newlines collapsed to single spaces.</p>
+<p>This is a simple code span:</p>
+. <code>foo</code> .
+<p>
+<code>foo</code>
+</p>
+<p>.</p>
+<p>Here two backticks are used, because the code contains a backtick. This example also illustrates stripping of leading and trailing spaces:</p>
+. <code>foo ` bar</code> .
+<p>
+<code>foo ` bar</code>
+</p>
+<p>.</p>
+<p>This example shows the motivation for stripping leading and trailing spaces:</p>
+. <code>``</code> .
+<p>
+<code>``</code>
+</p>
+<p>.</p>
+<p>Newlines are treated like spaces:</p>
+. <code>foo</code> .
+<p>
+<code>foo</code>
+</p>
+<p>.</p>
+<p>Interior spaces and newlines are collapsed into single spaces, just as they would be by a browser:</p>
+. <code>foo   bar   baz</code> .
+<p>
+<code>foo bar baz</code>
+</p>
+<p>.</p>
+<p>Q: Why not just leave the spaces, since browsers will collapse them anyway? A: Because we might be targeting a non-HTML format, and we shouldn’t rely on HTML-specific rendering assumptions.</p>
+<p>(Existing implementations differ in their treatment of internal spaces and newlines. Some, including <code>Markdown.pl</code> and <code>showdown</code>, convert an internal newline into a <code>&lt;br /&gt;</code> tag. But this makes things difficult for those who like to hard-wrap their paragraphs, since a line break in the midst of a code span will cause an unintended line break in the output. Others just leave internal spaces as they are, which is fine if only HTML is being targeted.)</p>
+. <code>foo `` bar</code> .
+<p>
+<code>foo `` bar</code>
+</p>
+<p>.</p>
+<p>Note that backslash escapes do not work in code spans. All backslashes are treated literally:</p>
+. <code>foo\</code>bar<code>. &lt;p&gt;&lt;code&gt;foo\&lt;/code&gt;bar</code>
+</p>
+<p>.</p>
+<p>Backslash escapes are never needed, because one can always choose a string of <em>n</em> backtick characters as delimiters, where the code does not contain any strings of exactly <em>n</em> backtick characters.</p>
+<p>Code span backticks have higher precedence than any other inline constructs except HTML tags and autolinks. Thus, for example, this is not parsed as emphasized text, since the second <code>*</code> is part of a code span:</p>
+. *foo<code>*</code> .
+<p>
+<em>foo<code></em></code>
+</p>
+<p>.</p>
+<p>And this is not parsed as a link:</p>
+. [not a <code>link](/foo</code>) .
+<p>
+<a href="/foo&lt;/code&gt;">not a <code>link</a>
+</p>
+<p>.</p>
+<p>But this is a link:</p>
+. <a href="http://foo.bar.`baz" class="uri">http://foo.bar.`baz</a><code>. &lt;p&gt;&lt;a href=&quot;http://foo.bar.%60baz&quot;&gt;http://foo.bar.</code>baz</a>`
+</p>
+<p>.</p>
+<p>And this is an HTML tag:</p>
+. <a href="`"><code>. &lt;p&gt;&lt;a href=&quot;</code>“&gt;`
+</p>
+<p>.</p>
+<p>When a backtick string is not closed by a matching backtick string, we just have literal backticks:</p>
+. <code>foo`` . &lt;p&gt;</code>foo``
+</p>
+<p>.</p>
+. <code>foo . &lt;p&gt;</code>foo
+</p>
+<p>.</p>
+<h2 id="emphasis-and-strong-emphasis">Emphasis and strong emphasis</h2>
+<p>John Gruber’s original <a href="http://daringfireball.net/projects/markdown/syntax#em">Markdown syntax description</a> says:</p>
+<blockquote>
+<p>Markdown treats asterisks (<code>*</code>) and underscores (<code>_</code>) as indicators of emphasis. Text wrapped with one <code>*</code> or <code>_</code> will be wrapped with an HTML <code>&lt;em&gt;</code> tag; double <code>*</code>’s or <code>_</code>’s will be wrapped with an HTML <code>&lt;strong&gt;</code> tag.</p>
+</blockquote>
+<p>This is enough for most users, but these rules leave much undecided, especially when it comes to nested emphasis. The original <code>Markdown.pl</code> test suite makes it clear that triple <code>***</code> and <code>___</code> delimiters can be used for strong emphasis, and most implementations have also allowed the following patterns:</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">***strong emph***
+***strong** in emph*
+***emph* in strong**
+**in strong *emph***
+*in emph **strong***</code></pre>
+<p>The following patterns are less widely supported, but the intent is clear and they are useful (especially in contexts like bibliography entries):</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">*emph *with emph* in it*
+**strong **with strong** in it**</code></pre>
+<p>Many implementations have also restricted intraword emphasis to the <code>*</code> forms, to avoid unwanted emphasis in words containing internal underscores. (It is best practice to put these in code spans, but users often do not.)</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">internal emphasis: foo*bar*baz
+no emphasis: foo_bar_baz</code></pre>
+<p>The following rules capture all of these patterns, while allowing for efficient parsing strategies that do not backtrack:</p>
+<ol type="1">
+<li><p>A single <code>*</code> character <a href="#can-open-emphasis">can open emphasis</a> <a id="can-open-emphasis"></a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>*</code>s,</li>
+<li>it is not followed by whitespace, and</li>
+<li>either it is not followed by a <code>*</code> character or it is followed immediately by emphasis or strong emphasis.</li>
+</ol></li>
+<li><p>A single <code>_</code> character <a href="#can-open-emphasis">can open emphasis</a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
+<li>it is not followed by whitespace,</li>
+<li>it is not preceded by an ASCII alphanumeric character, and</li>
+<li>either it is not followed by a <code>_</code> character or it is followed immediately by emphasis or strong emphasis.</li>
+</ol></li>
+<li><p>A single <code>*</code> character <a href="#can-close-emphasis">can close emphasis</a> <a id="can-close-emphasis"></a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>*</code>s, and</li>
+<li>it is not preceded by whitespace.</li>
+</ol></li>
+<li><p>A single <code>_</code> character <a href="#can-close-emphasis">can close emphasis</a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
+<li>it is not preceded by whitespace, and</li>
+<li>it is not followed by an ASCII alphanumeric character.</li>
+</ol></li>
+<li><p>A double <code>**</code> <a href="#can-open-strong-emphasis">can open strong emphasis</a> <a id="can-open-strong-emphasis" ></a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>*</code>s,</li>
+<li>it is not followed by whitespace, and</li>
+<li>either it is not followed by a <code>*</code> character or it is followed immediately by emphasis.</li>
+</ol></li>
+<li><p>A double <code>__</code> <a href="#can-open-strong-emphasis">can open strong emphasis</a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
+<li>it is not followed by whitespace, and</li>
+<li>it is not preceded by an ASCII alphanumeric character, and</li>
+<li>either it is not followed by a <code>_</code> character or it is followed immediately by emphasis.</li>
+</ol></li>
+<li><p>A double <code>**</code> <a href="#can-close-strong-emphasis">can close strong emphasis</a> <a id="can-close-strong-emphasis" ></a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>*</code>s, and</li>
+<li>it is not preceded by whitespace.</li>
+</ol></li>
+<li><p>A double <code>__</code> <a href="#can-close-strong-emphasis">can close strong emphasis</a> iff</p>
+<ol type="a">
+<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
+<li>it is not preceded by whitespace, and</li>
+<li>it is not followed by an ASCII alphanumeric character.</li>
+</ol></li>
+<li><p>Emphasis begins with a delimiter that <a href="#can-open-emphasis">can open emphasis</a> and ends with a delimiter that <a href="#can-close-emphasis">can close emphasis</a>, and that uses the same character (<code>_</code> or <code>*</code>) as the opening delimiter. The inlines between the open delimiter and the closing delimiter are the contents of the emphasis inline.</p></li>
+<li><p>Strong emphasis begins with a delimiter that <a href="#can-open-strong-emphasis">can open strong emphasis</a> and ends with a delimiter that <a href="#can-close-strong-emphasis">can close strong emphasis</a>, and that uses the same character (<code>_</code> or <code>*</code>) as the opening delimiter. The inlines between the open delimiter and the closing delimiter are the contents of the strong emphasis inline.</p></li>
+</ol>
+<p>Where rules 1–10 above are compatible with multiple parsings, the following principles resolve ambiguity:</p>
+<ol start="11" type="1">
+<li><p>An interpretation <code>&lt;strong&gt;...&lt;/strong&gt;</code> is always preferred to <code>&lt;em&gt;&lt;em&gt;...&lt;/em&gt;&lt;/em&gt;</code>.</p></li>
+<li><p>An interpretation <code>&lt;strong&gt;&lt;em&gt;...&lt;/em&gt;&lt;/strong&gt;</code> is always preferred to <code>&lt;em&gt;&lt;strong&gt;..&lt;/strong&gt;&lt;/em&gt;</code>.</p></li>
+<li><p>Earlier closings are preferred to later closings. Thus, when two potential emphasis or strong emphasis spans overlap, the first takes precedence: for example, <code>*foo _bar* baz_</code> is parsed as <code>&lt;em&gt;foo _bar&lt;/em&gt; baz_</code> rather than <code>*foo &lt;em&gt;bar* baz&lt;/em&gt;</code>. For the same reason, <code>**foo*bar**</code> is parsed as <code>&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;bar&lt;/em&gt;*</code> rather than <code>&lt;strong&gt;foo*bar&lt;/strong&gt;</code>.</p></li>
+<li><p>Inline code spans, links, images, and HTML tags group more tightly than emphasis. So, when there is a choice between an interpretation that contains one of these elements and one that does not, the former always wins. Thus, for example, <code>*[foo*](bar)</code> is parsed as <code>*&lt;a href=&quot;bar&quot;&gt;foo*&lt;/a&gt;</code> rather than as <code>&lt;em&gt;[foo&lt;/em&gt;](bar)</code>.</p></li>
+</ol>
+<p>These rules can be illustrated through a series of examples.</p>
+<p>Simple emphasis:</p>
+. <em>foo bar</em> .
+<p>
+<em>foo bar</em>
+</p>
+<p>.</p>
+. <em>foo bar</em> .
+<p>
+<em>foo bar</em>
+</p>
+<p>.</p>
+<p>Simple strong emphasis:</p>
+. <strong>foo bar</strong> .
+<p>
+<strong>foo bar</strong>
+</p>
+<p>.</p>
+. <strong>foo bar</strong> .
+<p>
+<strong>foo bar</strong>
+</p>
+<p>.</p>
+<p>Emphasis can continue over line breaks:</p>
+. <em>foo bar</em> .
+<p>
+<em>foo bar</em>
+</p>
+<p>.</p>
+. <em>foo bar</em> .
+<p>
+<em>foo bar</em>
+</p>
+<p>.</p>
+. <strong>foo bar</strong> .
+<p>
+<strong>foo bar</strong>
+</p>
+<p>.</p>
+. <strong>foo bar</strong> .
+<p>
+<strong>foo bar</strong>
+</p>
+<p>.</p>
+<p>Emphasis can contain other inline constructs:</p>
+. <em>foo <a href="/url">bar</a></em> .
+<p>
+<em>foo <a href="/url">bar</a></em>
+</p>
+<p>.</p>
+. <em>foo <a href="/url">bar</a></em> .
+<p>
+<em>foo <a href="/url">bar</a></em>
+</p>
+<p>.</p>
+. <strong>foo <a href="/url">bar</a></strong> .
+<p>
+<strong>foo <a href="/url">bar</a></strong>
+</p>
+<p>.</p>
+. <strong>foo <a href="/url">bar</a></strong> .
+<p>
+<strong>foo <a href="/url">bar</a></strong>
+</p>
+<p>.</p>
+<p>Symbols contained in other inline constructs will not close emphasis:</p>
+. *foo <a href="/url">bar*</a> .
+<p>
+<em>foo <a href="/url">bar</em></a>
+</p>
+<p>.</p>
+. _foo <a href="/url">bar_</a> .
+<p>
+<em>foo <a href="/url">bar</em></a>
+</p>
+<p>.</p>
+. **<a href="**"> .
+<p>
+**<a href="**">
+</p>
+<p>.</p>
+. __<a href="__"> .
+<p>
+__<a href="__">
+</p>
+<p>.</p>
+. <em>a <code>*</code></em> .
+<p>
+<em>a <code>*</code></em>
+</p>
+<p>.</p>
+. <em>a <code>_</code></em> .
+<p>
+<em>a <code>_</code></em>
+</p>
+<p>.</p>
+. **a<a href="http://foo.bar?q=**" class="uri">http://foo.bar?q=**</a> .
+<p>
+<strong>a<a href="http://foo.bar?q=**">http://foo.bar?q=</strong></a>
+</p>
+<p>.</p>
+. __a<a href="http://foo.bar?q=__" class="uri">http://foo.bar?q=__</a> .
+<p>
+<strong>a<a href="http://foo.bar?q=__">http://foo.bar?q=</strong></a>
+</p>
+<p>.</p>
+<p>This is not emphasis, because the opening delimiter is followed by white space:</p>
+. and * foo bar* .
+<p>
+and * foo bar*
+</p>
+<p>.</p>
+. _ foo bar_ .
+<p>
+_ foo bar_
+</p>
+<p>.</p>
+. and ** foo bar** .
+<p>
+and ** foo bar**
+</p>
+<p>.</p>
+. __ foo bar__ .
+<p>
+__ foo bar__
+</p>
+<p>.</p>
+<p>This is not emphasis, because the closing delimiter is preceded by white space:</p>
+. and <em>foo bar </em> .
+<p>
+and <em>foo bar </em>
+</p>
+<p>.</p>
+. and <em>foo bar </em> .
+<p>
+and <em>foo bar </em>
+</p>
+<p>.</p>
+. and <strong>foo bar </strong> .
+<p>
+and <strong>foo bar </strong>
+</p>
+<p>.</p>
+. and <strong>foo bar </strong> .
+<p>
+and <strong>foo bar </strong>
+</p>
+<p>.</p>
+<p>The rules imply that a sequence of four or more unescaped <code>*</code> or <code>_</code> characters will always be parsed as a literal string:</p>
+. ****hi**** .
+<p>
+****hi****
+</p>
+<p>.</p>
+. _____hi_____ .
+<p>
+_____hi_____
+</p>
+<p>.</p>
+. Sign here: _________ .
+<p>
+Sign here: _________
+</p>
+<p>.</p>
+<p>The rules also imply that there can be no empty emphasis or strong emphasis:</p>
+. ** is not an empty emphasis .
+<p>
+** is not an empty emphasis
+</p>
+<p>.</p>
+. **** is not an empty strong emphasis .
+<p>
+**** is not an empty strong emphasis
+</p>
+<p>.</p>
+<p>To include <code>*</code> or <code>_</code> in emphasized sections, use backslash escapes or code spans:</p>
+. <em>here is a *</em> .
+<p>
+<em>here is a *</em>
+</p>
+<p>.</p>
+. <strong>this is a double underscore (<code>__</code>)</strong> .
+<p>
+<strong>this is a double underscore (<code>__</code>)</strong>
+</p>
+<p>.</p>
+<p>Or use the other emphasis character:</p>
+. *_* .
+<p>
+<em>_</em>
+</p>
+<p>.</p>
+. _*_ .
+<p>
+<em>*</em>
+</p>
+<p>.</p>
+. *__* .
+<p>
+<em>__</em>
+</p>
+<p>.</p>
+. _**_ .
+<p>
+<em>**</em>
+</p>
+<p>.</p>
+<p><code>*</code> delimiters allow intra-word emphasis; <code>_</code> delimiters do not:</p>
+. foo<em>bar</em>baz .
+<p>
+foo<em>bar</em>baz
+</p>
+<p>.</p>
+. foo_bar_baz .
+<p>
+foo_bar_baz
+</p>
+<p>.</p>
+. foo__bar__baz .
+<p>
+foo__bar__baz
+</p>
+<p>.</p>
+. <em>foo_bar_baz</em> .
+<p>
+<em>foo_bar_baz</em>
+</p>
+<p>.</p>
+. 11<em>15</em>32 .
+<p>
+11<em>15</em>32
+</p>
+<p>.</p>
+. 11_15_32 .
+<p>
+11_15_32
+</p>
+<p>.</p>
+<p>Internal underscores will be ignored in underscore-delimited emphasis:</p>
+. <em>foo_bar_baz</em> .
+<p>
+<em>foo_bar_baz</em>
+</p>
+<p>.</p>
+. __foo__bar<strong>baz</strong> .
+<p>
+<strong>foo__bar__baz</strong>
+</p>
+<p>.</p>
+<p>The rules are sufficient for the following nesting patterns:</p>
+. <strong><em>foo bar</em></strong> .
+<p>
+<strong><em>foo bar</em></strong>
+</p>
+<p>.</p>
+. <strong><em>foo bar</em></strong> .
+<p>
+<strong><em>foo bar</em></strong>
+</p>
+<p>.</p>
+. <em><strong>foo</strong> bar</em> .
+<p>
+<em><strong>foo</strong> bar</em>
+</p>
+<p>.</p>
+. <em><strong>foo</strong> bar</em> .
+<p>
+<em><strong>foo</strong> bar</em>
+</p>
+<p>.</p>
+. <strong><em>foo</em> bar</strong> .
+<p>
+<strong><em>foo</em> bar</strong>
+</p>
+<p>.</p>
+. <strong><em>foo</em> bar</strong> .
+<p>
+<strong><em>foo</em> bar</strong>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong></em> .
+<p>
+<em>foo <strong>bar</strong></em>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong></em> .
+<p>
+<em>foo <strong>bar</strong></em>
+</p>
+<p>.</p>
+. <strong>foo <em>bar</em></strong> .
+<p>
+<strong>foo <em>bar</em></strong>
+</p>
+<p>.</p>
+. <strong>foo <em>bar</em></strong> .
+<p>
+<strong>foo <em>bar</em></strong>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong></em> .
+<p>
+<em>foo <strong>bar</strong></em>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong></em> .
+<p>
+<em>foo <strong>bar</strong></em>
+</p>
+<p>.</p>
+. <em>foo </em>bar* baz* .
+<p>
+<em>foo <em>bar</em> baz</em>
+</p>
+<p>.</p>
+. <em>foo <em>bar</em> baz</em> .
+<p>
+<em>foo <em>bar</em> baz</em>
+</p>
+<p>.</p>
+. <strong>foo </strong>bar** baz** .
+<p>
+<strong>foo <strong>bar</strong> baz</strong>
+</p>
+<p>.</p>
+. <strong>foo <strong>bar</strong> baz</strong> .
+<p>
+<strong>foo <strong>bar</strong> baz</strong>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong> baz</em> .
+<p>
+<em>foo <strong>bar</strong> baz</em>
+</p>
+<p>.</p>
+. <em>foo <strong>bar</strong> baz</em> .
+<p>
+<em>foo <strong>bar</strong> baz</em>
+</p>
+<p>.</p>
+. <strong>foo <em>bar</em> baz</strong> .
+<p>
+<strong>foo <em>bar</em> baz</strong>
+</p>
+<p>.</p>
+. <strong>foo <em>bar</em> baz</strong> .
+<p>
+<strong>foo <em>bar</em> baz</strong>
+</p>
+<p>.</p>
+. <strong>foo, <em>bar</em>, baz</strong> .
+<p>
+<strong>foo, <em>bar</em>, baz</strong>
+</p>
+<p>.</p>
+. <strong>foo, <em>bar</em>, baz</strong> .
+<p>
+<strong>foo, <em>bar</em>, baz</strong>
+</p>
+<p>.</p>
+<p>But note:</p>
+. <em>foo<strong>bar</strong>baz</em> .
+<p>
+<em>foo</em><em>bar</em><em>baz</em>
+</p>
+<p>.</p>
+. <strong>foo<em>bar</em>baz</strong> .
+<p>
+<em><em>foo</em>bar</em>baz**
+</p>
+<p>.</p>
+<p>The difference is that in the two preceding cases, the internal delimiters <a href="#can-close-emphasis">can close emphasis</a>, while in the cases with spaces, they cannot.</p>
+<p>Note that you cannot nest emphasis directly inside emphasis using the same delimeter, or strong emphasis directly inside strong emphasis:</p>
+. <strong>foo</strong> .
+<p>
+<strong>foo</strong>
+</p>
+<p>.</p>
+. ****foo**** .
+<p>
+****foo****
+</p>
+<p>.</p>
+<p>For these nestings, you need to switch delimiters:</p>
+. <em><em>foo</em></em> .
+<p>
+<em><em>foo</em></em>
+</p>
+<p>.</p>
+. <strong><strong>foo</strong></strong> .
+<p>
+<strong><strong>foo</strong></strong>
+</p>
+<p>.</p>
+<p>Note that a <code>*</code> followed by a <code>*</code> can close emphasis, and a <code>**</code> followed by a <code>*</code> can close strong emphasis (and similarly for <code>_</code> and <code>__</code>):</p>
+. *foo** .
+<p>
+<em>foo</em>*
+</p>
+<p>.</p>
+. <em>foo </em>bar** .
+<p>
+<em>foo <em>bar</em></em>
+</p>
+<p>.</p>
+. <strong>foo</strong>* .
+<p>
+<strong>foo</strong>*
+</p>
+<p>.</p>
+. <strong><em>foo</em> bar</strong>* .
+<p>
+<strong><em>foo</em> bar</strong>*
+</p>
+<p>.</p>
+. <em><strong>foo</strong> bar</em>** .
+<p>
+<em><strong>foo</strong> bar</em>**
+</p>
+<p>.</p>
+<p>The following contains no strong emphasis, because the opening delimiter is closed by the first <code>*</code> before <code>bar</code>:</p>
+. <em>foo<strong>bar</strong></em> .
+<p>
+<em>foo</em><em>bar</em>**
+</p>
+<p>.</p>
+<p>However, a string of four or more <code>****</code> can never close emphasis:</p>
+. <em>foo</em>*** .
+<p>
+<em>foo</em>***
+</p>
+<p>.</p>
+<p>We retain symmetry in these cases:</p>
+<p>. *foo**</p>
+**foo* .
+<p>
+<em>foo</em>*
+</p>
+<p>
+*<em>foo</em>
+</p>
+<p>.</p>
+<p>. <em>foo </em>bar**</p>
+**foo* bar* .
+<p>
+<em>foo <em>bar</em></em>
+</p>
+<p>
+<em><em>foo</em> bar</em>
+</p>
+<p>.</p>
+<p>More cases with mismatched delimiters:</p>
+. <em>bar</em>** .
+<p>
+<em>bar</em>**
+</p>
+<p>.</p>
+. **<em>foo</em> .
+<p>
+**<em>foo</em>
+</p>
+<p>.</p>
+. <strong>bar</strong>* .
+<p>
+<strong>bar</strong>*
+</p>
+<p>.</p>
+. *<strong>foo</strong> .
+<p>
+*<strong>foo</strong>
+</p>
+<p>.</p>
+. **<em>foo </em>bar* .
+<p>
+***foo <em>bar</em>
+</p>
+<p>.</p>
+<p>The following cases illustrate rule 13:</p>
+. *foo <em>bar* baz</em> .
+<p>
+<em>foo <em>bar</em> baz</em>
+</p>
+<p>.</p>
+. <strong>foo bar* baz</strong> .
+<p>
+<em><em>foo bar</em> baz</em>*
+</p>
+<p>.</p>
+<p>The following cases illustrate rule 14:</p>
+. *<a href="bar">foo*</a> .
+<p>
+<em><a href="bar">foo</em></a>
+</p>
+<p>.</p>
+. *<img src="bar" alt="foo*" /> .
+<p>
+*<img src="bar" alt="foo*" />
+</p>
+<p>.</p>
+. *<img src="foo" title="*"/> .
+<p>
+*<img src="foo" title="*"/>
+</p>
+<p>.</p>
+. *a<code>a*</code> .
+<p>
+<em>a<code>a</em></code>
+</p>
+<p>.</p>
+<h2 id="links">Links</h2>
+<p>A link contains a <a href="#link-label">link label</a> (the visible text), a <a href="#destination">destination</a> (the URI that is the link destination), and optionally a <a href="#link-title">link title</a>. There are two basic kinds of links in Markdown. In <a href="#inline-links">inline links</a> the destination and title are given immediately after the label. In <a href="#reference-links">reference links</a> the destination and title are defined elsewhere in the document.</p>
+<p>A <a href="#link-label">link label</a> <a id="link-label"></a> consists of</p>
+<ul>
+<li>an opening <code>[</code>, followed by</li>
+<li>zero or more backtick code spans, autolinks, HTML tags, link labels, backslash-escaped ASCII punctuation characters, or non-<code>]</code> characters, followed by</li>
+<li>a closing <code>]</code>.</li>
+</ul>
+<p>These rules are motivated by the following intuitive ideas:</p>
+<ul>
+<li>A link label is a container for inline elements.</li>
+<li>The square brackets bind more tightly than emphasis markers, but less tightly than <code>&lt;&gt;</code> or <code>`</code>.</li>
+<li>Link labels may contain material in matching square brackets.</li>
+</ul>
+<p>A <a href="#link-destination">link destination</a> <a id="link-destination"></a> consists of either</p>
+<ul>
+<li><p>a sequence of zero or more characters between an opening <code>&lt;</code> and a closing <code>&gt;</code> that contains no line breaks or unescaped <code>&lt;</code> or <code>&gt;</code> characters, or</p></li>
+<li><p>a nonempty sequence of characters that does not include ASCII space or control characters, and includes parentheses only if (a) they are backslash-escaped or (b) they are part of a balanced pair of unescaped parentheses that is not itself inside a balanced pair of unescaped paretheses.</p></li>
+</ul>
+<p>A <a href="#link-title">link title</a> <a id="link-title"></a> consists of either</p>
+<ul>
+<li><p>a sequence of zero or more characters between straight double-quote characters (<code>&quot;</code>), including a <code>&quot;</code> character only if it is backslash-escaped, or</p></li>
+<li><p>a sequence of zero or more characters between straight single-quote characters (<code>'</code>), including a <code>'</code> character only if it is backslash-escaped, or</p></li>
+<li><p>a sequence of zero or more characters between matching parentheses (<code>(...)</code>), including a <code>)</code> character only if it is backslash-escaped.</p></li>
+</ul>
+<p>An <a href="#inline-link">inline link</a> <a id="inline-link"></a> consists of a <a href="#link-label">link label</a> followed immediately by a left parenthesis <code>(</code>, optional whitespace, an optional <a href="#link-destination">link destination</a>, an optional <a href="#link-title">link title</a> separated from the link destination by whitespace, optional whitespace, and a right parenthesis <code>)</code>. The link’s text consists of the label (excluding the enclosing square brackets) parsed as inlines. The link’s URI consists of the link destination, excluding enclosing <code>&lt;...&gt;</code> if present, with backslash-escapes in effect as described above. The link’s title consists of the link title, excluding its enclosing delimiters, with backslash-escapes in effect as described above.</p>
+<p>Here is a simple inline link:</p>
+. <a href="/uri" title="title">link</a> .
+<p>
+<a href="/uri" title="title">link</a>
+</p>
+<p>.</p>
+<p>The title may be omitted:</p>
+. <a href="/uri">link</a> .
+<p>
+<a href="/uri">link</a>
+</p>
+<p>.</p>
+<p>Both the title and the destination may be omitted:</p>
+. <a href="">link</a> .
+<p>
+<a href="">link</a>
+</p>
+<p>.</p>
+. <a href="">link</a> .
+<p>
+<a href="">link</a>
+</p>
+<p>.</p>
+<p>If the destination contains spaces, it must be enclosed in pointy braces:</p>
+. <a href="/my%20uri">link</a> .
+<p>
+<a href="/my%20uri">link</a>
+</p>
+<p>.</p>
+. <a href="/my%20uri">link</a> .
+<p>
+<a href="/my%20uri">link</a>
+</p>
+<p>.</p>
+<p>The destination cannot contain line breaks, even with pointy braces:</p>
+. <a href="foo%20bar">link</a> .
+<p>
+<a href="foo%20bar">link</a>
+</p>
+<p>.</p>
+<p>One level of balanced parentheses is allowed without escaping:</p>
+. <a href="(foo)and(bar)">link</a> .
+<p>
+<a href="(foo)and(bar)">link</a>
+</p>
+<p>.</p>
+<p>However, if you have parentheses within parentheses, you need to escape or use the <code>&lt;...&gt;</code> form:</p>
+. <a href="foo(and(bar))">link</a> .
+<p>
+<a href="foo(and(bar))">link</a>
+</p>
+<p>.</p>
+. <a href="foo(and(bar))">link</a> .
+<p>
+<a href="foo(and(bar))">link</a>
+</p>
+<p>.</p>
+. <a href="foo(and(bar))">link</a> .
+<p>
+<a href="foo(and(bar))">link</a>
+</p>
+<p>.</p>
+<p>Parentheses and other symbols can also be escaped, as usual in Markdown:</p>
+. <a href="foo):">link</a> .
+<p>
+<a href="foo):">link</a>
+</p>
+<p>.</p>
+<p>URL-escaping should be left alone inside the destination, as all URL-escaped characters are also valid URL characters. HTML entities in the destination will be parsed into their UTF-8 codepoints, as usual, and optionally URL-escaped when written as HTML.</p>
+. <a href="foo%20bä">link</a> .
+<p>
+<a href="foo%20b%C3%A4">link</a>
+</p>
+<p>.</p>
+<p>Note that, because titles can often be parsed as destinations, if you try to omit the destination and keep the title, you’ll get unexpected results:</p>
+. <a href="&quot;title&quot;">link</a> .
+<p>
+<a href="%22title%22">link</a>
+</p>
+<p>.</p>
+<p>Titles may be in single quotes, double quotes, or parentheses:</p>
+. <a href="/url" title="title">link</a> <a href="/url" title="title">link</a> <a href="/url%20(title)">link</a> .
+<p>
+<a href="/url" title="title">link</a> <a href="/url" title="title">link</a> <a href="/url" title="title">link</a>
+</p>
+<p>.</p>
+<p>Backslash escapes and entities may be used in titles:</p>
+. <a href="/url" title="title &quot;&quot;">link</a> .
+<p>
+<a href="/url" title="title &quot;&quot;">link</a>
+</p>
+<p>.</p>
+<p>Nested balanced quotes are not allowed without escaping:</p>
+. <a href="/url" title="title &quot;and&quot; title">link</a> .
+<p>
+<a href="/url%20&quot;title%20&quot;and&quot;%20title&quot;">link</a>
+</p>
+<p>.</p>
+<p>But it is easy to work around this by using a different quote type:</p>
+. <a href="/url" title="title &quot;and&quot; title">link</a> .
+<p>
+<a href="/url" title="title &quot;and&quot; title">link</a>
+</p>
+<p>.</p>
+<p>(Note: <code>Markdown.pl</code> did allow double quotes inside a double-quoted title, and its test suite included a test demonstrating this. But it is hard to see a good rationale for the extra complexity this brings, since there are already many ways—backslash escaping, entities, or using a different quote type for the enclosing title—to write titles containing double quotes. <code>Markdown.pl</code>’s handling of titles has a number of other strange features. For example, it allows single-quoted titles in inline links, but not reference links. And, in reference links but not inline links, it allows a title to begin with <code>&quot;</code> and end with <code>)</code>. <code>Markdown.pl</code> 1.0.1 even allows titles with no closing quotation mark, though 1.0.2b8 does not. It seems preferable to adopt a simple, rational rule that works the same way in inline links and link reference definitions.)</p>
+<p>Whitespace is allowed around the destination and title:</p>
+. <a href="/uri" title="title">link</a> .
+<p>
+<a href="/uri" title="title">link</a>
+</p>
+<p>.</p>
+<p>But it is not allowed between the link label and the following parenthesis:</p>
+. [link] (/uri) .
+<p>
+[link] (/uri)
+</p>
+<p>.</p>
+<p>Note that this is not a link, because the closing <code>]</code> occurs in an HTML tag:</p>
+. <a href="baz">foo &lt;bar attr=“</a>“&gt; .
+<p>
+<a href="baz">foo &lt;bar attr=“</a>“&gt;
+</p>
+<p>.</p>
+<p>There are three kinds of <a href="#reference-link">reference links</a>: <a id="reference-link"></a></p>
+<p>A <a href="#full-reference-link">full reference link</a> <a id="full-reference-link"></a> consists of a <a href="#link-label">link label</a>, optional whitespace, and another <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document.</p>
+<p>One label <a href="#matches">matches</a> <a id="matches"></a> another just in case their normalized forms are equal. To normalize a label, perform the <em>unicode case fold</em> and collapse consecutive internal whitespace to a single space. If there are multiple matching reference link definitions, the one that comes first in the document is used. (It is desirable in such cases to emit a warning.)</p>
+<p>The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching <a href="#link-reference-definition">link reference definition</a>.</p>
+<p>Here is a simple example:</p>
+<p>. <a href="/url">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>The first label can contain inline content:</p>
+<p>. <a href="/url"><em>foo!</em></a></p>
+.
+<p>
+<a href="/url" title="title"><em>foo!</em></a>
+</p>
+<p>.</p>
+<p>Matching is case-insensitive:</p>
+<p>. <a href="/url">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>Unicode case fold is used:</p>
+<p>. <a href="/url">Толпой</a> is a Russian word.</p>
+.
+<p>
+<a href="/url">Толпой</a> is a Russian word.
+</p>
+<p>.</p>
+<p>Consecutive internal whitespace is treated as one space for purposes of determining matching:</p>
+<p>. [Foo bar]: /url</p>
+[Baz][Foo bar] .
+<p>
+<a href="/url">Baz</a>
+</p>
+<p>.</p>
+<p>There can be whitespace between the two labels:</p>
+<p>. <a href="/url">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>When there are multiple matching <a href="#link-reference-definition">link reference definitions</a>, the first is used:</p>
+<p>. <a href="/url" title="title">foo</a>: /url1</p>
+<a href="/url" title="title">bar</a> .
+<p>
+<a href="/url1">bar</a>
+</p>
+<p>.</p>
+<p>Note that matching is performed on normalized strings, not parsed inline content. So the following does not match, even though the labels define equivalent inline content:</p>
+<p>. [bar][foo!]</p>
+.
+<p>
+<a href="/url">bar</a>
+</p>
+<p>.</p>
+<p>A <a href="#collapsed-reference-link">collapsed reference link</a> <a id="collapsed-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document, optional whitespace, and the string <code>[]</code>. The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching reference link definition. Thus, <code>[foo][]</code> is equivalent to <code>[foo][foo]</code>.</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url" title="title"><em>foo</em> bar</a></p>
+.
+<p>
+<a href="/url" title="title"><em>foo</em> bar</a>
+</p>
+<p>.</p>
+<p>The link labels are case-insensitive:</p>
+<p>. <a href="/url" title="title">Foo</a></p>
+.
+<p>
+<a href="/url" title="title">Foo</a>
+</p>
+<p>.</p>
+<p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>A <a href="#shortcut-reference-link">shortcut reference link</a> <a id="shortcut-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document and is not followed by <code>[]</code> or a link label. The contents of the first link label are parsed as inlines, which are used as the link’s text. the link’s URI and title are provided by the matching link reference definition. Thus, <code>[foo]</code> is equivalent to <code>[foo][]</code>.</p>
+<p>. <a href="/url" title="title">foo</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>. <a href="/url" title="title"><em>foo</em> bar</a></p>
+.
+<p>
+<a href="/url" title="title"><em>foo</em> bar</a>
+</p>
+<p>.</p>
+<p>. [<a href="/url" title="title"><em>foo</em> bar</a>]</p>
+.
+<p>
+[<a href="/url" title="title"><em>foo</em> bar</a>]
+</p>
+<p>.</p>
+<p>The link labels are case-insensitive:</p>
+<p>. <a href="/url" title="title">Foo</a></p>
+.
+<p>
+<a href="/url" title="title">Foo</a>
+</p>
+<p>.</p>
+<p>If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:</p>
+<p>. [foo]</p>
+.
+<p>
+<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<p>Note that this is a link, because link labels bind more tightly than emphasis:</p>
+<p>. [foo*]: /url</p>
+*[foo*] .
+<p>
+<em><a href="/url">foo</em></a>
+</p>
+<p>.</p>
+<p>However, this is not, because link labels bind less tightly than code backticks:</p>
+<p>. [foo`]: /url</p>
+[foo<code>]</code> .
+<p>
+[foo<code>]</code>
+</p>
+<p>.</p>
+<p>Link labels can contain matched square brackets:</p>
+<p>. <a href="/url1">[[foo]]</a></p>
+.
+<p>
+<a href="/url"><a href="/url" title="title">[foo]</a></a>
+</p>
+<p>.</p>
+<p>. <a href="/url1">[[foo]]</a></p>
+.
+<p>
+<a href="/url1"><a href="/url" title="title">[foo]</a></a>
+</p>
+<p>.</p>
+<p>For non-matching brackets, use backslash escapes:</p>
+<p>. [[foo]</p>
+[[foo]: /url .
+<p>
+<a href="/url">[foo</a>
+</p>
+<p>.</p>
+<p>Full references take precedence over shortcut references:</p>
+<p>. <a href="/url">foo</a></p>
+.
+<p>
+<a href="/url2">foo</a>
+</p>
+<p>.</p>
+<p>In the following case <code>[bar][baz]</code> is parsed as a reference, <code>[foo]</code> as normal text:</p>
+<p>. <a href="/url">foo</a><a href="/url1">baz</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a><a href="/url">bar</a>
+</p>
+<p>.</p>
+<p>Here, though, <code>[foo][bar]</code> is parsed as a reference, since <code>[bar]</code> is defined:</p>
+<p>. <a href="/url">foo</a><a href="/url1">baz</a></p>
+.
+<p>
+<a href="/url2">foo</a><a href="/url1">baz</a>
+</p>
+<p>.</p>
+<p>Here <code>[foo]</code> is not parsed as a shortcut reference, because it is followed by a link label (even though <code>[bar]</code> is not defined):</p>
+<p>. <a href="/url">foo</a><a href="/url1">baz</a></p>
+.
+<p>
+<a href="/url" title="title">foo</a><a href="/url1">bar</a>
+</p>
+<p>.</p>
+<h2 id="images">Images</h2>
+<p>An (unescaped) exclamation mark (<code>!</code>) followed by a reference or inline link will be parsed as an image. The link label will be used as the image’s alt text, and the link title, if any, will be used as the image’s title.</p>
+. <img src="/url" title="title" alt="foo" /> .
+<p>
+<img src="/url" alt="foo" title="title" />
+</p>
+<p>.</p>
+<p>. <img src="train.jpg" title="train &amp; tracks" alt="foo bar" /></p>
+.
+<p>
+<img src="train.jpg" alt="foo &lt;em&gt;bar&lt;/em&gt;" title="train &amp; tracks" />
+</p>
+<p>.</p>
+<p>. <img src="train.jpg" title="train &amp; tracks" alt="foo bar" /></p>
+.
+<p>
+<img src="train.jpg" alt="foo &lt;em&gt;bar&lt;/em&gt;" title="train &amp; tracks" />
+</p>
+<p>.</p>
+<p>. <img src="train.jpg" title="train &amp; tracks" alt="foo bar" /></p>
+.
+<p>
+<img src="train.jpg" alt="foo &lt;em&gt;bar&lt;/em&gt;" title="train &amp; tracks" />
+</p>
+<p>.</p>
+. <img src="train.jpg" alt="foo" /> .
+<p>
+<img src="train.jpg" alt="foo" />
+</p>
+<p>.</p>
+. My <img src="/path/to/train.jpg" title="title" alt="foo bar" /> .
+<p>
+My <img src="/path/to/train.jpg" alt="foo bar" title="title" />
+</p>
+<p>.</p>
+. <img src="url" alt="foo" /> .
+<p>
+<img src="url" alt="foo" />
+</p>
+<p>.</p>
+. <img src="/url" /> .
+<p>
+<img src="/url" alt="" />
+</p>
+<p>.</p>
+<p>Reference-style:</p>
+<p>. <img src="/url" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="foo" />
+</p>
+<p>.</p>
+<p>. <img src="/url" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="foo" />
+</p>
+<p>.</p>
+<p>Collapsed:</p>
+<p>. <img src="/url" title="title" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="foo" title="title" />
+</p>
+<p>.</p>
+<p>. <img src="/url" title="title" alt="foo bar" /></p>
+.
+<p>
+<img src="/url" alt="&lt;em&gt;foo&lt;/em&gt; bar" title="title" />
+</p>
+<p>.</p>
+<p>The labels are case-insensitive:</p>
+<p>. <img src="/url" title="title" alt="Foo" /></p>
+.
+<p>
+<img src="/url" alt="Foo" title="title" />
+</p>
+<p>.</p>
+<p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
+<p>. <img src="/url" title="title" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="foo" title="title" />
+</p>
+<p>.</p>
+<p>Shortcut:</p>
+<p>. <img src="/url" title="title" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="foo" title="title" />
+</p>
+<p>.</p>
+<p>. <img src="/url" title="title" alt="foo bar" /></p>
+.
+<p>
+<img src="/url" alt="&lt;em&gt;foo&lt;/em&gt; bar" title="title" />
+</p>
+<p>.</p>
+<p>. <img src="/url" title="title" alt="foo" /></p>
+.
+<p>
+<img src="/url" alt="[foo]" title="title" />
+</p>
+<p>.</p>
+<p>The link labels are case-insensitive:</p>
+<p>. <img src="/url" title="title" alt="Foo" /></p>
+.
+<p>
+<img src="/url" alt="Foo" title="title" />
+</p>
+<p>.</p>
+<p>If you just want bracketed text, you can backslash-escape the opening <code>!</code> and <code>[</code>:</p>
+<p>. ![foo]</p>
+.
+<p>
+<img src="/url" title="title" alt="foo" />
+</p>
+<p>.</p>
+<p>If you want a link after a literal <code>!</code>, backslash-escape the <code>!</code>:</p>
+<p>. !<a href="/url" title="title">foo</a></p>
+.
+<p>
+!<a href="/url" title="title">foo</a>
+</p>
+<p>.</p>
+<h2 id="autolinks">Autolinks</h2>
+<p>Autolinks are absolute URIs and email addresses inside <code>&lt;</code> and <code>&gt;</code>. They are parsed as links, with the URL or email address as the link label.</p>
+<p>A <a href="#uri-autolink">URI autolink</a> <a id="uri-autolink"></a> consists of <code>&lt;</code>, followed by an <a href="#absolute-uri">absolute URI</a> not containing <code>&lt;</code>, followed by <code>&gt;</code>. It is parsed as a link to the URI, with the URI as the link’s label.</p>
+<p>An <a href="#absolute-uri">absolute URI</a>, <a id="absolute-uri"></a> for these purposes, consists of a <a href="#scheme">scheme</a> followed by a colon (<code>:</code>) followed by zero or more characters other than ASCII whitespace and control characters, <code>&lt;</code>, and <code>&gt;</code>. If the URI includes these characters, you must use percent-encoding (e.g. <code>%20</code> for a space).</p>
+<p>The following <a href="#scheme">schemes</a> <a id="scheme"></a> are recognized (case-insensitive): <code>coap</code>, <code>doi</code>, <code>javascript</code>, <code>aaa</code>, <code>aaas</code>, <code>about</code>, <code>acap</code>, <code>cap</code>, <code>cid</code>, <code>crid</code>, <code>data</code>, <code>dav</code>, <code>dict</code>, <code>dns</code>, <code>file</code>, <code>ftp</code>, <code>geo</code>, <code>go</code>, <code>gopher</code>, <code>h323</code>, <code>http</code>, <code>https</code>, <code>iax</code>, <code>icap</code>, <code>im</code>, <code>imap</code>, <code>info</code>, <code>ipp</code>, <code>iris</code>, <code>iris.beep</code>, <code>iris.xpc</code>, <code>iris.xpcs</code>, <code>iris.lwz</code>, <code>ldap</code>, <code>mailto</code>, <code>mid</code>, <code>msrp</code>, <code>msrps</code>, <code>mtqp</code>, <code>mupdate</code>, <code>news</code>, <code>nfs</code>, <code>ni</code>, <code>nih</code>, <code>nntp</code>, <code>opaquelocktoken</code>, <code>pop</code>, <code>pres</code>, <code>rtsp</code>, <code>service</code>, <code>session</code>, <code>shttp</code>, <code>sieve</code>, <code>sip</code>, <code>sips</code>, <code>sms</code>, <code>snmp</code>,<code>soap.beep</code>, <code>soap.beeps</code>, <code>tag</code>, <code>tel</code>, <code>telnet</code>, <code>tftp</code>, <code>thismessage</code>, <code>tn3270</code>, <code>tip</code>, <code>tv</code>, <code>urn</code>, <code>vemmi</code>, <code>ws</code>, <code>wss</code>, <code>xcon</code>, <code>xcon-userid</code>, <code>xmlrpc.beep</code>, <code>xmlrpc.beeps</code>, <code>xmpp</code>, <code>z39.50r</code>, <code>z39.50s</code>, <code>adiumxtra</code>, <code>afp</code>, <code>afs</code>, <code>aim</code>, <code>apt</code>,<code>attachment</code>, <code>aw</code>, <code>beshare</code>, <code>bitcoin</code>, <code>bolo</code>, <code>callto</code>, <code>chrome</code>,<code>chrome-extension</code>, <code>com-eventbrite-attendee</code>, <code>content</code>, <code>cvs</code>,<code>dlna-playsingle</code>, <code>dlna-playcontainer</code>, <code>dtn</code>, <code>dvb</code>, <code>ed2k</code>, <code>facetime</code>, <code>feed</code>, <code>finger</code>, <code>fish</code>, <code>gg</code>, <code>git</code>, <code>gizmoproject</code>, <code>gtalk</code>, <code>hcp</code>, <code>icon</code>, <code>ipn</code>, <code>irc</code>, <code>irc6</code>, <code>ircs</code>, <code>itms</code>, <code>jar</code>, <code>jms</code>, <code>keyparc</code>, <code>lastfm</code>, <code>ldaps</code>, <code>magnet</code>, <code>maps</code>, <code>market</code>,<code>message</code>, <code>mms</code>, <code>ms-help</code>, <code>msnim</code>, <code>mumble</code>, <code>mvn</code>, <code>notes</code>, <code>oid</code>, <code>palm</code>, <code>paparazzi</code>, <code>platform</code>, <code>proxy</code>, <code>psyc</code>, <code>query</code>, <code>res</code>, <code>resource</code>, <code>rmi</code>, <code>rsync</code>, <code>rtmp</code>, <code>secondlife</code>, <code>sftp</code>, <code>sgn</code>, <code>skype</code>, <code>smb</code>, <code>soldat</code>, <code>spotify</code>, <code>ssh</code>, <code>steam</code>, <code>svn</code>, <code>teamspeak</code>, <code>things</code>, <code>udp</code>, <code>unreal</code>, <code>ut2004</code>, <code>ventrilo</code>, <code>view-source</code>, <code>webcal</code>, <code>wtai</code>, <code>wyciwyg</code>, <code>xfire</code>, <code>xri</code>, <code>ymsgr</code>.</p>
+<p>Here are some valid autolinks:</p>
+. <a href="http://foo.bar.baz" class="uri">http://foo.bar.baz</a> .
+<p>
+<a href="http://foo.bar.baz">http://foo.bar.baz</a>
+</p>
+<p>.</p>
+. <a href="http://foo.bar.baz?q=hello&amp;id=22&amp;boolean" class="uri">http://foo.bar.baz?q=hello&amp;id=22&amp;boolean</a> .
+<p>
+<a href="http://foo.bar.baz?q=hello&amp;id=22&amp;boolean">http://foo.bar.baz?q=hello&amp;id=22&amp;boolean</a>
+</p>
+<p>.</p>
+. <a href="irc://foo.bar:2233/baz" class="uri">irc://foo.bar:2233/baz</a> .
+<p>
+<a href="irc://foo.bar:2233/baz">irc://foo.bar:2233/baz</a>
+</p>
+<p>.</p>
+<p>Uppercase is also fine:</p>
+. <a href="MAILTO:FOO@BAR.BAZ" class="uri">MAILTO:FOO@BAR.BAZ</a> .
+<p>
+<a href="MAILTO:FOO@BAR.BAZ">MAILTO:FOO@BAR.BAZ</a>
+</p>
+<p>.</p>
+<p>Spaces are not allowed in autolinks:</p>
+. <http://foo.bar/baz bim> .
+<p>
+&lt;http://foo.bar/baz bim&gt;
+</p>
+<p>.</p>
+<p>An <a href="#email-autolink">email autolink</a> <a id="email-autolink"></a> consists of <code>&lt;</code>, followed by an <a href="#email-address">email address</a>, followed by <code>&gt;</code>. The link’s label is the email address, and the URL is <code>mailto:</code> followed by the email address.</p>
+<p>An <a href="#email-address">email address</a>, <a id="email-address"></a> for these purposes, is anything that matches the <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/forms.html#e-mail-state-%28type=email%29">non-normative regex from the HTML5 spec</a>:</p>
+<pre><code>/^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?
+(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/</code></pre>
+<p>Examples of email autolinks:</p>
+. <script type="text/javascript">
+<!--
+h='&#98;&#x61;&#114;&#46;&#x65;&#120;&#x61;&#x6d;&#112;&#108;&#x65;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#102;&#x6f;&#x6f;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#102;&#x6f;&#x6f;&#32;&#x61;&#116;&#32;&#98;&#x61;&#114;&#32;&#100;&#x6f;&#116;&#32;&#x65;&#120;&#x61;&#x6d;&#112;&#108;&#x65;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript> .
+<p>
+<a href="mailto:foo@bar.example.com">foo@bar.example.com</a>
+</p>
+<p>.</p>
+. <script type="text/javascript">
+<!--
+h='&#66;&#x61;&#114;&#46;&#98;&#x61;&#122;&#x2d;&#98;&#x61;&#114;&#48;&#46;&#x63;&#x6f;&#x6d;';a='&#64;';n='&#102;&#x6f;&#x6f;&#x2b;&#x73;&#112;&#x65;&#x63;&#x69;&#x61;&#108;';e=n+a+h;
+document.write('<a h'+'ref'+'="ma'+'ilto'+':'+e+'" clas'+'s="em' + 'ail">'+e+'<\/'+'a'+'>');
+// -->
+</script><noscript>&#102;&#x6f;&#x6f;&#x2b;&#x73;&#112;&#x65;&#x63;&#x69;&#x61;&#108;&#32;&#x61;&#116;&#32;&#66;&#x61;&#114;&#32;&#100;&#x6f;&#116;&#32;&#98;&#x61;&#122;&#x2d;&#98;&#x61;&#114;&#48;&#32;&#100;&#x6f;&#116;&#32;&#x63;&#x6f;&#x6d;</noscript> .
+<p>
+<a href="mailto:foo+special@Bar.baz-bar0.com">foo+special@Bar.baz-bar0.com</a>
+</p>
+<p>.</p>
+<p>These are not autolinks:</p>
+. &lt;&gt; .
+<p>
+&lt;&gt;
+</p>
+<p>.</p>
+. <heck://bing.bong> .
+<p>
+&lt;heck://bing.bong&gt;
+</p>
+<p>.</p>
+. &lt; http://foo.bar &gt; .
+<p>
+&lt; http://foo.bar &gt;
+</p>
+<p>.</p>
+. <foo.bar.baz> .
+<p>
+&lt;foo.bar.baz&gt;
+</p>
+<p>.</p>
+. <localhost:5001/foo> .
+<p>
+&lt;localhost:5001/foo&gt;
+</p>
+<p>.</p>
+. http://example.com .
+<p>
+http://example.com
+</p>
+<p>.</p>
+. foo@bar.example.com .
+<p>
+foo@bar.example.com
+</p>
+<p>.</p>
+<h2 id="raw-html">Raw HTML</h2>
+<p>Text between <code>&lt;</code> and <code>&gt;</code> that looks like an HTML tag is parsed as a raw HTML tag and will be rendered in HTML without escaping. Tag and attribute names are not limited to current HTML tags, so custom tags (and even, say, DocBook tags) may be used.</p>
+<p>Here is the grammar for tags:</p>
+<p>A <a href="#tag-name">tag name</a> <a id="tag-name"></a> consists of an ASCII letter followed by zero or more ASCII letters or digits.</p>
+<p>An <a href="#attribute">attribute</a> <a id="attribute"></a> consists of whitespace, an <strong>attribute name</strong>, and an optional <strong>attribute value specification</strong>.</p>
+<p>An <a href="#attribute-name">attribute name</a> <a id="attribute-name"></a> consists of an ASCII letter, <code>_</code>, or <code>:</code>, followed by zero or more ASCII letters, digits, <code>_</code>, <code>.</code>, <code>:</code>, or <code>-</code>. (Note: This is the XML specification restricted to ASCII. HTML5 is laxer.)</p>
+<p>An <a href="#attribute-value-specification">attribute value specification</a> <a id="attribute-value-specification"></a> consists of optional whitespace, a <code>=</code> character, optional whitespace, and an <a href="#attribute-value">attribute value</a>.</p>
+<p>An <a href="#attribute-value">attribute value</a> <a id="attribute-value"></a> consists of an <a href="#unquoted-attribute-value">unquoted attribute value</a>, a <a href="#single-quoted-attribute-value">single-quoted attribute value</a>, or a <a href="#double-quoted-attribute-value">double-quoted attribute value</a>.</p>
+<p>An <a href="#unquoted-attribute-value">unquoted attribute value</a> <a id="unquoted-attribute-value"></a> is a nonempty string of characters not including spaces, <code>&quot;</code>, <code>'</code>, <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, or <code>`</code>.</p>
+<p>A <a href="#single-quoted-attribute-value">single-quoted attribute value</a> <a id="single-quoted-attribute-value"></a> consists of <code>'</code>, zero or more characters not including <code>'</code>, and a final <code>'</code>.</p>
+<p>A <a href="#double-quoted-attribute-value">double-quoted attribute value</a> <a id="double-quoted-attribute-value"></a> consists of <code>&quot;</code>, zero or more characters not including <code>&quot;</code>, and a final <code>&quot;</code>.</p>
+<p>An <a href="#open-tag">open tag</a> <a id="open-tag"></a> consists of a <code>&lt;</code> character, a <a href="#tag-name">tag name</a>, zero or more <a href="#attribute">attributes</a>, optional whitespace, an optional <code>/</code> character, and a <code>&gt;</code> character.</p>
+<p>A <a href="#closing-tag">closing tag</a> <a id="closing-tag"></a> consists of the string <code>&lt;/</code>, a <a href="#tag-name">tag name</a>, optional whitespace, and the character <code>&gt;</code>.</p>
+<p>An <a href="#html-comment">HTML comment</a> <a id="html-comment"></a> consists of the string <code>&lt;!--</code>, a string of characters not including the string <code>--</code>, and the string <code>--&gt;</code>.</p>
+<p>A <a href="#processing-instruction">processing instruction</a> <a id="processing-instruction"></a> consists of the string <code>&lt;?</code>, a string of characters not including the string <code>?&gt;</code>, and the string <code>?&gt;</code>.</p>
+<p>A <a href="#declaration">declaration</a> <a id="declaration"></a> consists of the string <code>&lt;!</code>, a name consisting of one or more uppercase ASCII letters, whitespace, a string of characters not including the character <code>&gt;</code>, and the character <code>&gt;</code>.</p>
+<p>A <a href="#cdata-section">CDATA section</a> <a id="cdata-section"></a> consists of the string <code>&lt;![CDATA[</code>, a string of characters not including the string <code>]]&gt;</code>, and the string <code>]]&gt;</code>.</p>
+<p>An <a href="#html-tag">HTML tag</a> <a id="html-tag"></a> consists of an <a href="#open-tag">open tag</a>, a <a href="#closing-tag">closing tag</a>, an <a href="#html-comment">HTML comment</a>, a <a href="#processing-instruction">processing instruction</a>, an <a href="#element-type-declaration">element type declaration</a>, or a <a href="#cdata-section">CDATA section</a>.</p>
+<p>Here are some simple open tags:</p>
+. <a><bab><c2c> .
+<p>
+<a><bab><c2c>
+</p>
+<p>.</p>
+<p>Empty elements:</p>
+. <a/><b2/> .
+<p>
+<a/><b2/>
+</p>
+<p>.</p>
+<p>Whitespace is allowed:</p>
+. <a  /><b2
+data="foo" > .
+<p>
+<a  /><b2
+data="foo" >
+</p>
+<p>.</p>
+<p>With attributes:</p>
+. <a foo="bar" bam = 'baz <em>“</em>’ _boolean zoop:33=zoop:33 /&gt; .
+<p>
+<a foo="bar" bam = 'baz <em>“</em>’ _boolean zoop:33=zoop:33 /&gt;
+</p>
+<p>.</p>
+<p>Illegal tag names, not parsed as HTML:</p>
+. &lt;33&gt; &lt;__&gt; .
+<p>
+&lt;33&gt; &lt;__&gt;
+</p>
+<p>.</p>
+<p>Illegal attribute names:</p>
+. <a h*#ref="hi"> .
+<p>
+&lt;a h*#ref=“hi”&gt;
+</p>
+<p>.</p>
+<p>Illegal attribute values:</p>
+. <a href="hi'> <a href=hi'> .
+<p>
+&lt;a href=“hi’&gt; &lt;a href=hi’&gt;
+</p>
+<p>.</p>
+<p>Illegal whitespace:</p>
+. &lt; a&gt;&lt; foo&gt;<bar/ > .
+<p>
+&lt; a&gt;&lt; foo&gt;&lt;bar/ &gt;
+</p>
+<p>.</p>
+<p>Missing whitespace:</p>
+. <a href='bar'title=title> .
+<p>
+&lt;a href=’bar’title=title&gt;
+</p>
+<p>.</p>
+<p>Closing tags:</p>
+. </a> </foo > .
+<p>
+</a> </foo >
+</p>
+<p>.</p>
+<p>Illegal attributes in closing tag:</p>
+. </a href="foo"> .
+<p>
+&lt;/a href=“foo”&gt;
+</p>
+<p>.</p>
+<p>Comments:</p>
+. foo <!-- this is a
+comment - with hyphen --> .
+<p>
+foo <!-- this is a
+comment - with hyphen -->
+</p>
+<p>.</p>
+. foo <!-- not a comment -- two hyphens --> .
+<p>
+foo &lt;!– not a comment – two hyphens –&gt;
+</p>
+<p>.</p>
+<p>Processing instructions:</p>
+. foo <?php echo $a; ?> .
+<p>
+foo <?php echo $a; ?>
+</p>
+<p>.</p>
+<p>Declarations:</p>
+. foo <!ELEMENT br EMPTY> .
+<p>
+foo <!ELEMENT br EMPTY>
+</p>
+<p>.</p>
+<p>CDATA sections:</p>
+. foo &lt;[CDATA[&gt;&amp;&lt;]]&gt; .
+<p>
+foo &lt;[CDATA[&gt;&amp;&lt;]]&gt;
+</p>
+<p>.</p>
+<p>Entities are preserved in HTML attributes:</p>
+. <a href="&ouml;"> .
+<p>
+<a href="&ouml;">
+</p>
+<p>.</p>
+<p>Backslash escapes do not work in HTML attributes:</p>
+. <a href="\*"> .
+<p>
+<a href="\*">
+</p>
+<p>.</p>
+. <a href="\""> .
+<p>
+&lt;a href=“”“&gt;
+</p>
+<p>.</p>
+<h2 id="hard-line-breaks">Hard line breaks</h2>
+<p>A line break (not in a code span or HTML tag) that is preceded by two or more spaces is parsed as a <a href="#hard-line-break">hard line break</a><a id="hard-line-break"></a> (rendered in HTML as a <code>&lt;br /&gt;</code> tag):</p>
+. foo<br />baz .
+<p>
+foo<br /> baz
+</p>
+<p>.</p>
+<p>For a more visible alternative, a backslash before the newline may be used instead of two spaces:</p>
+. foo<br />baz .
+<p>
+foo<br /> baz
+</p>
+<p>.</p>
+<p>More than two spaces can be used:</p>
+. foo<br />baz .
+<p>
+foo<br /> baz
+</p>
+<p>.</p>
+<p>Leading spaces at the beginning of the next line are ignored:</p>
+. foo<br /> bar .
+<p>
+foo<br /> bar
+</p>
+<p>.</p>
+. foo<br /> bar .
+<p>
+foo<br /> bar
+</p>
+<p>.</p>
+<p>Line breaks can occur inside emphasis, links, and other constructs that allow inline content:</p>
+. <em>foo<br />bar</em> .
+<p>
+<em>foo<br /> bar</em>
+</p>
+<p>.</p>
+. <em>foo<br />bar</em> .
+<p>
+<em>foo<br /> bar</em>
+</p>
+<p>.</p>
+<p>Line breaks do not occur inside code spans</p>
+. <code>code   span</code> .
+<p>
+<code>code span</code>
+</p>
+<p>.</p>
+. <code>code\ span</code> .
+<p>
+<code>code span</code>
+</p>
+<p>.</p>
+<p>or HTML tags:</p>
+. <a href="foo  
+bar"> .
+<p>
+<a href="foo  
+bar">
+</p>
+<p>.</p>
+. <a href="foo\
+bar"> .
+<p>
+<a href="foo\
+bar">
+</p>
+<p>.</p>
+<h2 id="soft-line-breaks">Soft line breaks</h2>
+<p>A regular line break (not in a code span or HTML tag) that is not preceded by two or more spaces is parsed as a softbreak. (A softbreak may be rendered in HTML either as a newline or as a space. The result will be the same in browsers. In the examples here, a newline will be used.)</p>
+. foo baz .
+<p>
+foo baz
+</p>
+<p>.</p>
+<p>Spaces at the end of the line and beginning of the next line are removed:</p>
+. foo baz .
+<p>
+foo baz
+</p>
+<p>.</p>
+<p>A conforming parser may render a soft line break in HTML either as a line break or as a space.</p>
+<p>A renderer may also provide an option to render soft line breaks as hard line breaks.</p>
+<h2 id="strings">Strings</h2>
+<p>Any characters not given an interpretation by the above rules will be parsed as string content.</p>
+. hello $.;’there .
+<p>
+hello $.;’there
+</p>
+<p>.</p>
+. Foo χρῆν .
+<p>
+Foo χρῆν
+</p>
+<p>.</p>
+<p>Internal spaces are preserved verbatim:</p>
+. Multiple spaces .
+<p>
+Multiple spaces
+</p>
+<p>.</p>
+<!-- END TESTS -->
+<h1 id="appendix-a-a-parsing-strategy" class="unnumbered">Appendix A: A parsing strategy</h1>
+<h2 id="overview" class="unnumbered">Overview</h2>
+<p>Parsing has two phases:</p>
+<ol type="1">
+<li><p>In the first phase, lines of input are consumed and the block structure of the document—its division into paragraphs, block quotes, list items, and so on—is constructed. Text is assigned to these blocks but not parsed. Link reference definitions are parsed and a map of links is constructed.</p></li>
+<li><p>In the second phase, the raw text contents of paragraphs and headers are parsed into sequences of Markdown inline elements (strings, code spans, links, emphasis, and so on), using the map of link references constructed in phase 1.</p></li>
+</ol>
+<h2 id="the-document-tree" class="unnumbered">The document tree</h2>
+<p>At each point in processing, the document is represented as a tree of <strong>blocks</strong>. The root of the tree is a <code>document</code> block. The <code>document</code> may have any number of other blocks as <strong>children</strong>. These children may, in turn, have other blocks as children. The last child of a block is normally considered <strong>open</strong>, meaning that subsequent lines of input can alter its contents. (Blocks that are not open are <strong>closed</strong>.) Here, for example, is a possible document tree, with the open blocks marked by arrows:</p>
+<pre class="tree"><code>-&gt; document
+  -&gt; block_quote
+       paragraph
+         &quot;Lorem ipsum dolor\nsit amet.&quot;
+    -&gt; list (type=bullet tight=true bullet_char=-)
+         list_item
+           paragraph
+             &quot;Qui *quodsi iracundia*&quot;
+      -&gt; list_item
+        -&gt; paragraph
+             &quot;aliquando id&quot;</code></pre>
+<h2 id="how-source-lines-alter-the-document-tree" class="unnumbered">How source lines alter the document tree</h2>
+<p>Each line that is processed has an effect on this tree. The line is analyzed and, depending on its contents, the document may be altered in one or more of the following ways:</p>
+<ol type="1">
+<li>One or more open blocks may be closed.</li>
+<li>One or more new blocks may be created as children of the last open block.</li>
+<li>Text may be added to the last (deepest) open block remaining on the tree.</li>
+</ol>
+<p>Once a line has been incorporated into the tree in this way, it can be discarded, so input can be read in a stream.</p>
+<p>We can see how this works by considering how the tree above is generated by four lines of Markdown:</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt"> Lorem ipsum dolor</span>
+sit amet.
+&gt;<span class="dt"> - Qui *quodsi iracundia*</span>
+&gt;<span class="dt"> - aliquando id</span></code></pre>
+<p>At the outset, our document model is just</p>
+<pre class="tree"><code>-&gt; document</code></pre>
+<p>The first line of our text,</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt"> Lorem ipsum dolor</span></code></pre>
+<p>causes a <code>block_quote</code> block to be created as a child of our open <code>document</code> block, and a <code>paragraph</code> block as a child of the <code>block_quote</code>. Then the text is added to the last open block, the <code>paragraph</code>:</p>
+<pre class="tree"><code>-&gt; document
+  -&gt; block_quote
+    -&gt; paragraph
+         &quot;Lorem ipsum dolor&quot;</code></pre>
+<p>The next line,</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">sit amet.</code></pre>
+<p>is a “lazy continuation” of the open <code>paragraph</code>, so it gets added to the paragraph’s text:</p>
+<pre class="tree"><code>-&gt; document
+  -&gt; block_quote
+    -&gt; paragraph
+         &quot;Lorem ipsum dolor\nsit amet.&quot;</code></pre>
+<p>The third line,</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt"> - Qui *quodsi iracundia*</span></code></pre>
+<p>causes the <code>paragraph</code> block to be closed, and a new <code>list</code> block opened as a child of the <code>block_quote</code>. A <code>list_item</code> is also added as a child of the <code>list</code>, and a <code>paragraph</code> as a child of the <code>list_item</code>. The text is then added to the new <code>paragraph</code>:</p>
+<pre class="tree"><code>-&gt; document
+  -&gt; block_quote
+       paragraph
+         &quot;Lorem ipsum dolor\nsit amet.&quot;
+    -&gt; list (type=bullet tight=true bullet_char=-)
+      -&gt; list_item
+        -&gt; paragraph
+             &quot;Qui *quodsi iracundia*&quot;</code></pre>
+<p>The fourth line,</p>
+<pre class="sourceCode markdown"><code class="sourceCode markdown">&gt;<span class="dt"> - aliquando id</span></code></pre>
+<p>causes the <code>list_item</code> (and its child the <code>paragraph</code>) to be closed, and a new <code>list_item</code> opened up as child of the <code>list</code>. A <code>paragraph</code> is added as a child of the new <code>list_item</code>, to contain the text. We thus obtain the final tree:</p>
+<pre class="tree"><code>-&gt; document
+  -&gt; block_quote
+       paragraph
+         &quot;Lorem ipsum dolor\nsit amet.&quot;
+    -&gt; list (type=bullet tight=true bullet_char=-)
+         list_item
+           paragraph
+             &quot;Qui *quodsi iracundia*&quot;
+      -&gt; list_item
+        -&gt; paragraph
+             &quot;aliquando id&quot;</code></pre>
+<h2 id="from-block-structure-to-the-final-document" class="unnumbered">From block structure to the final document</h2>
+<p>Once all of the input has been parsed, all open blocks are closed.</p>
+<p>We then “walk the tree,” visiting every node, and parse raw string contents of paragraphs and headers as inlines. At this point we have seen all the link reference definitions, so we can resolve reference links as we go.</p>
+<pre class="tree"><code>document
+  block_quote
+    paragraph
+      str &quot;Lorem ipsum dolor&quot;
+      softbreak
+      str &quot;sit amet.&quot;
+    list (type=bullet tight=true bullet_char=-)
+      list_item
+        paragraph
+          str &quot;Qui &quot;
+          emph
+            str &quot;quodsi iracundia&quot;
+      list_item
+        paragraph
+          str &quot;aliquando id&quot;</code></pre>
+<p>Notice how the newline in the first paragraph has been parsed as a <code>softbreak</code>, and the asterisks in the first list item have become an <code>emph</code>.</p>
+<p>The document can be rendered as HTML, or in any other format, given an appropriate renderer.</p>
+</body>
 </html>
