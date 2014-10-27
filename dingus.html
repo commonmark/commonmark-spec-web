@@ -25,7 +25,6 @@ function getQueryVariable(variable)
 
 
 $(document).ready(function() {
-  $("#text").val(getQueryVariable("text"));
   var timer;
   var x;
   var parsed;
@@ -65,6 +64,8 @@ $(document).ready(function() {
       render();
     }, 0); // ms delay
   };
+  $("#text").val(getQueryVariable("text"));
+  parseAndRender();
   $("#clear-text-box").click(function(e) {
     $("#text").val('');
     window.location.search = "";
@@ -73,7 +74,7 @@ $(document).ready(function() {
   $("#permalink").click(function(e) {
     window.location.pathname = "/index.html";
     window.location.search = "text=" + encodeURIComponent($("#text").val());
-    location.reload();
+    // location.reload();
   });
   $("#text").bind('keyup paste cut mouseup', parseAndRender);
   $(".option").change(render);
