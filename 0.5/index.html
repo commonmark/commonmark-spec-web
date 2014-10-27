@@ -46,6 +46,19 @@ pre.html { background-color: #C9CaCE; }
 pre.html span.space:after {
   border: 1px solid #666;
 }
+#watermark {
+ position:fixed;
+ bottom:0px;
+ left:0px;
+ padding: 1em;
+ width: 100%;
+ font-size: 120%;
+ opacity:0.7;
+ z-index:99;
+ background-color: black;
+ color: white;
+}
+#watermark a { color: white; }
 div.examplenum { font-size: 82%; text-align: left; }
 a.dingus { color: red; }
 a.footnoteRef > sup:before {
@@ -131,6 +144,7 @@ $(document).ready(function() {
 </ul></li>
 </ul>
 </div>
+<div id="watermark">This is an older version of the spec. For the most recent version, see <a href="http://spec.commonmark.org">http://spec.commonmark.org</a>.</div>
 <h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
 <h2 id="what-is-markdown"><span class="header-section-number">1.1</span> What is Markdown?</h2>
 <p>Markdown is a plain text format for writing structured documents, based on conventions used for indicating formatting in email and usenet posts. It was developed in 2004 by John Gruber, who wrote the first Markdown-to-HTML converter in perl, and it soon became widely used in websites. By 2014 there were dozens of implementations in many languages. Some of them extended basic Markdown syntax with conventions for footnotes, definition lists, tables, and other constructs, and some allowed output not just in HTML but in LaTeX and many other formats.</p>
