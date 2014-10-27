@@ -73,7 +73,7 @@ $(document).ready(function() {
   $("#permalink").click(function(e) {
     window.location.pathname = "/index.html";
     window.location.search = "text=" + encodeURIComponent($("#text").val());
-    window.reload();
+    location.reload();
   });
   $("#text").bind('keyup paste cut mouseup', parseAndRender);
   $(".option").change(render);
