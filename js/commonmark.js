@@ -26,13 +26,13 @@ var detabLine = function(text) {
 };
 
 // Attempt to match a regex in string s at offset offset.
-// Return index of match or null.
+// Return index of match or -1.
 var matchAt = function(re, s, offset) {
     var res = s.slice(offset).match(re);
     if (res) {
         return offset + res.index;
     } else {
-        return null;
+        return -1;
     }
 };
 
@@ -219,7 +219,7 @@ var incorporateLine = function(ln, line_number) {
         container = last_child;
 
         match = matchAt(/[^ ]/, ln, offset);
-        if (match === null) {
+        if (match === -1) {
             first_nonspace = ln.length;
             blank = true;
         } else {
@@ -327,10 +327,10 @@ var incorporateLine = function(ln, line_number) {
            container.t != 'IndentedCode' &&
            container.t != 'HtmlBlock' &&
            // this is a little performance optimization:
-           matchAt(/^[ #`~*+_=<>0-9-]/,ln,offset) !== null) {
+           matchAt(/^[ #`~*+_=<>0-9-]/,ln,offset) !== -1) {
 
         match = matchAt(/[^ ]/, ln, offset);
-        if (match === null) {
+        if (match === -1) {
             first_nonspace = ln.length;
             blank = true;
         } else {
@@ -381,7 +381,7 @@ var incorporateLine = function(ln, line_number) {
             offset = first_nonspace + fence_length;
             break;
 
-        } else if (matchAt(reHtmlBlockOpen, ln, first_nonspace) !== null) {
+        } else if (matchAt(reHtmlBlockOpen, ln, first_nonspace) !== -1) {
             // html block
             closeUnmatchedBlocks(this);
             container = this.addChild('HtmlBlock', line_number, first_nonspace);
@@ -397,7 +397,7 @@ var incorporateLine = function(ln, line_number) {
             container.level = match[0][0] === '=' ? 1 : 2;
             offset = ln.length;
 
-        } else if (matchAt(reHrule, ln, first_nonspace) !== null) {
+        } else if (matchAt(reHrule, ln, first_nonspace) !== -1) {
             // hrule
             closeUnmatchedBlocks(this);
             container = this.addChild('HorizontalRule', line_number, first_nonspace);
@@ -436,7 +436,7 @@ var incorporateLine = function(ln, line_number) {
     // appropriate container.
 
     match = matchAt(/[^ ]/, ln, offset);
-    if (match === null) {
+    if (match === -1) {
         first_nonspace = ln.length;
         blank = true;
     } else {
@@ -3322,8 +3322,8 @@ var scanDelims = function(cc) {
         char_after = fromCodePoint(cc_after);
     }
 
-    var can_open = numdelims > 0 && numdelims <= 3 && !(/\s/.test(char_after));
-    var can_close = numdelims > 0 && numdelims <= 3 && !(/\s/.test(char_before));
+    var can_open = numdelims > 0 && !(/\s/.test(char_after));
+    var can_close = numdelims > 0 && !(/\s/.test(char_before));
     if (cc === C_UNDERSCORE) {
         can_open = can_open && !((/[a-z0-9]/i).test(char_before));
         can_close = can_close && !((/[a-z0-9]/i).test(char_after));
@@ -3352,6 +3352,7 @@ var parseEmphasis = function(cc,inlines) {
 
     var res = this.scanDelims(cc);
     var numdelims = res.numdelims;
+    var usedelims;
 
     if (numdelims === 0) {
         this.pos = startpos;
@@ -3366,41 +3367,36 @@ var parseEmphasis = function(cc,inlines) {
 
         if (opener.cc === cc) { // we have a match!
 
-          if (opener.numdelims <= numdelims) { // all openers used
+          if (numdelims < 3 || opener.numdelims < 3) {
+                usedelims = numdelims <= opener.numdelims ? numdelims : opener.numdelims;
+          } else { // numdelims >= 3 && opener.numdelims >= 3
+                usedelims = numdelims % 2 === 0 ? 2 : 1;
+          }
+          var X = usedelims === 1 ? Emph : Strong;
 
-            this.pos += opener.numdelims;
-            var X;
-            switch (opener.numdelims) {
-            case 3:
-                X = function(x) { return Strong([Emph(x)]); };
-                break;
-            case 2:
-                X = Strong;
-                break;
-            case 1:
-            default:
-                X = Emph;
-                break;
-            }
+          if (opener.numdelims == usedelims) { // all openers used
+
+            this.pos += usedelims;
             inlines[opener.pos] = X(inlines.slice(opener.pos + 1));
             inlines.splice(opener.pos + 1, inlines.length - (opener.pos + 1));
             // Remove entries after this, to prevent overlapping nesting:
             this.emphasis_openers = opener.previous;
             return true;
 
-          } else if (opener.numdelims > numdelims) { // only some openers used
+          } else if (opener.numdelims > usedelims) { // only some openers used
 
-            this.pos += numdelims;
-            opener.numdelims -= numdelims;
+            this.pos += usedelims;
+            opener.numdelims -= usedelims;
             inlines[opener.pos].c =
               inlines[opener.pos].c.slice(0, opener.numdelims);
-            var X = numdelims === 2 ? Strong : Emph;
             inlines[opener.pos + 1] = X(inlines.slice(opener.pos + 1));
             inlines.splice(opener.pos + 2, inlines.length - (opener.pos + 2));
             // Remove entries after this, to prevent overlapping nesting:
             this.emphasis_openers = opener;
             return true;
 
+          } else { // usedelims > opener.numdelims, should never happen
+            throw new Error("Logic error: usedelims > opener.numdelims");
           }
 
         }

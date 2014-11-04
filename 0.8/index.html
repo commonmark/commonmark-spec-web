@@ -89,7 +89,7 @@ $(document).ready(function() {
 </head>
 <body>
 <h1 class="title">CommonMark Spec</h1>
-<div class="version">Version 0.7 (2014-10-28)</div>
+<div class="version">Version 0.8 (2014-11-03)</div>
 <div class="authors">
 <span class="author">John MacFarlane</span>
 </div>
@@ -144,7 +144,7 @@ $(document).ready(function() {
 </ul></li>
 </ul>
 </div>
-<div id="watermark" style="background-color:black">This is an older version of the spec. For the most recent version, see <a href="http://spec.commonmark.org">http://spec.commonmark.org</a>.</div>
+<div id="watermark"></div>
 <h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
 <h2 id="what-is-markdown"><span class="header-section-number">1.1</span> What is Markdown?</h2>
 <p>Markdown is a plain text format for writing structured documents, based on conventions used for indicating formatting in email and usenet posts. It was developed in 2004 by John Gruber, who wrote the first Markdown-to-HTML converter in perl, and it soon became widely used in websites. By 2014 there were dozens of implementations in many languages. Some of them extended basic Markdown syntax with conventions for footnotes, definition lists, tables, and other constructs, and some allowed output not just in HTML but in LaTeX and many other formats.</p>
@@ -3667,49 +3667,41 @@ no emphasis: foo_bar_baz</code></pre>
 <ol style="list-style-type: decimal">
 <li><p>A single <code>*</code> character <a href="#can-open-emphasis">can open emphasis</a> <a id="can-open-emphasis"></a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>*</code>s,</li>
 <li>it is not followed by whitespace, and</li>
 <li>either it is not followed by a <code>*</code> character or it is followed immediately by emphasis or strong emphasis.</li>
 </ol></li>
 <li><p>A single <code>_</code> character <a href="#can-open-emphasis">can open emphasis</a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
 <li>it is not followed by whitespace,</li>
 <li>it is not preceded by an ASCII alphanumeric character, and</li>
 <li>either it is not followed by a <code>_</code> character or it is followed immediately by emphasis or strong emphasis.</li>
 </ol></li>
 <li><p>A single <code>*</code> character <a href="#can-close-emphasis">can close emphasis</a> <a id="can-close-emphasis"></a> iff</p>
-<ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>*</code>s, and</li>
+<ol start="2" style="list-style-type: lower-alpha">
 <li>it is not preceded by whitespace.</li>
 </ol></li>
 <li><p>A single <code>_</code> character <a href="#can-close-emphasis">can close emphasis</a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
 <li>it is not preceded by whitespace, and</li>
 <li>it is not followed by an ASCII alphanumeric character.</li>
 </ol></li>
 <li><p>A double <code>**</code> <a href="#can-open-strong-emphasis">can open strong emphasis</a> <a id="can-open-strong-emphasis" ></a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>*</code>s,</li>
 <li>it is not followed by whitespace, and</li>
 <li>either it is not followed by a <code>*</code> character or it is followed immediately by emphasis.</li>
 </ol></li>
 <li><p>A double <code>__</code> <a href="#can-open-strong-emphasis">can open strong emphasis</a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
 <li>it is not followed by whitespace, and</li>
 <li>it is not preceded by an ASCII alphanumeric character, and</li>
 <li>either it is not followed by a <code>_</code> character or it is followed immediately by emphasis.</li>
 </ol></li>
 <li><p>A double <code>**</code> <a href="#can-close-strong-emphasis">can close strong emphasis</a> <a id="can-close-strong-emphasis" ></a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>*</code>s, and</li>
 <li>it is not preceded by whitespace.</li>
 </ol></li>
 <li><p>A double <code>__</code> <a href="#can-close-strong-emphasis">can close strong emphasis</a> iff</p>
 <ol style="list-style-type: lower-alpha">
-<li>it is not part of a sequence of four or more unescaped <code>_</code>s,</li>
 <li>it is not preceded by whitespace, and</li>
 <li>it is not followed by an ASCII alphanumeric character.</li>
 </ol></li>
@@ -3936,381 +3928,382 @@ bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>and __foo bar __</code></pre>
 <pre class="html"><code>&lt;p&gt;and __foo bar __&lt;/p&gt;</code></pre>
 </div>
-<p>The rules imply that a sequence of four or more unescaped <code>*</code> or <code>_</code> characters will always be parsed as a literal string:</p>
+<p>The rules imply that a sequence of <code>*</code> or <code>_</code> characters surrounded by whitespace will be parsed as a literal string:</p>
 <div id="example-286" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-286">Example 286</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>****hi****</code></pre>
-<pre class="html"><code>&lt;p&gt;****hi****&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo ********</code></pre>
+<pre class="html"><code>&lt;p&gt;foo ********&lt;/p&gt;</code></pre>
 </div>
 <div id="example-287" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-287">Example 287</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_____hi_____</code></pre>
-<pre class="html"><code>&lt;p&gt;_____hi_____&lt;/p&gt;</code></pre>
-</div>
-<div id="example-288" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-288">Example 288</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>Sign here: _________</code></pre>
 <pre class="html"><code>&lt;p&gt;Sign here: _________&lt;/p&gt;</code></pre>
 </div>
 <p>The rules also imply that there can be no empty emphasis or strong emphasis:</p>
-<div id="example-289" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-288" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-289">Example 289</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-288">Example 288</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>** is not an empty emphasis</code></pre>
 <pre class="html"><code>&lt;p&gt;** is not an empty emphasis&lt;/p&gt;</code></pre>
 </div>
-<div id="example-290" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-289" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-290">Example 290</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-289">Example 289</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>**** is not an empty strong emphasis</code></pre>
 <pre class="html"><code>&lt;p&gt;**** is not an empty strong emphasis&lt;/p&gt;</code></pre>
 </div>
 <p>To include <code>*</code> or <code>_</code> in emphasized sections, use backslash escapes or code spans:</p>
-<div id="example-291" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-290" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-291">Example 291</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-290">Example 290</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*here is a \**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;here is a *&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-292" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-291" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-292">Example 292</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-291">Example 291</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>__this is a double underscore (`__`)__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;this is a double underscore (&lt;code&gt;__&lt;/code&gt;)&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Or use the other emphasis character:</p>
+<div id="example-292" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-292">Example 292</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>*_*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;_&lt;/em&gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-293" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-293">Example 293</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*_*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;_&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_*_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;*&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-294" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-294">Example 294</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_*_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;*&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*__*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;__&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-295" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-295">Example 295</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*__*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;__&lt;/em&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-296" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-296">Example 296</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>_**_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;**&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p><code>*</code> delimiters allow intra-word emphasis; <code>_</code> delimiters do not:</p>
+<div id="example-296" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-296">Example 296</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>foo*bar*baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo&lt;em&gt;bar&lt;/em&gt;baz&lt;/p&gt;</code></pre>
+</div>
 <div id="example-297" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-297">Example 297</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>foo*bar*baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo&lt;em&gt;bar&lt;/em&gt;baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo_bar_baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo_bar_baz&lt;/p&gt;</code></pre>
 </div>
 <div id="example-298" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-298">Example 298</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>foo_bar_baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo_bar_baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo__bar__baz</code></pre>
+<pre class="html"><code>&lt;p&gt;foo__bar__baz&lt;/p&gt;</code></pre>
 </div>
 <div id="example-299" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-299">Example 299</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>foo__bar__baz</code></pre>
-<pre class="html"><code>&lt;p&gt;foo__bar__baz&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>_foo_bar_baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-300" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-300">Example 300</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_foo_bar_baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>11*15*32</code></pre>
+<pre class="html"><code>&lt;p&gt;11&lt;em&gt;15&lt;/em&gt;32&lt;/p&gt;</code></pre>
 </div>
 <div id="example-301" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-301">Example 301</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>11*15*32</code></pre>
-<pre class="html"><code>&lt;p&gt;11&lt;em&gt;15&lt;/em&gt;32&lt;/p&gt;</code></pre>
-</div>
-<div id="example-302" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-302">Example 302</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>11_15_32</code></pre>
 <pre class="html"><code>&lt;p&gt;11_15_32&lt;/p&gt;</code></pre>
 </div>
 <p>Internal underscores will be ignored in underscore-delimited emphasis:</p>
-<div id="example-303" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-302" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-303">Example 303</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-302">Example 302</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>_foo_bar_baz_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo_bar_baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-304" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-303" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-304">Example 304</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-303">Example 303</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>__foo__bar__baz__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo__bar__baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The rules are sufficient for the following nesting patterns:</p>
+<div id="example-304" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-304">Example 304</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>***foo bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-305" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-305">Example 305</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo bar***</code></pre>
+<pre class="markdown"><code>___foo bar___</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-306" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-306">Example 306</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>___foo bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo** bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-307" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-307">Example 307</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo** bar*</code></pre>
+<pre class="markdown"><code>___foo__ bar_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-308" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-308">Example 308</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>___foo__ bar_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo* bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-309" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-309">Example 309</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo* bar**</code></pre>
+<pre class="markdown"><code>___foo_ bar__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-310" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-310">Example 310</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>___foo_ bar__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-311" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-311">Example 311</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="markdown"><code>_foo __bar___</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-312" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-312">Example 312</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_foo __bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo *bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-313" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-313">Example 313</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**foo *bar***</code></pre>
+<pre class="markdown"><code>__foo _bar___</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-314" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-314">Example 314</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>__foo _bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-315" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-315">Example 315</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo **bar***</code></pre>
+<pre class="markdown"><code>_foo __bar___</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-316" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-316">Example 316</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_foo __bar___</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo *bar* baz*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-317" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-317">Example 317</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo *bar* baz*</code></pre>
+<pre class="markdown"><code>_foo _bar_ baz_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-318" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-318">Example 318</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_foo _bar_ baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo **bar** baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-319" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-319">Example 319</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**foo **bar** baz**</code></pre>
+<pre class="markdown"><code>__foo __bar__ baz__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-320" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-320">Example 320</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>__foo __bar__ baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo **bar** baz*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-321" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-321">Example 321</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo **bar** baz*</code></pre>
+<pre class="markdown"><code>_foo __bar__ baz_</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-322" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-322">Example 322</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>_foo __bar__ baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;strong&gt;bar&lt;/strong&gt; baz&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo *bar* baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-323" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-323">Example 323</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**foo *bar* baz**</code></pre>
+<pre class="markdown"><code>__foo _bar_ baz__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-324" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-324">Example 324</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>__foo _bar_ baz__</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;em&gt;bar&lt;/em&gt; baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo, *bar*, baz**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-325" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-325">Example 325</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**foo, *bar*, baz**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-326" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-326">Example 326</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>__foo, _bar_, baz__</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo, &lt;em&gt;bar&lt;/em&gt;, baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>But note:</p>
-<div id="example-327" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-326" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-327">Example 327</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-326">Example 326</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo**bar**baz*</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;&lt;em&gt;bar&lt;/em&gt;&lt;em&gt;baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-328" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-327" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-328">Example 328</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-327">Example 327</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>**foo*bar*baz**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;bar&lt;/em&gt;baz**&lt;/p&gt;</code></pre>
 </div>
 <p>The difference is that in the two preceding cases, the internal delimiters <a href="#can-close-emphasis">can close emphasis</a>, while in the cases with spaces, they cannot.</p>
-<p>Note that you cannot nest emphasis directly inside emphasis using the same delimeter, or strong emphasis directly inside strong emphasis:</p>
-<div id="example-329" class="example" data-section="Emphasis and strong emphasis">
+<p>Note that you cannot nest emphasis directly inside emphasis using the same delimeter:</p>
+<div id="example-328" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-329">Example 329</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-328">Example 328</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>**foo**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>For this, you need to switch delimiters:</p>
+<div id="example-329" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-329">Example 329</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>*_foo_*</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+</div>
+<p>Strong within strong is possible without switching delimiters:</p>
 <div id="example-330" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-330">Example 330</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>****foo****</code></pre>
-<pre class="html"><code>&lt;p&gt;****foo****&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>For these nestings, you need to switch delimiters:</p>
 <div id="example-331" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-331">Example 331</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*_foo_*</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>____foo____</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>Note that a <code>*</code> followed by a <code>*</code> can close emphasis, and a <code>**</code> followed by a <code>*</code> can close strong emphasis (and similarly for <code>_</code> and <code>__</code>):</p>
 <div id="example-332" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-332">Example 332</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**__foo__**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;</code></pre>
 </div>
-<p>Note that a <code>*</code> followed by a <code>*</code> can close emphasis, and a <code>**</code> followed by a <code>*</code> can close strong emphasis (and similarly for <code>_</code> and <code>__</code>):</p>
 <div id="example-333" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-333">Example 333</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo *bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-334" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-334">Example 334</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo *bar**</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;*&lt;/p&gt;</code></pre>
 </div>
 <div id="example-335" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-335">Example 335</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**foo***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo* bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
 </div>
 <div id="example-336" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-336">Example 336</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo* bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo** bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
 <div id="example-337" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-337">Example 337</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo** bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*foo****</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;***&lt;/p&gt;</code></pre>
 </div>
 <p>The following contains no strong emphasis, because the opening delimiter is closed by the first <code>*</code> before <code>bar</code>:</p>
 <div id="example-338" class="example" data-section="Emphasis and strong emphasis">
@@ -4320,18 +4313,10 @@ bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>*foo**bar***</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
-<p>However, a string of four or more <code>****</code> can never close emphasis:</p>
+<p>We retain symmetry in these cases:</p>
 <div id="example-339" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-339">Example 339</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>*foo****</code></pre>
-<pre class="html"><code>&lt;p&gt;*foo****&lt;/p&gt;</code></pre>
-</div>
-<p>We retain symmetry in these cases:</p>
-<div id="example-340" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-340">Example 340</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo**
 
@@ -4339,9 +4324,9 @@ bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;/em&gt;*&lt;/p&gt;
 &lt;p&gt;*&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-341" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-340" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-341">Example 341</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-340">Example 340</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo *bar**
 
@@ -4349,97 +4334,117 @@ bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo &lt;em&gt;bar&lt;/em&gt;&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;&lt;em&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>More cases with mismatched delimiters:</p>
+<div id="example-341" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-341">Example 341</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>**foo***
+
+***foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo&lt;/strong&gt;*&lt;/p&gt;
+&lt;p&gt;*&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-342" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-342">Example 342</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**foo **bar****
+
+****foo** bar**</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;foo &lt;strong&gt;bar&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;&lt;strong&gt;foo&lt;/strong&gt; bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>More cases with mismatched delimiters:</p>
 <div id="example-343" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-343">Example 343</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo*</code></pre>
-<pre class="html"><code>&lt;p&gt;**&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;bar&lt;/em&gt;**&lt;/p&gt;</code></pre>
 </div>
 <div id="example-344" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-344">Example 344</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>**bar***</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;strong&gt;bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo*</code></pre>
+<pre class="html"><code>&lt;p&gt;**&lt;em&gt;foo&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-345" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-345">Example 345</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo**</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>**bar***</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;strong&gt;bar&lt;/strong&gt;*&lt;/p&gt;</code></pre>
 </div>
 <div id="example-346" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-346">Example 346</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>***foo *bar*</code></pre>
-<pre class="html"><code>&lt;p&gt;***foo &lt;em&gt;bar&lt;/em&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo**</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;strong&gt;foo&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>The following cases illustrate rule 13:</p>
 <div id="example-347" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-347">Example 347</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*foo _bar* baz_</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo _bar&lt;/em&gt; baz_&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>***foo *bar*</code></pre>
+<pre class="html"><code>&lt;p&gt;***foo &lt;em&gt;bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>The following cases illustrate rule 13:</p>
 <div id="example-348" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-348">Example 348</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>*foo _bar* baz_</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;em&gt;foo _bar&lt;/em&gt; baz_&lt;/p&gt;</code></pre>
+</div>
+<div id="example-349" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-349">Example 349</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>**foo bar* baz**</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;&lt;em&gt;foo bar&lt;/em&gt; baz&lt;/em&gt;*&lt;/p&gt;</code></pre>
 </div>
 <p>The following cases illustrate rule 14:</p>
-<div id="example-349" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-350" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-349">Example 349</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-350">Example 350</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>**foo **bar baz**</code></pre>
 <pre class="html"><code>&lt;p&gt;**foo &lt;strong&gt;bar baz&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-350" class="example" data-section="Emphasis and strong emphasis">
+<div id="example-351" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
-<a href="#example-350">Example 350</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-351">Example 351</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo *bar baz*</code></pre>
 <pre class="html"><code>&lt;p&gt;*foo &lt;em&gt;bar baz&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The following cases illustrate rule 15:</p>
-<div id="example-351" class="example" data-section="Emphasis and strong emphasis">
-<div class="examplenum">
-<a href="#example-351">Example 351</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>*[foo*](bar)</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;bar&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-352" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-352">Example 352</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*![foo*](bar)</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;bar&quot; alt=&quot;foo*&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*[foo*](bar)</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;bar&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-353" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-353">Example 353</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>*![foo*](bar)</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;bar&quot; alt=&quot;foo*&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-354" class="example" data-section="Emphasis and strong emphasis">
 <div class="examplenum">
 <a href="#example-354">Example 354</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;*&lt;img src=&quot;foo&quot; title=&quot;*&quot;/&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-355" class="example" data-section="Emphasis and strong emphasis">
+<div class="examplenum">
+<a href="#example-355">Example 355</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*a`a*`</code></pre>
 <pre class="html"><code>&lt;p&gt;*a&lt;code&gt;a*&lt;/code&gt;&lt;/p&gt;</code></pre>
@@ -4471,55 +4476,55 @@ bar&lt;/strong&gt;&lt;/p&gt;</code></pre>
 </ul>
 <p>An <a href="#inline-link">inline link</a> <a id="inline-link"></a> consists of a <a href="#link-label">link label</a> followed immediately by a left parenthesis <code>(</code>, optional whitespace, an optional <a href="#link-destination">link destination</a>, an optional <a href="#link-title">link title</a> separated from the link destination by whitespace, optional whitespace, and a right parenthesis <code>)</code>. The link’s text consists of the label (excluding the enclosing square brackets) parsed as inlines. The link’s URI consists of the link destination, excluding enclosing <code>&lt;...&gt;</code> if present, with backslash-escapes in effect as described above. The link’s title consists of the link title, excluding its enclosing delimiters, with backslash-escapes in effect as described above.</p>
 <p>Here is a simple inline link:</p>
-<div id="example-355" class="example" data-section="Links">
+<div id="example-356" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-355">Example 355</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-356">Example 356</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/uri &quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The title may be omitted:</p>
-<div id="example-356" class="example" data-section="Links">
+<div id="example-357" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-356">Example 356</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-357">Example 357</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/uri)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Both the title and the destination may be omitted:</p>
-<div id="example-357" class="example" data-section="Links">
+<div id="example-358" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-357">Example 357</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-358">Example 358</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link]()</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-358" class="example" data-section="Links">
+<div id="example-359" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-358">Example 358</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-359">Example 359</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](&lt;&gt;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If the destination contains spaces, it must be enclosed in pointy braces:</p>
-<div id="example-359" class="example" data-section="Links">
+<div id="example-360" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-359">Example 359</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-360">Example 360</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/my uri)</code></pre>
 <pre class="html"><code>&lt;p&gt;[link](/my uri)&lt;/p&gt;</code></pre>
 </div>
-<div id="example-360" class="example" data-section="Links">
+<div id="example-361" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-360">Example 360</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-361">Example 361</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](&lt;/my uri&gt;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/my%20uri&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The destination cannot contain line breaks, even with pointy braces:</p>
-<div id="example-361" class="example" data-section="Links">
+<div id="example-362" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-361">Example 361</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-362">Example 362</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](foo
 bar)</code></pre>
@@ -4527,63 +4532,63 @@ bar)</code></pre>
 bar)&lt;/p&gt;</code></pre>
 </div>
 <p>One level of balanced parentheses is allowed without escaping:</p>
-<div id="example-362" class="example" data-section="Links">
+<div id="example-363" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-362">Example 362</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-363">Example 363</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link]((foo)and(bar))</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;(foo)and(bar)&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>However, if you have parentheses within parentheses, you need to escape or use the <code>&lt;...&gt;</code> form:</p>
-<div id="example-363" class="example" data-section="Links">
-<div class="examplenum">
-<a href="#example-363">Example 363</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>[link](foo(and(bar)))</code></pre>
-<pre class="html"><code>&lt;p&gt;[link](foo(and(bar)))&lt;/p&gt;</code></pre>
-</div>
 <div id="example-364" class="example" data-section="Links">
 <div class="examplenum">
 <a href="#example-364">Example 364</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>[link](foo(and\(bar\)))</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo(and(bar))&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>[link](foo(and(bar)))</code></pre>
+<pre class="html"><code>&lt;p&gt;[link](foo(and(bar)))&lt;/p&gt;</code></pre>
 </div>
 <div id="example-365" class="example" data-section="Links">
 <div class="examplenum">
 <a href="#example-365">Example 365</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
+<pre class="markdown"><code>[link](foo(and\(bar\)))</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo(and(bar))&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-366" class="example" data-section="Links">
+<div class="examplenum">
+<a href="#example-366">Example 366</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
 <pre class="markdown"><code>[link](&lt;foo(and(bar))&gt;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo(and(bar))&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Parentheses and other symbols can also be escaped, as usual in Markdown:</p>
-<div id="example-366" class="example" data-section="Links">
+<div id="example-367" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-366">Example 366</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-367">Example 367</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](foo\)\:)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo):&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>URL-escaping should be left alone inside the destination, as all URL-escaped characters are also valid URL characters. HTML entities in the destination will be parsed into their UTF-8 codepoints, as usual, and optionally URL-escaped when written as HTML.</p>
-<div id="example-367" class="example" data-section="Links">
+<div id="example-368" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-367">Example 367</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-368">Example 368</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](foo%20b&amp;auml;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo%20b%C3%A4&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that, because titles can often be parsed as destinations, if you try to omit the destination and keep the title, you’ll get unexpected results:</p>
-<div id="example-368" class="example" data-section="Links">
+<div id="example-369" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-368">Example 368</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-369">Example 369</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](&quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;%22title%22&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Titles may be in single quotes, double quotes, or parentheses:</p>
-<div id="example-369" class="example" data-section="Links">
+<div id="example-370" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-369">Example 369</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-370">Example 370</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/url &quot;title&quot;)
 [link](/url &#39;title&#39;)
@@ -4593,51 +4598,51 @@ bar)&lt;/p&gt;</code></pre>
 &lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes and entities may be used in titles:</p>
-<div id="example-370" class="example" data-section="Links">
+<div id="example-371" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-370">Example 370</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-371">Example 371</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/url &quot;title \&quot;&amp;quot;&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title &amp;quot;&amp;quot;&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Nested balanced quotes are not allowed without escaping:</p>
-<div id="example-371" class="example" data-section="Links">
+<div id="example-372" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-371">Example 371</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-372">Example 372</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/url &quot;title &quot;and&quot; title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;[link](/url &amp;quot;title &amp;quot;and&amp;quot; title&amp;quot;)&lt;/p&gt;</code></pre>
 </div>
 <p>But it is easy to work around this by using a different quote type:</p>
-<div id="example-372" class="example" data-section="Links">
+<div id="example-373" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-372">Example 372</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-373">Example 373</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](/url &#39;title &quot;and&quot; title&#39;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title &amp;quot;and&amp;quot; title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>(Note: <code>Markdown.pl</code> did allow double quotes inside a double-quoted title, and its test suite included a test demonstrating this. But it is hard to see a good rationale for the extra complexity this brings, since there are already many ways—backslash escaping, entities, or using a different quote type for the enclosing title—to write titles containing double quotes. <code>Markdown.pl</code>’s handling of titles has a number of other strange features. For example, it allows single-quoted titles in inline links, but not reference links. And, in reference links but not inline links, it allows a title to begin with <code>&quot;</code> and end with <code>)</code>. <code>Markdown.pl</code> 1.0.1 even allows titles with no closing quotation mark, though 1.0.2b8 does not. It seems preferable to adopt a simple, rational rule that works the same way in inline links and link reference definitions.)</p>
 <p>Whitespace is allowed around the destination and title:</p>
-<div id="example-373" class="example" data-section="Links">
+<div id="example-374" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-373">Example 373</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-374">Example 374</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link](   /uri
   &quot;title&quot;  )</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/uri&quot; title=&quot;title&quot;&gt;link&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>But it is not allowed between the link label and the following parenthesis:</p>
-<div id="example-374" class="example" data-section="Links">
+<div id="example-375" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-374">Example 374</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-375">Example 375</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[link] (/uri)</code></pre>
 <pre class="html"><code>&lt;p&gt;[link] (/uri)&lt;/p&gt;</code></pre>
 </div>
 <p>Note that this is not a link, because the closing <code>]</code> occurs in an HTML tag:</p>
-<div id="example-375" class="example" data-section="Links">
+<div id="example-376" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-375">Example 375</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-376">Example 376</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo &lt;bar attr=&quot;](baz)&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo &lt;bar attr=&quot;](baz)&quot;&gt;&lt;/p&gt;</code></pre>
@@ -4647,9 +4652,9 @@ bar)&lt;/p&gt;</code></pre>
 <p>One label <a href="#matches">matches</a> <a id="matches"></a> another just in case their normalized forms are equal. To normalize a label, perform the <em>unicode case fold</em> and collapse consecutive internal whitespace to a single space. If there are multiple matching reference link definitions, the one that comes first in the document is used. (It is desirable in such cases to emit a warning.)</p>
 <p>The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching <a href="#link-reference-definition">link reference definition</a>.</p>
 <p>Here is a simple example:</p>
-<div id="example-376" class="example" data-section="Links">
+<div id="example-377" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-376">Example 376</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-377">Example 377</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar]
 
@@ -4657,9 +4662,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The first label can contain inline content:</p>
-<div id="example-377" class="example" data-section="Links">
+<div id="example-378" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-377">Example 377</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-378">Example 378</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[*foo\!*][bar]
 
@@ -4667,9 +4672,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo!&lt;/em&gt;&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Matching is case-insensitive:</p>
-<div id="example-378" class="example" data-section="Links">
+<div id="example-379" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-378">Example 378</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-379">Example 379</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][BaR]
 
@@ -4677,9 +4682,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Unicode case fold is used:</p>
-<div id="example-379" class="example" data-section="Links">
+<div id="example-380" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-379">Example 379</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-380">Example 380</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[Толпой][Толпой] is a Russian word.
 
@@ -4687,9 +4692,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;Толпой&lt;/a&gt; is a Russian word.&lt;/p&gt;</code></pre>
 </div>
 <p>Consecutive internal whitespace is treated as one space for purposes of determining matching:</p>
-<div id="example-380" class="example" data-section="Links">
+<div id="example-381" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-380">Example 380</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-381">Example 381</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[Foo
   bar]: /url
@@ -4698,18 +4703,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;Baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>There can be whitespace between the two labels:</p>
-<div id="example-381" class="example" data-section="Links">
+<div id="example-382" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-381">Example 381</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-382">Example 382</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo] [bar]
 
 [bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-382" class="example" data-section="Links">
+<div id="example-383" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-382">Example 382</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-383">Example 383</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo]
 [bar]
@@ -4718,9 +4723,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>When there are multiple matching <a href="#link-reference-definition">link reference definitions</a>, the first is used:</p>
-<div id="example-383" class="example" data-section="Links">
+<div id="example-384" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-383">Example 383</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-384">Example 384</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo]: /url1
 
@@ -4730,9 +4735,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url1&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that matching is performed on normalized strings, not parsed inline content. So the following does not match, even though the labels define equivalent inline content:</p>
-<div id="example-384" class="example" data-section="Links">
+<div id="example-385" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-384">Example 384</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-385">Example 385</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[bar][foo\!]
 
@@ -4740,18 +4745,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[bar][foo!]&lt;/p&gt;</code></pre>
 </div>
 <p>A <a href="#collapsed-reference-link">collapsed reference link</a> <a id="collapsed-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document, optional whitespace, and the string <code>[]</code>. The contents of the first link label are parsed as inlines, which are used as the link’s text. The link’s URI and title are provided by the matching reference link definition. Thus, <code>[foo][]</code> is equivalent to <code>[foo][foo]</code>.</p>
-<div id="example-385" class="example" data-section="Links">
+<div id="example-386" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-385">Example 385</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-386">Example 386</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-386" class="example" data-section="Links">
+<div id="example-387" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-386">Example 386</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-387">Example 387</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[*foo* bar][]
 
@@ -4759,9 +4764,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-387" class="example" data-section="Links">
+<div id="example-388" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-387">Example 387</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-388">Example 388</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[Foo][]
 
@@ -4769,9 +4774,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;Foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
-<div id="example-388" class="example" data-section="Links">
+<div id="example-389" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-388">Example 388</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-389">Example 389</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo] 
 []
@@ -4780,27 +4785,27 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>A <a href="#shortcut-reference-link">shortcut reference link</a> <a id="shortcut-reference-link"></a> consists of a <a href="#link-label">link label</a> that <a href="#matches">matches</a> a <a href="#link-reference-definition">link reference definition</a> elsewhere in the document and is not followed by <code>[]</code> or a link label. The contents of the first link label are parsed as inlines, which are used as the link’s text. the link’s URI and title are provided by the matching link reference definition. Thus, <code>[foo]</code> is equivalent to <code>[foo][]</code>.</p>
-<div id="example-389" class="example" data-section="Links">
+<div id="example-390" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-389">Example 389</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-390">Example 390</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-390" class="example" data-section="Links">
+<div id="example-391" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-390">Example 390</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-391">Example 391</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[*foo* bar]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-391" class="example" data-section="Links">
+<div id="example-392" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-391">Example 391</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-392">Example 392</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[[*foo* bar]]
 
@@ -4808,9 +4813,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;&lt;em&gt;foo&lt;/em&gt; bar&lt;/a&gt;]&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-392" class="example" data-section="Links">
+<div id="example-393" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-392">Example 392</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-393">Example 393</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[Foo]
 
@@ -4818,9 +4823,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot; title=&quot;title&quot;&gt;Foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:</p>
-<div id="example-393" class="example" data-section="Links">
+<div id="example-394" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-393">Example 393</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-394">Example 394</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\[foo]
 
@@ -4828,9 +4833,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo]&lt;/p&gt;</code></pre>
 </div>
 <p>Note that this is a link, because link labels bind more tightly than emphasis:</p>
-<div id="example-394" class="example" data-section="Links">
+<div id="example-395" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-394">Example 394</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-395">Example 395</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo*]: /url
 
@@ -4838,9 +4843,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;*&lt;a href=&quot;/url&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>However, this is not, because link labels bind less tightly than code backticks:</p>
-<div id="example-395" class="example" data-section="Links">
+<div id="example-396" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-395">Example 395</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-396">Example 396</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo`]: /url
 
@@ -4848,18 +4853,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo&lt;code&gt;]&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Link labels can contain matched square brackets:</p>
-<div id="example-396" class="example" data-section="Links">
+<div id="example-397" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-396">Example 396</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-397">Example 397</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[[[foo]]]
 
 [[[foo]]]: /url</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;[[foo]]&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-397" class="example" data-section="Links">
+<div id="example-398" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-397">Example 397</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-398">Example 398</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[[[foo]]]
 
@@ -4868,9 +4873,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url1&quot;&gt;[[foo]]&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>For non-matching brackets, use backslash escapes:</p>
-<div id="example-398" class="example" data-section="Links">
+<div id="example-399" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-398">Example 398</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-399">Example 399</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[\[foo]
 
@@ -4878,9 +4883,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url&quot;&gt;[foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Full references take precedence over shortcut references:</p>
-<div id="example-399" class="example" data-section="Links">
+<div id="example-400" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-399">Example 399</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-400">Example 400</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar]
 
@@ -4889,9 +4894,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>In the following case <code>[bar][baz]</code> is parsed as a reference, <code>[foo]</code> as normal text:</p>
-<div id="example-400" class="example" data-section="Links">
+<div id="example-401" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-400">Example 400</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-401">Example 401</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4899,9 +4904,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo]&lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here, though, <code>[foo][bar]</code> is parsed as a reference, since <code>[bar]</code> is defined:</p>
-<div id="example-401" class="example" data-section="Links">
+<div id="example-402" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-401">Example 401</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-402">Example 402</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4910,9 +4915,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;a href=&quot;/url1&quot;&gt;baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here <code>[foo]</code> is not parsed as a shortcut reference, because it is followed by a link label (even though <code>[bar]</code> is not defined):</p>
-<div id="example-402" class="example" data-section="Links">
+<div id="example-403" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-402">Example 402</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-403">Example 403</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -4922,27 +4927,18 @@ bar)&lt;/p&gt;</code></pre>
 </div>
 <h2 id="images"><span class="header-section-number">6.6</span> Images</h2>
 <p>An (unescaped) exclamation mark (<code>!</code>) followed by a reference or inline link will be parsed as an image. The link label will be used as the image’s alt text, and the link title, if any, will be used as the image’s title.</p>
-<div id="example-403" class="example" data-section="Images">
-<div class="examplenum">
-<a href="#example-403">Example 403</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>![foo](/url &quot;title&quot;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-404" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-404">Example 404</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo *bar*]
-
-[foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>![foo](/url &quot;title&quot;)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-405" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-405">Example 405</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo *bar*][]
+<pre class="markdown"><code>![foo *bar*]
 
 [foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
@@ -4951,52 +4947,61 @@ bar)&lt;/p&gt;</code></pre>
 <div class="examplenum">
 <a href="#example-406">Example 406</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo *bar*][foobar]
+<pre class="markdown"><code>![foo *bar*][]
 
-[FOOBAR]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
+[foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-407" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-407">Example 407</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo](train.jpg)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>![foo *bar*][foobar]
+
+[FOOBAR]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-408" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-408">Example 408</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>My ![foo bar](/path/to/train.jpg  &quot;title&quot;   )</code></pre>
-<pre class="html"><code>&lt;p&gt;My &lt;img src=&quot;/path/to/train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>![foo](train.jpg)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-409" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-409">Example 409</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>My ![foo bar](/path/to/train.jpg  &quot;title&quot;   )</code></pre>
+<pre class="html"><code>&lt;p&gt;My &lt;img src=&quot;/path/to/train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-410" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-410">Example 410</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
+<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-411" class="example" data-section="Images">
+<div class="examplenum">
+<a href="#example-411">Example 411</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
 <pre class="markdown"><code>![](/url)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Reference-style:</p>
-<div id="example-411" class="example" data-section="Images">
+<div id="example-412" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-411">Example 411</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-412">Example 412</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo] [bar]
 
 [bar]: /url</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-412" class="example" data-section="Images">
+<div id="example-413" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-412">Example 412</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-413">Example 413</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo] [bar]
 
@@ -5004,18 +5009,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Collapsed:</p>
-<div id="example-413" class="example" data-section="Images">
+<div id="example-414" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-413">Example 413</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-414">Example 414</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo][]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-414" class="example" data-section="Images">
+<div id="example-415" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-414">Example 414</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-415">Example 415</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![*foo* bar][]
 
@@ -5023,9 +5028,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The labels are case-insensitive:</p>
-<div id="example-415" class="example" data-section="Images">
+<div id="example-416" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-415">Example 415</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-416">Example 416</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![Foo][]
 
@@ -5033,9 +5038,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;Foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
-<div id="example-416" class="example" data-section="Images">
+<div id="example-417" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-416">Example 416</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-417">Example 417</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo] 
 []
@@ -5044,27 +5049,27 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Shortcut:</p>
-<div id="example-417" class="example" data-section="Images">
+<div id="example-418" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-417">Example 417</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-418">Example 418</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo]
 
 [foo]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-418" class="example" data-section="Images">
+<div id="example-419" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-418">Example 418</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-419">Example 419</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![*foo* bar]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-419" class="example" data-section="Images">
+<div id="example-420" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-419">Example 419</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-420">Example 420</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![[foo]]
 
@@ -5072,9 +5077,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;[foo]&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-420" class="example" data-section="Images">
+<div id="example-421" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-420">Example 420</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-421">Example 421</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![Foo]
 
@@ -5082,9 +5087,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;Foo&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If you just want bracketed text, you can backslash-escape the opening <code>!</code> and <code>[</code>:</p>
-<div id="example-421" class="example" data-section="Images">
+<div id="example-422" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-421">Example 421</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-422">Example 422</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\!\[foo]
 
@@ -5092,9 +5097,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;![foo]&lt;/p&gt;</code></pre>
 </div>
 <p>If you want a link after a literal <code>!</code>, backslash-escape the <code>!</code>:</p>
-<div id="example-422" class="example" data-section="Images">
+<div id="example-423" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-422">Example 422</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-423">Example 423</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\![foo]
 
@@ -5107,39 +5112,39 @@ bar)&lt;/p&gt;</code></pre>
 <p>An <a href="#absolute-uri">absolute URI</a>, <a id="absolute-uri"></a> for these purposes, consists of a <a href="#scheme">scheme</a> followed by a colon (<code>:</code>) followed by zero or more characters other than ASCII whitespace and control characters, <code>&lt;</code>, and <code>&gt;</code>. If the URI includes these characters, you must use percent-encoding (e.g. <code>%20</code> for a space).</p>
 <p>The following <a href="#scheme">schemes</a> <a id="scheme"></a> are recognized (case-insensitive): <code>coap</code>, <code>doi</code>, <code>javascript</code>, <code>aaa</code>, <code>aaas</code>, <code>about</code>, <code>acap</code>, <code>cap</code>, <code>cid</code>, <code>crid</code>, <code>data</code>, <code>dav</code>, <code>dict</code>, <code>dns</code>, <code>file</code>, <code>ftp</code>, <code>geo</code>, <code>go</code>, <code>gopher</code>, <code>h323</code>, <code>http</code>, <code>https</code>, <code>iax</code>, <code>icap</code>, <code>im</code>, <code>imap</code>, <code>info</code>, <code>ipp</code>, <code>iris</code>, <code>iris.beep</code>, <code>iris.xpc</code>, <code>iris.xpcs</code>, <code>iris.lwz</code>, <code>ldap</code>, <code>mailto</code>, <code>mid</code>, <code>msrp</code>, <code>msrps</code>, <code>mtqp</code>, <code>mupdate</code>, <code>news</code>, <code>nfs</code>, <code>ni</code>, <code>nih</code>, <code>nntp</code>, <code>opaquelocktoken</code>, <code>pop</code>, <code>pres</code>, <code>rtsp</code>, <code>service</code>, <code>session</code>, <code>shttp</code>, <code>sieve</code>, <code>sip</code>, <code>sips</code>, <code>sms</code>, <code>snmp</code>,<code>soap.beep</code>, <code>soap.beeps</code>, <code>tag</code>, <code>tel</code>, <code>telnet</code>, <code>tftp</code>, <code>thismessage</code>, <code>tn3270</code>, <code>tip</code>, <code>tv</code>, <code>urn</code>, <code>vemmi</code>, <code>ws</code>, <code>wss</code>, <code>xcon</code>, <code>xcon-userid</code>, <code>xmlrpc.beep</code>, <code>xmlrpc.beeps</code>, <code>xmpp</code>, <code>z39.50r</code>, <code>z39.50s</code>, <code>adiumxtra</code>, <code>afp</code>, <code>afs</code>, <code>aim</code>, <code>apt</code>,<code>attachment</code>, <code>aw</code>, <code>beshare</code>, <code>bitcoin</code>, <code>bolo</code>, <code>callto</code>, <code>chrome</code>,<code>chrome-extension</code>, <code>com-eventbrite-attendee</code>, <code>content</code>, <code>cvs</code>,<code>dlna-playsingle</code>, <code>dlna-playcontainer</code>, <code>dtn</code>, <code>dvb</code>, <code>ed2k</code>, <code>facetime</code>, <code>feed</code>, <code>finger</code>, <code>fish</code>, <code>gg</code>, <code>git</code>, <code>gizmoproject</code>, <code>gtalk</code>, <code>hcp</code>, <code>icon</code>, <code>ipn</code>, <code>irc</code>, <code>irc6</code>, <code>ircs</code>, <code>itms</code>, <code>jar</code>, <code>jms</code>, <code>keyparc</code>, <code>lastfm</code>, <code>ldaps</code>, <code>magnet</code>, <code>maps</code>, <code>market</code>,<code>message</code>, <code>mms</code>, <code>ms-help</code>, <code>msnim</code>, <code>mumble</code>, <code>mvn</code>, <code>notes</code>, <code>oid</code>, <code>palm</code>, <code>paparazzi</code>, <code>platform</code>, <code>proxy</code>, <code>psyc</code>, <code>query</code>, <code>res</code>, <code>resource</code>, <code>rmi</code>, <code>rsync</code>, <code>rtmp</code>, <code>secondlife</code>, <code>sftp</code>, <code>sgn</code>, <code>skype</code>, <code>smb</code>, <code>soldat</code>, <code>spotify</code>, <code>ssh</code>, <code>steam</code>, <code>svn</code>, <code>teamspeak</code>, <code>things</code>, <code>udp</code>, <code>unreal</code>, <code>ut2004</code>, <code>ventrilo</code>, <code>view-source</code>, <code>webcal</code>, <code>wtai</code>, <code>wyciwyg</code>, <code>xfire</code>, <code>xri</code>, <code>ymsgr</code>.</p>
 <p>Here are some valid autolinks:</p>
-<div id="example-423" class="example" data-section="Autolinks">
-<div class="examplenum">
-<a href="#example-423">Example 423</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>&lt;http://foo.bar.baz&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz&quot;&gt;http://foo.bar.baz&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-424" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-424">Example 424</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;http://foo.bar.baz?q=hello&amp;id=22&amp;boolean&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&quot;&gt;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;http://foo.bar.baz&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz&quot;&gt;http://foo.bar.baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-425" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-425">Example 425</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
+<pre class="markdown"><code>&lt;http://foo.bar.baz?q=hello&amp;id=22&amp;boolean&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a href=&quot;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&quot;&gt;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&lt;/a&gt;&lt;/p&gt;</code></pre>
+</div>
+<div id="example-426" class="example" data-section="Autolinks">
+<div class="examplenum">
+<a href="#example-426">Example 426</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
 <pre class="markdown"><code>&lt;irc://foo.bar:2233/baz&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;irc://foo.bar:2233/baz&quot;&gt;irc://foo.bar:2233/baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Uppercase is also fine:</p>
-<div id="example-426" class="example" data-section="Autolinks">
+<div id="example-427" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-426">Example 426</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-427">Example 427</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;MAILTO:FOO@BAR.BAZ&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;MAILTO:FOO@BAR.BAZ&quot;&gt;MAILTO:FOO@BAR.BAZ&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces are not allowed in autolinks:</p>
-<div id="example-427" class="example" data-section="Autolinks">
+<div id="example-428" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-427">Example 427</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-428">Example 428</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar/baz bim&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;http://foo.bar/baz bim&amp;gt;&lt;/p&gt;</code></pre>
@@ -5149,66 +5154,66 @@ bar)&lt;/p&gt;</code></pre>
 <pre><code>/^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?
 (?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/</code></pre>
 <p>Examples of email autolinks:</p>
-<div id="example-428" class="example" data-section="Autolinks">
+<div id="example-429" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-428">Example 428</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-429">Example 429</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;foo@bar.example.com&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo@bar.example.com&quot;&gt;foo@bar.example.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-429" class="example" data-section="Autolinks">
+<div id="example-430" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-429">Example 429</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-430">Example 430</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;foo+special@Bar.baz-bar0.com&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;mailto:foo+special@Bar.baz-bar0.com&quot;&gt;foo+special@Bar.baz-bar0.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>These are not autolinks:</p>
-<div id="example-430" class="example" data-section="Autolinks">
-<div class="examplenum">
-<a href="#example-430">Example 430</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>&lt;&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
-</div>
 <div id="example-431" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-431">Example 431</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-432" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-432">Example 432</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt; http://foo.bar &gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt; http://foo.bar &amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-433" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-433">Example 433</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt; http://foo.bar &gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt; http://foo.bar &amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-434" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-434">Example 434</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-435" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-435">Example 435</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>http://example.com</code></pre>
-<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-436" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-436">Example 436</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>http://example.com</code></pre>
+<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
+</div>
+<div id="example-437" class="example" data-section="Autolinks">
+<div class="examplenum">
+<a href="#example-437">Example 437</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo@bar.example.com</code></pre>
 <pre class="html"><code>&lt;p&gt;foo@bar.example.com&lt;/p&gt;</code></pre>
@@ -5232,25 +5237,25 @@ bar)&lt;/p&gt;</code></pre>
 <p>A <a href="#cdata-section">CDATA section</a> <a id="cdata-section"></a> consists of the string <code>&lt;![CDATA[</code>, a string of characters not including the string <code>]]&gt;</code>, and the string <code>]]&gt;</code>.</p>
 <p>An <a href="#html-tag">HTML tag</a> <a id="html-tag"></a> consists of an <a href="#open-tag">open tag</a>, a <a href="#closing-tag">closing tag</a>, an <a href="#html-comment">HTML comment</a>, a <a href="#processing-instruction">processing instruction</a>, an <a href="#element-type-declaration">element type declaration</a>, or a <a href="#cdata-section">CDATA section</a>.</p>
 <p>Here are some simple open tags:</p>
-<div id="example-437" class="example" data-section="Raw HTML">
+<div id="example-438" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-437">Example 437</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-438">Example 438</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Empty elements:</p>
-<div id="example-438" class="example" data-section="Raw HTML">
+<div id="example-439" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-438">Example 438</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-439">Example 439</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a/&gt;&lt;b2/&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a/&gt;&lt;b2/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Whitespace is allowed:</p>
-<div id="example-439" class="example" data-section="Raw HTML">
+<div id="example-440" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-439">Example 439</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-440">Example 440</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a  /&gt;&lt;b2
 data=&quot;foo&quot; &gt;</code></pre>
@@ -5258,9 +5263,9 @@ data=&quot;foo&quot; &gt;</code></pre>
 data=&quot;foo&quot; &gt;&lt;/p&gt;</code></pre>
 </div>
 <p>With attributes:</p>
-<div id="example-440" class="example" data-section="Raw HTML">
+<div id="example-441" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-440">Example 440</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-441">Example 441</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a foo=&quot;bar&quot; bam = &#39;baz &lt;em&gt;&quot;&lt;/em&gt;&#39;
 _boolean zoop:33=zoop:33 /&gt;</code></pre>
@@ -5268,33 +5273,33 @@ _boolean zoop:33=zoop:33 /&gt;</code></pre>
 _boolean zoop:33=zoop:33 /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal tag names, not parsed as HTML:</p>
-<div id="example-441" class="example" data-section="Raw HTML">
+<div id="example-442" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-441">Example 441</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-442">Example 442</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;33&gt; &lt;__&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;33&amp;gt; &amp;lt;__&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute names:</p>
-<div id="example-442" class="example" data-section="Raw HTML">
+<div id="example-443" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-442">Example 442</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-443">Example 443</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a h*#ref=&quot;hi&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a h*#ref=&amp;quot;hi&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute values:</p>
-<div id="example-443" class="example" data-section="Raw HTML">
+<div id="example-444" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-443">Example 443</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-444">Example 444</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;hi&#39;&gt; &lt;a href=hi&#39;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&amp;quot;hi&#39;&amp;gt; &amp;lt;a href=hi&#39;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal whitespace:</p>
-<div id="example-444" class="example" data-section="Raw HTML">
+<div id="example-445" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-444">Example 444</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-445">Example 445</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt; a&gt;&lt;
 foo&gt;&lt;bar/ &gt;</code></pre>
@@ -5302,17 +5307,17 @@ foo&gt;&lt;bar/ &gt;</code></pre>
 foo&amp;gt;&amp;lt;bar/ &amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Missing whitespace:</p>
-<div id="example-445" class="example" data-section="Raw HTML">
+<div id="example-446" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-445">Example 445</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-446">Example 446</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&#39;bar&#39;title=title&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&#39;bar&#39;title=title&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Closing tags:</p>
-<div id="example-446" class="example" data-section="Raw HTML">
+<div id="example-447" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-446">Example 446</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-447">Example 447</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;/a&gt;
 &lt;/foo &gt;</code></pre>
@@ -5320,82 +5325,82 @@ foo&amp;gt;&amp;lt;bar/ &amp;gt;&lt;/p&gt;</code></pre>
 &lt;/foo &gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attributes in closing tag:</p>
-<div id="example-447" class="example" data-section="Raw HTML">
+<div id="example-448" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-447">Example 447</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-448">Example 448</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;/a href=&quot;foo&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;/a href=&amp;quot;foo&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Comments:</p>
-<div id="example-448" class="example" data-section="Raw HTML">
+<div id="example-449" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-448">Example 448</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-449">Example 449</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo &lt;!-- this is a
 comment - with hyphen --&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;!-- this is a
 comment - with hyphen --&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-449" class="example" data-section="Raw HTML">
+<div id="example-450" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-449">Example 449</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-450">Example 450</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo &lt;!-- not a comment -- two hyphens --&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &amp;lt;!-- not a comment -- two hyphens --&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Processing instructions:</p>
-<div id="example-450" class="example" data-section="Raw HTML">
+<div id="example-451" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-450">Example 450</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-451">Example 451</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo &lt;?php echo $a; ?&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;?php echo $a; ?&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Declarations:</p>
-<div id="example-451" class="example" data-section="Raw HTML">
+<div id="example-452" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-451">Example 451</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-452">Example 452</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo &lt;!ELEMENT br EMPTY&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;!ELEMENT br EMPTY&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>CDATA sections:</p>
-<div id="example-452" class="example" data-section="Raw HTML">
+<div id="example-453" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-452">Example 452</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-453">Example 453</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo &lt;![CDATA[&gt;&amp;&lt;]]&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo &lt;![CDATA[&gt;&amp;&lt;]]&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Entities are preserved in HTML attributes:</p>
-<div id="example-453" class="example" data-section="Raw HTML">
+<div id="example-454" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-453">Example 453</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-454">Example 454</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;&amp;ouml;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;&amp;ouml;&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes do not work in HTML attributes:</p>
-<div id="example-454" class="example" data-section="Raw HTML">
+<div id="example-455" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-454">Example 454</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-455">Example 455</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;\*&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;\*&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-455" class="example" data-section="Raw HTML">
+<div id="example-456" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-455">Example 455</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-456">Example 456</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;\&quot;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a href=&amp;quot;&amp;quot;&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="hard-line-breaks"><span class="header-section-number">6.9</span> Hard line breaks</h2>
 <p>A line break (not in a code span or HTML tag) that is preceded by two or more spaces is parsed as a <a href="#hard-line-break">hard line break</a><a id="hard-line-break"></a> (rendered in HTML as a <code>&lt;br /&gt;</code> tag):</p>
-<div id="example-456" class="example" data-section="Hard line breaks">
+<div id="example-457" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-456">Example 456</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-457">Example 457</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo  
 baz</code></pre>
@@ -5403,9 +5408,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>For a more visible alternative, a backslash before the newline may be used instead of two spaces:</p>
-<div id="example-457" class="example" data-section="Hard line breaks">
+<div id="example-458" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-457">Example 457</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-458">Example 458</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo\
 baz</code></pre>
@@ -5413,9 +5418,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>More than two spaces can be used:</p>
-<div id="example-458" class="example" data-section="Hard line breaks">
+<div id="example-459" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-458">Example 458</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-459">Example 459</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo       
 baz</code></pre>
@@ -5423,18 +5428,18 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Leading spaces at the beginning of the next line are ignored:</p>
-<div id="example-459" class="example" data-section="Hard line breaks">
+<div id="example-460" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-459">Example 459</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-460">Example 460</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo  
      bar</code></pre>
 <pre class="html"><code>&lt;p&gt;foo&lt;br /&gt;
 bar&lt;/p&gt;</code></pre>
 </div>
-<div id="example-460" class="example" data-section="Hard line breaks">
+<div id="example-461" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-460">Example 460</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-461">Example 461</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo\
      bar</code></pre>
@@ -5442,18 +5447,18 @@ bar&lt;/p&gt;</code></pre>
 bar&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks can occur inside emphasis, links, and other constructs that allow inline content:</p>
-<div id="example-461" class="example" data-section="Hard line breaks">
+<div id="example-462" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-461">Example 461</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-462">Example 462</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo  
 bar*</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;br /&gt;
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-462" class="example" data-section="Hard line breaks">
+<div id="example-463" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-462">Example 462</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-463">Example 463</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo\
 bar*</code></pre>
@@ -5461,35 +5466,35 @@ bar*</code></pre>
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks do not occur inside code spans</p>
-<div id="example-463" class="example" data-section="Hard line breaks">
+<div id="example-464" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-463">Example 463</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-464">Example 464</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>`code  
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-464" class="example" data-section="Hard line breaks">
+<div id="example-465" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-464">Example 464</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-465">Example 465</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>`code\
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code\ span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>or HTML tags:</p>
-<div id="example-465" class="example" data-section="Hard line breaks">
+<div id="example-466" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-465">Example 465</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-466">Example 466</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;foo  
 bar&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a href=&quot;foo  
 bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-466" class="example" data-section="Hard line breaks">
+<div id="example-467" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-466">Example 466</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-467">Example 467</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a href=&quot;foo\
 bar&quot;&gt;</code></pre>
@@ -5498,9 +5503,9 @@ bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="soft-line-breaks"><span class="header-section-number">6.10</span> Soft line breaks</h2>
 <p>A regular line break (not in a code span or HTML tag) that is not preceded by two or more spaces is parsed as a softbreak. (A softbreak may be rendered in HTML either as a newline or as a space. The result will be the same in browsers. In the examples here, a newline will be used.)</p>
-<div id="example-467" class="example" data-section="Soft line breaks">
+<div id="example-468" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-<a href="#example-467">Example 467</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-468">Example 468</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo
 baz</code></pre>
@@ -5508,9 +5513,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces at the end of the line and beginning of the next line are removed:</p>
-<div id="example-468" class="example" data-section="Soft line breaks">
+<div id="example-469" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-<a href="#example-468">Example 468</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-469">Example 469</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo 
  baz</code></pre>
@@ -5521,24 +5526,24 @@ baz&lt;/p&gt;</code></pre>
 <p>A renderer may also provide an option to render soft line breaks as hard line breaks.</p>
 <h2 id="strings"><span class="header-section-number">6.11</span> Strings</h2>
 <p>Any characters not given an interpretation by the above rules will be parsed as string content.</p>
-<div id="example-469" class="example" data-section="Strings">
+<div id="example-470" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-469">Example 469</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-470">Example 470</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>hello $.;&#39;there</code></pre>
 <pre class="html"><code>&lt;p&gt;hello $.;&#39;there&lt;/p&gt;</code></pre>
 </div>
-<div id="example-470" class="example" data-section="Strings">
+<div id="example-471" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-470">Example 470</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-471">Example 471</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>Foo χρῆν</code></pre>
 <pre class="html"><code>&lt;p&gt;Foo χρῆν&lt;/p&gt;</code></pre>
 </div>
 <p>Internal spaces are preserved verbatim:</p>
-<div id="example-471" class="example" data-section="Strings">
+<div id="example-472" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-471">Example 471</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-472">Example 472</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>Multiple     spaces</code></pre>
 <pre class="html"><code>&lt;p&gt;Multiple     spaces&lt;/p&gt;</code></pre>
