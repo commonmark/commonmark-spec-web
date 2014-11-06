@@ -89,7 +89,7 @@ $(document).ready(function() {
 </head>
 <body>
 <h1 class="title">CommonMark Spec</h1>
-<div class="version">Version 0.9 (2014-11-04)</div>
+<div class="version">Version 0.1 (2014-11-06)</div>
 <div class="authors">
 <span class="author">John MacFarlane</span>
 </div>
@@ -144,7 +144,7 @@ $(document).ready(function() {
 </ul></li>
 </ul>
 </div>
-<div id="watermark" style="background-color:black">This is an older version of the spec. For the most recent version, see <a href="http://spec.commonmark.org">http://spec.commonmark.org</a>.</div>
+<div id="watermark"></div>
 <h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
 <h2 id="what-is-markdown"><span class="header-section-number">1.1</span> What is Markdown?</h2>
 <p>Markdown is a plain text format for writing structured documents, based on conventions used for indicating formatting in email and usenet posts. It was developed in 2004 by John Gruber, who wrote the first Markdown-to-HTML converter in perl, and it soon became widely used in websites. By 2014 there were dozens of implementations in many languages. Some of them extended basic Markdown syntax with conventions for footnotes, definition lists, tables, and other constructs, and some allowed output not just in HTML but in LaTeX and many other formats.</p>
@@ -4957,7 +4957,7 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo]&lt;a href=&quot;/url1&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="images"><span class="header-section-number">6.6</span> Images</h2>
-<p>An (unescaped) exclamation mark (<code>!</code>) followed by a reference or inline link will be parsed as an image. The link label will be used as the image’s alt text, and the link title, if any, will be used as the image’s title.</p>
+<p>An (unescaped) exclamation mark (<code>!</code>) followed by a reference or inline link will be parsed as an image. The plain string content of the link label will be used as the image’s alt text, and the link title, if any, will be used as the image’s title.</p>
 <div id="example-411" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-411">Example 411</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
@@ -4972,8 +4972,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>![foo *bar*]
 
 [foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
+<p>Note that in the above example, the alt text is <code>foo bar</code>, not <code>foo *bar*</code> or <code>foo &lt;em&gt;bar&lt;/em&gt;</code> or <code>foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;</code>. Only the plain string content is rendered, without formatting.</p>
 <div id="example-413" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-413">Example 413</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
@@ -4981,7 +4982,7 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>![foo *bar*][]
 
 [foo *bar*]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-414" class="example" data-section="Images">
 <div class="examplenum">
@@ -4990,7 +4991,7 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>![foo *bar*][foobar]
 
 [FOOBAR]: train.jpg &quot;train &amp; tracks&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo &amp;lt;em&amp;gt;bar&amp;lt;/em&amp;gt;&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;train.jpg&quot; alt=&quot;foo bar&quot; title=&quot;train &amp;amp; tracks&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-415" class="example" data-section="Images">
 <div class="examplenum">
@@ -5056,7 +5057,7 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>![*foo* bar][]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The labels are case-insensitive:</p>
 <div id="example-423" class="example" data-section="Images">
@@ -5096,7 +5097,7 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="markdown"><code>![*foo* bar]
 
 [*foo* bar]: /url &quot;title&quot;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;&amp;lt;em&amp;gt;foo&amp;lt;/em&amp;gt; bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img src=&quot;/url&quot; alt=&quot;foo bar&quot; title=&quot;title&quot; /&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-427" class="example" data-section="Images">
 <div class="examplenum">
