@@ -7,7 +7,7 @@ upload:
 
 index.html: ../spec.txt
 	./make_site_index.sh $(SPECVERSION) | \
-	  pandoc --template template.html -S -s -t html5 -o $@
+	  pandoc --template ../template.html -S -s -t html5 -o $@
 
 $(SPECVERSION)/index.html: spec.html
 	mkdir -p $(SPECVERSION) ; \
