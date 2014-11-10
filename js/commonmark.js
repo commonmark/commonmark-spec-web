@@ -3078,7 +3078,7 @@ var util = require('util');
 
 var renderAST = function(tree) {
     return util.inspect(tree, {depth: null});
-}
+};
 
 module.exports.DocParser = require('./blocks');
 module.exports.HtmlRenderer = require('./html-renderer');
@@ -3226,7 +3226,7 @@ var parseBackticks = function(inlines) {
     var foundCode = false;
     var match;
     while (!foundCode && (match = this.match(/`+/m))) {
-        if (match == ticks) {
+        if (match === ticks) {
             inlines.push({ t: 'Code', c: this.subject.slice(afterOpenTicks,
                                                       this.pos - ticks.length)
                      .replace(/[ \n]+/g,' ')
@@ -3348,78 +3348,153 @@ var Str = function(s) {
 
 // Attempt to parse emphasis or strong emphasis.
 var parseEmphasis = function(cc,inlines) {
-    var startpos = this.pos;
 
     var res = this.scanDelims(cc);
     var numdelims = res.numdelims;
-    var usedelims;
+    var startpos = this.pos;
 
     if (numdelims === 0) {
-        this.pos = startpos;
         return false;
     }
 
-    if (res.can_close) {
-
-      // Walk the stack and find a matching opener, if possible
-      var opener = this.emphasis_openers;
-      while (opener) {
-
-        if (opener.cc === cc) { // we have a match!
-
-          if (numdelims < 3 || opener.numdelims < 3) {
-                usedelims = numdelims <= opener.numdelims ? numdelims : opener.numdelims;
-          } else { // numdelims >= 3 && opener.numdelims >= 3
-                usedelims = numdelims % 2 === 0 ? 2 : 1;
-          }
-          var X = usedelims === 1 ? Emph : Strong;
-
-          if (opener.numdelims == usedelims) { // all openers used
-
-            this.pos += usedelims;
-            inlines[opener.pos] = X(inlines.slice(opener.pos + 1));
-            inlines.splice(opener.pos + 1, inlines.length - (opener.pos + 1));
-            // Remove entries after this, to prevent overlapping nesting:
-            this.emphasis_openers = opener.previous;
-            return true;
-
-          } else if (opener.numdelims > usedelims) { // only some openers used
-
-            this.pos += usedelims;
-            opener.numdelims -= usedelims;
-            inlines[opener.pos].c =
-              inlines[opener.pos].c.slice(0, opener.numdelims);
-            inlines[opener.pos + 1] = X(inlines.slice(opener.pos + 1));
-            inlines.splice(opener.pos + 2, inlines.length - (opener.pos + 2));
-            // Remove entries after this, to prevent overlapping nesting:
-            this.emphasis_openers = opener;
-            return true;
-
-          } else { // usedelims > opener.numdelims, should never happen
-            throw new Error("Logic error: usedelims > opener.numdelims");
-          }
-
-        }
-        opener = opener.previous;
-      }
-    }
-
-    // If we're here, we didn't match a closer.
-
     this.pos += numdelims;
-    inlines.push(Str(this.subject.slice(startpos, startpos + numdelims)));
+    inlines.push(Str(this.subject.slice(startpos, this.pos)));
 
-    if (res.can_open) {
-
-      // Add entry to stack for this opener
-      this.emphasis_openers = { cc: cc,
-                                numdelims: numdelims,
-                                pos: inlines.length - 1,
-                                previous: this.emphasis_openers };
+    // Add entry to stack for this opener
+    this.delimiters = { cc: cc,
+                        numdelims: numdelims,
+                        pos: inlines.length - 1,
+                        previous: this.delimiters,
+                        next: null,
+                        can_open: res.can_open,
+                        can_close: res.can_close};
+    if (this.delimiters.previous !== null) {
+        this.delimiters.previous.next = this.delimiters;
     }
 
     return true;
 
+};
+
+var removeDelimiter = function(delim) {
+    if (delim.previous !== null) {
+        delim.previous.next = delim.next;
+    }
+    if (delim.next === null) {
+        // top of stack
+        this.delimiters = delim.previous;
+    } else {
+        delim.next.previous = delim.previous;
+    }
+};
+
+var removeGaps = function(inlines) {
+    // remove gaps from inlines
+    var i, j;
+    j = 0;
+    for (i = 0 ; i < inlines.length; i++) {
+        if (inlines[i] !== null) {
+            inlines[j] = inlines[i];
+            j++;
+        }
+    }
+    inlines.splice(j);
+};
+
+var processEmphasis = function(inlines, stack_bottom) {
+    var opener, closer;
+    var opener_inl, closer_inl;
+    var nextstack, tempstack;
+    var use_delims;
+    var contents;
+    var tmp;
+    var emph;
+    var i,j;
+
+    // find first closer above stack_bottom:
+    closer = this.delimiters;
+    while (closer !== null && closer.previous !== stack_bottom) {
+        closer = closer.previous;
+    }
+    // move forward, looking for closers, and handling each
+    while (closer !== null) {
+        if (closer.can_close && (closer.cc === C_UNDERSCORE || closer.cc === C_ASTERISK)) {
+            // found emphasis closer. now look back for first matching opener:
+            opener = closer.previous;
+            while (opener !== null && opener !== stack_bottom) {
+                if (opener.cc === closer.cc && opener.can_open) {
+                    break;
+                }
+                opener = opener.previous;
+            }
+            if (opener !== null && opener !== stack_bottom) {
+                // calculate actual number of delimiters used from this closer
+                if (closer.numdelims < 3 || opener.numdelims < 3) {
+                    use_delims = closer.numdelims <= opener.numdelims ?
+                        closer.numdelims : opener.numdelims;
+                } else {
+                    use_delims = closer.numdelims % 2 === 0 ? 2 : 1;
+                }
+
+                opener_inl = inlines[opener.pos];
+                closer_inl = inlines[closer.pos];
+
+                // remove used delimiters from stack elts and inlines
+                opener.numdelims -= use_delims;
+                closer.numdelims -= use_delims;
+                opener_inl.c = opener_inl.c.slice(0, opener_inl.c.length - use_delims);
+                closer_inl.c = closer_inl.c.slice(0, closer_inl.c.length - use_delims);
+
+                // build contents for new emph element
+                contents = inlines.slice(opener.pos + 1, closer.pos);
+                removeGaps(contents);
+
+                emph = use_delims === 1 ? Emph(contents) : Strong(contents);
+
+                // insert into list of inlines
+                inlines[opener.pos + 1] = emph;
+                for (i = opener.pos + 2; i < closer.pos; i++) {
+                    inlines[i] = null;
+                }
+
+                // remove elts btw opener and closer in delimiters stack
+                tempstack = closer.previous;
+                while (tempstack !== null && tempstack !== opener) {
+                    nextstack = tempstack.previous;
+                    this.removeDelimiter(tempstack);
+                    tempstack = nextstack;
+                }
+
+                // if opener has 0 delims, remove it and the inline
+                if (opener.numdelims === 0) {
+                    inlines[opener.pos] = null;
+                    this.removeDelimiter(opener);
+                }
+
+                if (closer.numdelims === 0) {
+                    inlines[closer.pos] = null;
+                    tempstack = closer.next;
+                    this.removeDelimiter(closer);
+                    closer = tempstack;
+                }
+
+
+            } else {
+                closer = closer.next;
+            }
+
+        } else {
+            closer = closer.next;
+        }
+
+    }
+
+    removeGaps(inlines);
+
+    // remove all delimiters
+    while (this.delimiters != stack_bottom) {
+        this.removeDelimiter(this.delimiters);
+    }
 };
 
 // Attempt to parse link title (sans quotes), returning the string
@@ -3452,59 +3527,8 @@ var parseLinkDestination = function() {
 
 // Attempt to parse a link label, returning number of characters parsed.
 var parseLinkLabel = function() {
-    if (this.peek() != C_OPEN_BRACKET) {
-        return 0;
-    }
-    var startpos = this.pos;
-    var nest_level = 0;
-    if (this.label_nest_level > 0) {
-        // If we've already checked to the end of this subject
-        // for a label, even with a different starting [, we
-        // know we won't find one here and we can just return.
-        // This avoids lots of backtracking.
-        // Note:  nest level 1 would be: [foo [bar]
-        //        nest level 2 would be: [foo [bar [baz]
-        this.label_nest_level--;
-        return 0;
-    }
-    this.pos++;  // advance past [
-    var c;
-    while ((c = this.peek()) && c != -1 && (c != C_CLOSE_BRACKET || nest_level > 0)) {
-        switch (c) {
-        case C_BACKTICK:
-            this.parseBackticks([]);
-            break;
-        case C_LESSTHAN:
-            if (!(this.parseAutolink([]) || this.parseHtmlTag([]))) {
-                this.pos++;
-            }
-            break;
-        case C_OPEN_BRACKET:  // nested []
-            nest_level++;
-            this.pos++;
-            break;
-        case C_CLOSE_BRACKET:  // nested []
-            nest_level--;
-            this.pos++;
-            break;
-        case C_BACKSLASH:
-            this.parseBackslash([]);
-            break;
-        default:
-            this.parseString([]);
-        }
-    }
-    if (c === C_CLOSE_BRACKET) {
-        this.label_nest_level = 0;
-        this.pos++; // advance past ]
-        return this.pos - startpos;
-    } else {
-        if (c === -1) {
-            this.label_nest_level = nest_level;
-        }
-        this.pos = startpos;
-        return 0;
-    }
+    var match = this.match(/^\[(?:[^\\\[\]]|\\[\[\]]){0,1000}\]/);
+    return match === null ? 0 : match.length;
 };
 
 // Parse raw link label, including surrounding [], and return
@@ -3515,24 +3539,105 @@ var parseRawLabel = function(s) {
     return new InlineParser().parse(s.substr(1, s.length - 2), {});
 };
 
-// Attempt to parse a link.  If successful, return the link.
-var parseLink = function(inlines) {
+// Add open bracket to delimiter stack and add a Str to inlines.
+var parseOpenBracket = function(inlines) {
+
     var startpos = this.pos;
-    var reflabel;
-    var n;
+    this.pos += 1;
+    inlines.push(Str("["));
+
+    // Add entry to stack for this opener
+    this.delimiters = { cc: C_OPEN_BRACKET,
+                        numdelims: 1,
+                        pos: inlines.length - 1,
+                        previous: this.delimiters,
+                        next: null,
+                        can_open: true,
+                        can_close: false,
+                        index: startpos };
+    if (this.delimiters.previous !== null) {
+        this.delimiters.previous.next = this.delimiters;
+    }
+    return true;
+
+};
+
+// IF next character is [, and ! delimiter to delimiter stack and
+// add a Str to inlines.  Otherwise just add a Str.
+var parseBang = function(inlines) {
+
+    var startpos = this.pos;
+    this.pos += 1;
+    if (this.peek() === C_OPEN_BRACKET) {
+        this.pos += 1;
+        inlines.push(Str("!["));
+
+        // Add entry to stack for this opener
+        this.delimiters = { cc: C_BANG,
+                            numdelims: 1,
+                            pos: inlines.length - 1,
+                            previous: this.delimiters,
+                            next: null,
+                            can_open: true,
+                            can_close: false,
+                            index: startpos + 1 };
+        if (this.delimiters.previous !== null) {
+            this.delimiters.previous.next = this.delimiters;
+        }
+    } else {
+        inlines.push(Str("!"));
+    }
+    return true;
+};
+
+// Try to match close bracket against an opening in the delimiter
+// stack.  Add either a link or image, or a plain [ character,
+// to the inlines stack.  If there is a matching delimiter,
+// remove it from the delimiter stack.
+var parseCloseBracket = function(inlines) {
+    var startpos;
+    var is_image;
     var dest;
     var title;
+    var matched = false;
+    var link_text;
+    var i;
+    var opener, closer_above, tempstack;
 
-    n = this.parseLinkLabel();
-    if (n === 0) {
-        return false;
+    this.pos += 1;
+    startpos = this.pos;
+
+    // look through stack of delimiters for a [ or !
+    opener = this.delimiters;
+    while (opener !== null) {
+        if (opener.cc === C_OPEN_BRACKET || opener.cc === C_BANG) {
+            break;
+        }
+        opener = opener.previous;
     }
-    var afterlabel = this.pos;
-    var rawlabel = this.subject.substr(startpos, n);
 
-    // if we got this far, we've parsed a label.
-    // Try to parse an explicit link: [label](url "title")
-    if (this.peek() == C_OPEN_PAREN) {
+    if (opener === null) {
+        // no matched opener, just return a literal
+        inlines.push(Str("]"));
+        return true;
+    }
+
+    // If we got here, open is a potential opener
+    is_image = opener.cc === C_BANG;
+    // instead of copying a slice, we null out the
+    // parts of inlines that don't correspond to link_text;
+    // later, we'll collapse them.  This is awkward, and could
+    // be simplified if we made inlines a linked list rather than
+    // an array:
+    link_text = inlines.slice(0);
+    for (i = 0; i < opener.pos + 1; i++) {
+        link_text[i] = null;
+    }
+
+    // Check to see if we have a link/image
+
+    // Inline link?
+    if (this.peek() === C_OPEN_PAREN) {
         this.pos++;
         if (this.spnl() &&
             ((dest = this.parseLinkDestination()) !== null) &&
@@ -3542,46 +3647,72 @@ var parseLink = function(inlines) {
              (title = this.parseLinkTitle() || '') || true) &&
             this.spnl() &&
             this.match(/^\)/)) {
-            inlines.push({ t: 'Link',
-                      destination: dest,
-                      title: title,
-                      label: parseRawLabel(rawlabel) });
-            return true;
+            matched = true;
+        }
+    } else {
+
+        // Next, see if there's a link label
+        var savepos = this.pos;
+        this.spnl();
+        var beforelabel = this.pos;
+        n = this.parseLinkLabel();
+        if (n === 0 || n === 2) {
+            // empty or missing second label
+            reflabel = this.subject.slice(opener.index, startpos);
         } else {
-            this.pos = startpos;
-            return false;
+            reflabel = this.subject.slice(beforelabel, beforelabel + n);
+        }
+
+        // lookup rawlabel in refmap
+        var link = this.refmap[normalizeReference(reflabel)];
+        if (link) {
+            dest = link.destination;
+            title = link.title;
+            matched = true;
         }
     }
-    // If we're here, it wasn't an explicit link. Try to parse a reference link.
-    // first, see if there's another label
-    var savepos = this.pos;
-    this.spnl();
-    var beforelabel = this.pos;
-    n = this.parseLinkLabel();
-    if (n == 2) {
-        // empty second label
-        reflabel = rawlabel;
-    } else if (n > 0) {
-        reflabel = this.subject.slice(beforelabel, beforelabel + n);
-    } else {
-        this.pos = savepos;
-        reflabel = rawlabel;
-    }
-    // lookup rawlabel in refmap
-    var link = this.refmap[normalizeReference(reflabel)];
-    if (link) {
-        inlines.push({t: 'Link',
-                 destination: link.destination,
-                 title: link.title,
-                 label: parseRawLabel(rawlabel) });
+
+    if (matched) {
+        this.processEmphasis(link_text, opener.previous);
+
+        // remove the part of inlines that became link_text.
+        // see note above on why we need to do this instead of splice:
+        for (i = opener.pos; i < inlines.length; i++) {
+            inlines[i] = null;
+        }
+
+        // processEmphasis will remove this and later delimiters.
+        // Now we also remove earlier ones of the same kind (so,
+        // no links in links, no images in images).
+        opener = this.delimiters;
+        closer_above = null;
+        while (opener !== null) {
+            if (opener.cc === (is_image ? C_BANG : C_OPEN_BRACKET)) {
+                if (closer_above) {
+                    closer_above.previous = opener.previous;
+                } else {
+                    this.delimiters = opener.previous;
+                }
+            } else {
+                closer_above = opener;
+            }
+            opener = opener.previous;
+        }
+
+        inlines.push({t: is_image ? 'Image' : 'Link',
+                      destination: dest,
+                      title: title,
+                      label: link_text});
         return true;
-    } else {
+
+    } else { // no match
+
+        this.removeDelimiter(opener);  // remove this opener from stack
         this.pos = startpos;
-        return false;
+        inlines.push(Str("]"));
+        return true;
     }
-    // Nothing worked, rewind:
-    this.pos = startpos;
-    return false;
+
 };
 
 // Attempt to parse an entity, return Entity object if successful.
@@ -3727,10 +3858,13 @@ var parseInline = function(inlines) {
         res = this.parseEmphasis(c, inlines);
         break;
     case C_OPEN_BRACKET:
-        res = this.parseLink(inlines);
+        res = this.parseOpenBracket(inlines);
         break;
     case C_BANG:
-        res = this.parseImage(inlines);
+        res = this.parseBang(inlines);
+        break;
+    case C_CLOSE_BRACKET:
+        res = this.parseCloseBracket(inlines);
         break;
     case C_LESSTHAN:
         res = this.parseAutolink(inlines) || this.parseHtmlTag(inlines);
@@ -3755,10 +3889,11 @@ var parseInlines = function(s, refmap) {
     this.subject = s;
     this.pos = 0;
     this.refmap = refmap || {};
-    this.emphasis_openers = null;
+    this.delimiters = null;
     var inlines = [];
     while (this.parseInline(inlines)) {
     }
+    this.processEmphasis(inlines, null);
     return inlines;
 };
 
@@ -3767,7 +3902,7 @@ function InlineParser(){
     return {
         subject: '',
         label_nest_level: 0, // used by parseLinkLabel method
-        emphasis_openers: null,  // used by parseEmphasis method
+        delimiters: null,  // used by parseEmphasis method
         pos: 0,
         refmap: {},
         match: match,
@@ -3783,13 +3918,16 @@ function InlineParser(){
         parseLinkTitle: parseLinkTitle,
         parseLinkDestination: parseLinkDestination,
         parseLinkLabel: parseLinkLabel,
-        parseLink: parseLink,
+        parseOpenBracket: parseOpenBracket,
+        parseCloseBracket: parseCloseBracket,
+        parseBang: parseBang,
         parseEntity: parseEntity,
         parseString: parseString,
         parseNewline: parseNewline,
-        parseImage: parseImage,
         parseReference: parseReference,
         parseInline: parseInline,
+        processEmphasis: processEmphasis,
+        removeDelimiter: removeDelimiter,
         parse: parseInlines
     };
 }

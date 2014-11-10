@@ -16,5 +16,8 @@ $(SPECVERSION)/index.html: ../spec.txt ../spec.html
 	git add $(SPECVERSION)/index.html $(SPECVERSION)/spec.txt; git commit -a -m "Added version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
 
+js/commonmark.js: ../js/commonmark.js
+	cp $< $@
+
 %: ../%
 	cp $< $@
