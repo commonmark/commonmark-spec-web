@@ -20,5 +20,5 @@ for vers in $VERSIONS
     if [ "$vers" != "$SPECVERSION" ]; then
 	perl -p -i -e 's/<div id="watermark">.*?<\/div>/<div id="watermark" style="background-color:black">This is an older version of the spec. For the most recent version, see <a href="http:\/\/spec.commonmark.org">http:\/\/spec.commonmark.org<\/a>.<\/div>/' $vers/index.html
         echo "- [$vers](/$vers/) ($date)"
-    fi
+    fi | sort -r -k3
   done

@@ -1,6 +1,6 @@
 SPECVERSION=$(shell grep version: ../spec.txt | sed -e 's/version: *//')
 
-update: dingus.html js/commonmark.js index.html $(SPECVERSION)/index.html js/LICENSE
+update: dingus.html js/commonmark.js $(SPECVERSION)/index.html index.html js/LICENSE
 
 upload:
 	git pull; git commit -a -m "Updated site for latest spec, js" ; git push ; git push --tags
