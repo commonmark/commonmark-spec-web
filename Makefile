@@ -9,9 +9,9 @@ index.html: ../spec.txt
 	./make_site_index.sh $(SPECVERSION) | \
 	  pandoc --template ../template.html -S -s -t html5 -o $@
 
-$(SPECVERSION)/index.html: spec.html
+$(SPECVERSION)/index.html: spec.html spec.txt
 	mkdir -p $(SPECVERSION) ; \
-	cp $< $@ ; \
+	cp $^ $@ ; \
 	git add $(SPECVERSION)/index.html; git commit -a -m "Added version $(SPECVERSION) of spec"; cd ..
 
 %: ../%
