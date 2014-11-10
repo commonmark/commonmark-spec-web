@@ -11,7 +11,8 @@ index.html: ../spec.txt
 
 $(SPECVERSION)/index.html: spec.html spec.txt
 	mkdir -p $(SPECVERSION) ; \
-	cp $^ $@ ; \
+	cp $< $@ ; \
+	cp spec.txt $(SPECVERSION)/spec.txt; \
 	git add $(SPECVERSION)/index.html; git commit -a -m "Added version $(SPECVERSION) of spec"; cd ..
 
 %: ../%
