@@ -5,11 +5,11 @@ update: dingus.html js/commonmark.js $(SPECVERSION)/index.html index.html js/LIC
 upload:
 	git pull; git commit -a -m "Updated site for latest spec, js" ; git push ; git push --tags
 
-index.html: ../spec.txt
+index.html:
 	./make_site_index.sh $(SPECVERSION) | \
 	  pandoc --template ../template.html -S -s -t html5 -o $@
 
-$(SPECVERSION)/index.html: spec.html spec.txt
+$(SPECVERSION)/index.html:
 	mkdir -p $(SPECVERSION) ; \
 	cp $< $@ ; \
 	cp spec.txt $(SPECVERSION)/spec.txt; \
