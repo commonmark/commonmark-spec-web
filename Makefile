@@ -13,7 +13,7 @@ $(SPECVERSION)/index.html: ../spec.txt ../spec.html
 	mkdir -p $(SPECVERSION) ; \
 	cp ../spec.html $@ ; \
 	cp ../spec.txt $(SPECVERSION)/spec.txt; \
-	git add $(SPECVERSION)/index.html $(SPECVERSION)/spec.txt; git commit -a -m "Added version $(SPECVERSION) of spec"; \
+	git add $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt; git commit -a -m "Added version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
 
 js/commonmark.js: ../js/commonmark.js
