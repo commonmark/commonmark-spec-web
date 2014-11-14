@@ -25,4 +25,4 @@ for vers in $VERSIONS
     fi
   done | sort -r -k3 | tee PREVIOUS
 PREV_VERSION=`head -1 PREVIOUS | perl -pe 's/- \[([^]]*).*/\1/'`
-rfcdiff --html --stdout $PREV_VERSION/spec.txt $SPECVERSION/spec.txt > $SPECVERSION/changes.html
+rfcdiff --html --width 80 --stdout $PREV_VERSION/spec.txt $SPECVERSION/spec.txt | perl -pe 's/charset=iso-8859-1/charset=utf-8/' > $SPECVERSION/changes.html
