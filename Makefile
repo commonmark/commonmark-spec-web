@@ -14,7 +14,7 @@ $(SPECVERSION)/index.html: ../spec.txt ../spec.html
 	cp ../spec.html $@ ; \
 	cp ../spec.txt $(SPECVERSION)/spec.txt; \
 	rm spec.html; \
-	ln -s $(SPECVERSION)/index.html spec.html; \
+	cp $(SPECVERSION)/index.html spec.html; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt; git commit -a -m "Added version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
 
