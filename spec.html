@@ -132,7 +132,7 @@ $(document).ready(function() {
 <li><a href="#raw-html"><span class="toc-section-number">6.8</span> Raw HTML</a></li>
 <li><a href="#hard-line-breaks"><span class="toc-section-number">6.9</span> Hard line breaks</a></li>
 <li><a href="#soft-line-breaks"><span class="toc-section-number">6.10</span> Soft line breaks</a></li>
-<li><a href="#textual-content"><span class="toc-section-number">6.11</span> Textual content</a></li>
+<li><a href="#strings"><span class="toc-section-number">6.11</span> Strings</a></li>
 </ul></li>
 <li><a href="#appendix-a-a-parsing-strategy">Appendix A: A parsing strategy</a><ul>
 <li><a href="#overview">Overview</a></li>
@@ -201,8 +201,8 @@ $(document).ready(function() {
 <p>In the absence of a spec, early implementers consulted <code>Markdown.pl</code> to resolve these ambiguities. But <code>Markdown.pl</code> was quite buggy, and gave manifestly bad results in many cases, so it was not a satisfactory replacement for a spec.</p>
 <p>Because there is no unambiguous spec, implementations have diverged considerably. As a result, users are often surprised to find that a document that renders one way on one system (say, a github wiki) renders differently on another (say, converting to docbook using pandoc). To make matters worse, because nothing in Markdown counts as a “syntax error,” the divergence often isn’t discovered right away.</p>
 <h2 id="about-this-document"><span class="header-section-number">1.3</span> About this document</h2>
-<p>This document attempts to specify Markdown syntax unambiguously. It contains many examples with side-by-side Markdown and HTML. These are intended to double as conformance tests. An accompanying script <code>spec_tests.py</code> can be used to run the tests against any Markdown program:</p>
-<pre><code>python test/spec_tests.py --spec spec.txt --program PROGRAM</code></pre>
+<p>This document attempts to specify Markdown syntax unambiguously. It contains many examples with side-by-side Markdown and HTML. These are intended to double as conformance tests. An accompanying script <code>runtests.pl</code> can be used to run the tests against any Markdown program:</p>
+<pre><code>perl runtests.pl spec.txt PROGRAM</code></pre>
 <p>Since this document describes how Markdown is to be parsed into an abstract syntax tree, it would have made sense to use an abstract representation of the syntax tree instead of HTML. But HTML is capable of representing the structural distinctions we need to make, and the choice of HTML for the tests makes it possible to run the tests against an implementation without writing an abstract syntax tree renderer.</p>
 <p>This document is generated from a text file, <code>spec.txt</code>, written in Markdown with a small extension for the side-by-side tests. The script <code>spec2md.pl</code> can be used to turn <code>spec.txt</code> into pandoc Markdown, which can then be converted into other formats.</p>
 <p>In the examples, the <code>→</code> character is used to represent tabs.</p>
@@ -230,7 +230,6 @@ $(document).ready(function() {
 </div>
 <p>Line endings are replaced by newline characters (LF).</p>
 <p>A line containing no characters, or a line containing only spaces (after tab expansion), is called a <a id="blank-line" href="#blank-line" class="definition">blank line</a>.</p>
-<p>For security reasons, a conforming parser must strip or replace the Unicode character <code>U+0000</code>.</p>
 <h1 id="blocks-and-inlines"><span class="header-section-number">3</span> Blocks and inlines</h1>
 <p>We can think of a document as a sequence of <a id="block" href="#block" class="definition">blocks</a>—structural elements like paragraphs, block quotations, lists, headers, rules, and code blocks. Blocks can contain other blocks, or they can contain <a id="inline" href="#inline" class="definition">inline</a> content: words, spaces, links, emphasized text, images, and inline code.</p>
 <h2 id="precedence"><span class="header-section-number">3.1</span> Precedence</h2>
@@ -445,9 +444,7 @@ bar</code></pre>
 -<span class="space"> </span>*<span class="space"> </span>*<span class="space"> </span>*</code></pre>
 <pre class="html"><code>&lt;ul&gt;
 &lt;li&gt;Foo&lt;/li&gt;
-&lt;li&gt;
-&lt;hr<span class="space"> </span>/&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;hr<span class="space"> </span>/&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <h2 id="atx-headers"><span class="header-section-number">4.2</span> ATX headers</h2>
@@ -2262,15 +2259,13 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>A<span class="space"> </span>block<span class="space"> </span>quote.</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;A<span class="space"> </span>paragraph
+&lt;li&gt;&lt;p&gt;A<span class="space"> </span>paragraph
 with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;blockquote&gt;
 &lt;p&gt;A<span class="space"> </span>block<span class="space"> </span>quote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>The most important thing to notice is that the position of the text after the list marker determines how much indentation is needed in subsequent blocks in the list item. If the list marker takes up two spaces, and there are three spaces between the list marker and the next nonspace character, then blocks must be indented five spaces in order to fall under the list item.</p>
@@ -2295,10 +2290,8 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 
 <span class="space"> </span><span class="space"> </span>two</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;one&lt;/p&gt;
-&lt;p&gt;two&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;one&lt;/p&gt;
+&lt;p&gt;two&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <div id="example-166" class="example" data-section="List items">
@@ -2322,10 +2315,8 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>two</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;one&lt;/p&gt;
-&lt;p&gt;two&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;one&lt;/p&gt;
+&lt;p&gt;two&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>It is tempting to think of this in terms of columns: the continuation blocks must be indented at least to the column of the first nonspace character after the list marker. However, that is not quite right. The spaces after the list marker determine how much relative indentation is needed. Which column this indentation reaches will depend on how the list item is embedded in other constructions, as shown by this example:</p>
@@ -2339,10 +2330,8 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 <pre class="html"><code>&lt;blockquote&gt;
 &lt;blockquote&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;one&lt;/p&gt;
-&lt;p&gt;two&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;one&lt;/p&gt;
+&lt;p&gt;two&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;
 &lt;/blockquote&gt;</code></pre>
@@ -2386,23 +2375,17 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 <span class="space"> </span><span class="space"> </span>bar
 <span class="space"> </span><span class="space"> </span>```</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;p&gt;bar&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
+&lt;p&gt;bar&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;bar&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;pre&gt;&lt;code&gt;foo
+&lt;li&gt;&lt;pre&gt;&lt;code&gt;foo
 
 
 bar
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>A list item may contain any kind of block:</p>
@@ -2420,15 +2403,13 @@ bar
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>bam</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;bar
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;baz&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;bam&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <ol start="2" style="list-style-type: decimal">
@@ -2443,11 +2424,9 @@ bar
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>bar</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;bar
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>And in this case it is 11 spaces:</p>
@@ -2459,11 +2438,9 @@ bar
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>bar</code></pre>
 <pre class="html"><code>&lt;ol<span class="space"> </span>start=&quot;10&quot;&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;bar
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>If the <em>first</em> block in the list item is an indented code block, then by rule #2, the contents must be indented <em>one</em> space after the list marker:</p>
@@ -2492,13 +2469,11 @@ paragraph
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>more<span class="space"> </span>code</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
+&lt;li&gt;&lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;paragraph&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;more<span class="space"> </span>code
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Note that an additional space indent is interpreted as space inside the code block:</p>
@@ -2512,13 +2487,11 @@ paragraph
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>more<span class="space"> </span>code</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;pre&gt;&lt;code&gt;<span class="space"> </span>indented<span class="space"> </span>code
+&lt;li&gt;&lt;pre&gt;&lt;code&gt;<span class="space"> </span>indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;paragraph&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;more<span class="space"> </span>code
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Note that rules #1 and #2 only apply to two cases: (a) cases in which the lines to be included in a list item begin with a nonspace character, and (b) cases in which they begin with an indented code block. In a case like the following, where the first block begins with a three-space indent, the rules do not allow us to form a list item by indenting the whole thing and prepending a list marker:</p>
@@ -2553,10 +2526,8 @@ bar</code></pre>
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span>bar</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;p&gt;bar&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
+&lt;p&gt;bar&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <ol start="3" style="list-style-type: decimal">
@@ -2574,15 +2545,13 @@ bar</code></pre>
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>A<span class="space"> </span>block<span class="space"> </span>quote.</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;A<span class="space"> </span>paragraph
+&lt;li&gt;&lt;p&gt;A<span class="space"> </span>paragraph
 with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;blockquote&gt;
 &lt;p&gt;A<span class="space"> </span>block<span class="space"> </span>quote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Indented two spaces:</p>
@@ -2597,15 +2566,13 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>A<span class="space"> </span>block<span class="space"> </span>quote.</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;A<span class="space"> </span>paragraph
+&lt;li&gt;&lt;p&gt;A<span class="space"> </span>paragraph
 with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;blockquote&gt;
 &lt;p&gt;A<span class="space"> </span>block<span class="space"> </span>quote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Indented three spaces:</p>
@@ -2620,15 +2587,13 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>A<span class="space"> </span>block<span class="space"> </span>quote.</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;A<span class="space"> </span>paragraph
+&lt;li&gt;&lt;p&gt;A<span class="space"> </span>paragraph
 with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;blockquote&gt;
 &lt;p&gt;A<span class="space"> </span>block<span class="space"> </span>quote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Four spaces indent gives a code block:</p>
@@ -2665,15 +2630,13 @@ with<span class="space"> </span>two<span class="space"> </span>lines.
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>&gt;<span class="space"> </span>A<span class="space"> </span>block<span class="space"> </span>quote.</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;A<span class="space"> </span>paragraph
+&lt;li&gt;&lt;p&gt;A<span class="space"> </span>paragraph
 with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/p&gt;
 &lt;pre&gt;&lt;code&gt;indented<span class="space"> </span>code
 &lt;/code&gt;&lt;/pre&gt;
 &lt;blockquote&gt;
 &lt;p&gt;A<span class="space"> </span>block<span class="space"> </span>quote.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Indentation can be partially deleted:</p>
@@ -2697,12 +2660,10 @@ with<span class="space"> </span>two<span class="space"> </span>lines.&lt;/li&gt;
 continued<span class="space"> </span>here.</code></pre>
 <pre class="html"><code>&lt;blockquote&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;blockquote&gt;
+&lt;li&gt;&lt;blockquote&gt;
 &lt;p&gt;Blockquote
 continued<span class="space"> </span>here.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;</code></pre>
 </div>
@@ -2714,12 +2675,10 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 &gt;<span class="space"> </span>continued<span class="space"> </span>here.</code></pre>
 <pre class="html"><code>&lt;blockquote&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;blockquote&gt;
+&lt;li&gt;&lt;blockquote&gt;
 &lt;p&gt;Blockquote
 continued<span class="space"> </span>here.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;/blockquote&gt;</code></pre>
 </div>
@@ -2741,10 +2700,8 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 &lt;li&gt;bar
 &lt;ul&gt;
 &lt;li&gt;baz&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>One is not enough:</p>
@@ -2772,8 +2729,7 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 &lt;li&gt;foo
 &lt;ul&gt;
 &lt;li&gt;bar&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>Three is not enough:</p>
@@ -2797,11 +2753,9 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 </div>
 <pre class="markdown"><code>-<span class="space"> </span>-<span class="space"> </span>foo</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;ul&gt;
+&lt;li&gt;&lt;ul&gt;
 &lt;li&gt;foo&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <div id="example-193" class="example" data-section="List items">
@@ -2810,15 +2764,11 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 </div>
 <pre class="markdown"><code>1.<span class="space"> </span>-<span class="space"> </span>2.<span class="space"> </span>foo</code></pre>
 <pre class="html"><code>&lt;ol&gt;
-&lt;li&gt;
-&lt;ul&gt;
-&lt;li&gt;
-&lt;ol<span class="space"> </span>start=&quot;2&quot;&gt;
+&lt;li&gt;&lt;ul&gt;
+&lt;li&gt;&lt;ol<span class="space"> </span>start=&quot;2&quot;&gt;
 &lt;li&gt;foo&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ol&gt;</code></pre>
 </div>
 <p>A list item may be empty:</p>
@@ -2854,12 +2804,9 @@ continued<span class="space"> </span>here.&lt;/p&gt;
 <span class="space"> </span><span class="space"> </span>---
 <span class="space"> </span><span class="space"> </span>baz</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;h1&gt;Foo&lt;/h1&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;h2&gt;Bar&lt;/h2&gt;
-baz&lt;/li&gt;
+&lt;li&gt;&lt;h1&gt;Foo&lt;/h1&gt;&lt;/li&gt;
+&lt;li&gt;&lt;h2&gt;Bar&lt;/h2&gt;
+&lt;p&gt;baz&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <h3 id="motivation"><span class="header-section-number">5.2.1</span> Motivation</h3>
@@ -2892,13 +2839,11 @@ baz&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 <p>as the four-space rule demands, rather than a single list,</p>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
 &lt;p&gt;bar&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;baz&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 <p>The choice of four spaces is arbitrary. It can be learned, but it is not likely to be guessed, and it trips up beginners regularly.</p>
 <p>Would it help to adopt a two-space rule? The problem is that such a rule, together with the rule allowing 1–3 spaces indentation of the initial list marker, allows text that is indented <em>less than</em> the original list marker to be included in the list item. For example, <code>Markdown.pl</code> parses</p>
@@ -2907,10 +2852,8 @@ baz&lt;/li&gt;
   two</code></pre>
 <p>as a single list item, with <code>two</code> a continuation paragraph:</p>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;one&lt;/p&gt;
-&lt;p&gt;two&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;one&lt;/p&gt;
+&lt;p&gt;two&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 <p>and similarly</p>
 <pre class="markdown"><code>&gt;   - one
@@ -2919,10 +2862,8 @@ baz&lt;/li&gt;
 <p>as</p>
 <pre class="html"><code>&lt;blockquote&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;one&lt;/p&gt;
-&lt;p&gt;two&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;one&lt;/p&gt;
+&lt;p&gt;two&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;</code></pre>
 <p>This is extremely unintuitive.</p>
@@ -3038,12 +2979,8 @@ baz&lt;/li&gt;
 
 -<span class="space"> </span>baz</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;bar&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;bar&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;ul&gt;
 &lt;li&gt;baz&lt;/li&gt;
@@ -3084,10 +3021,8 @@ baz&lt;/li&gt;
 &lt;li&gt;bar
 &lt;ul&gt;
 &lt;li&gt;baz&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;pre&gt;&lt;code&gt;<span class="space"> </span><span class="space"> </span>bim
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
@@ -3125,13 +3060,9 @@ baz&lt;/li&gt;
 
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>code</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;p&gt;notcode&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
+&lt;p&gt;notcode&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;pre&gt;&lt;code&gt;code
 &lt;/code&gt;&lt;/pre&gt;</code></pre>
@@ -3168,15 +3099,9 @@ baz&lt;/li&gt;
 
 -<span class="space"> </span>c</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;a&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;b&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;c&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;a&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;b&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;c&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>So is this, with a empty second item:</p>
@@ -3189,13 +3114,9 @@ baz&lt;/li&gt;
 
 *<span class="space"> </span>c</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;a&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;a&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;c&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;c&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>These are loose lists, even though there is no space between the items, because one of the items directly contains two block-level elements with a blank line between them:</p>
@@ -3209,16 +3130,10 @@ baz&lt;/li&gt;
 <span class="space"> </span><span class="space"> </span>c
 -<span class="space"> </span>d</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;a&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;b&lt;/p&gt;
-&lt;p&gt;c&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;d&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;a&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;b&lt;/p&gt;
+&lt;p&gt;c&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;d&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <div id="example-210" class="example" data-section="Lists">
@@ -3231,15 +3146,9 @@ baz&lt;/li&gt;
 <span class="space"> </span><span class="space"> </span>[ref]:<span class="space"> </span>/url
 -<span class="space"> </span>d</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;a&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;b&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;d&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;a&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;b&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;d&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>This is a tight list, because the blank lines are in a code block:</p>
@@ -3256,12 +3165,10 @@ baz&lt;/li&gt;
 -<span class="space"> </span>c</code></pre>
 <pre class="html"><code>&lt;ul&gt;
 &lt;li&gt;a&lt;/li&gt;
-&lt;li&gt;
-&lt;pre&gt;&lt;code&gt;b
+&lt;li&gt;&lt;pre&gt;&lt;code&gt;b
 
 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;li&gt;c&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
@@ -3278,12 +3185,9 @@ baz&lt;/li&gt;
 <pre class="html"><code>&lt;ul&gt;
 &lt;li&gt;a
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;b&lt;/p&gt;
-&lt;p&gt;c&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;b&lt;/p&gt;
+&lt;p&gt;c&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;li&gt;d&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
@@ -3300,8 +3204,7 @@ baz&lt;/li&gt;
 &lt;li&gt;a
 &lt;blockquote&gt;
 &lt;p&gt;b&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;/blockquote&gt;&lt;/li&gt;
 &lt;li&gt;c&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
@@ -3322,8 +3225,7 @@ baz&lt;/li&gt;
 &lt;p&gt;b&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;pre&gt;&lt;code&gt;c
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/li&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
 &lt;li&gt;d&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
@@ -3347,8 +3249,7 @@ baz&lt;/li&gt;
 &lt;li&gt;a
 &lt;ul&gt;
 &lt;li&gt;b&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <p>Here the outer list is loose, the inner list tight:</p>
@@ -3361,13 +3262,11 @@ baz&lt;/li&gt;
 
 <span class="space"> </span><span class="space"> </span>baz</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;foo&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;foo&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;bar&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;baz&lt;/p&gt;
-&lt;/li&gt;
+&lt;p&gt;baz&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <div id="example-218" class="example" data-section="Lists">
@@ -3382,20 +3281,16 @@ baz&lt;/li&gt;
 <span class="space"> </span><span class="space"> </span>-<span class="space"> </span>e
 <span class="space"> </span><span class="space"> </span>-<span class="space"> </span>f</code></pre>
 <pre class="html"><code>&lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;a&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;a&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;b&lt;/li&gt;
 &lt;li&gt;c&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;d&lt;/p&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;d&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;e&lt;/li&gt;
 &lt;li&gt;f&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;</code></pre>
 </div>
 <h1 id="inlines"><span class="header-section-number">6</span> Inlines</h1>
@@ -5172,20 +5067,10 @@ bar)&lt;/p&gt;</code></pre>
 [foo]:<span class="space"> </span>/url<span class="space"> </span>&quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;/url&quot;<span class="space"> </span>title=&quot;title&quot;&gt;Foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<p>A space after the link text should be preserved:</p>
+<p>If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:</p>
 <div id="example-427" class="example" data-section="Links">
 <div class="examplenum">
 <a href="#example-427">Example 427</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>[foo]<span class="space"> </span>bar
-
-[foo]:<span class="space"> </span>/url</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;/url&quot;&gt;foo&lt;/a&gt;<span class="space"> </span>bar&lt;/p&gt;</code></pre>
-</div>
-<p>If you just want bracketed text, you can backslash-escape the opening bracket to avoid links:</p>
-<div id="example-428" class="example" data-section="Links">
-<div class="examplenum">
-<a href="#example-428">Example 428</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\[foo]
 
@@ -5193,9 +5078,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo]&lt;/p&gt;</code></pre>
 </div>
 <p>Note that this is a link, because a link label ends with the first following closing bracket:</p>
-<div id="example-429" class="example" data-section="Links">
+<div id="example-428" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-429">Example 429</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-428">Example 428</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo*]:<span class="space"> </span>/url
 
@@ -5203,9 +5088,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;*&lt;a<span class="space"> </span>href=&quot;/url&quot;&gt;foo*&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>This is a link too, for the same reason:</p>
-<div id="example-430" class="example" data-section="Links">
+<div id="example-429" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-430">Example 430</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-429">Example 429</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo`]:<span class="space"> </span>/url
 
@@ -5213,9 +5098,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo&lt;code&gt;]&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Full references take precedence over shortcut references:</p>
-<div id="example-431" class="example" data-section="Links">
+<div id="example-430" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-431">Example 431</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-430">Example 430</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar]
 
@@ -5224,9 +5109,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>In the following case <code>[bar][baz]</code> is parsed as a reference, <code>[foo]</code> as normal text:</p>
-<div id="example-432" class="example" data-section="Links">
+<div id="example-431" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-432">Example 432</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-431">Example 431</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -5234,9 +5119,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;[foo]&lt;a<span class="space"> </span>href=&quot;/url&quot;&gt;bar&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here, though, <code>[foo][bar]</code> is parsed as a reference, since <code>[bar]</code> is defined:</p>
-<div id="example-433" class="example" data-section="Links">
+<div id="example-432" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-433">Example 433</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-432">Example 432</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -5245,9 +5130,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;/url2&quot;&gt;foo&lt;/a&gt;&lt;a<span class="space"> </span>href=&quot;/url1&quot;&gt;baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Here <code>[foo]</code> is not parsed as a shortcut reference, because it is followed by a link label (even though <code>[bar]</code> is not defined):</p>
-<div id="example-434" class="example" data-section="Links">
+<div id="example-433" class="example" data-section="Links">
 <div class="examplenum">
-<a href="#example-434">Example 434</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-433">Example 433</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>[foo][bar][baz]
 
@@ -5257,96 +5142,96 @@ bar)&lt;/p&gt;</code></pre>
 </div>
 <h2 id="images"><span class="header-section-number">6.6</span> Images</h2>
 <p>Syntax for images is like the syntax for links, with one difference. Instead of <a href="#link-text">link text</a>, we have an <a id="image-description" href="#image-description" class="definition">image description</a>. The rules for this are the same as for <a href="#link-text">link text</a>, except that (a) an image description starts with <code>![</code> rather than <code>[</code>, and (b) an image description may contain links. An image description has inline elements as its contents. When an image is rendered to HTML, this is standardly used as the image’s <code>alt</code> attribute.</p>
-<div id="example-435" class="example" data-section="Images">
+<div id="example-434" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-435">Example 435</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-434">Example 434</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo](/url<span class="space"> </span>&quot;title&quot;)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-436" class="example" data-section="Images">
+<div id="example-435" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-436">Example 436</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-435">Example 435</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo<span class="space"> </span>*bar*]
 
 [foo<span class="space"> </span>*bar*]:<span class="space"> </span>train.jpg<span class="space"> </span>&quot;train<span class="space"> </span>&amp;<span class="space"> </span>tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;train.jpg&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;train<span class="space"> </span>&amp;amp;<span class="space"> </span>tracks&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-437" class="example" data-section="Images">
+<div id="example-436" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-437">Example 437</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-436">Example 436</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo<span class="space"> </span>![bar](/url)](/url2)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url2&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-438" class="example" data-section="Images">
+<div id="example-437" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-438">Example 438</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-437">Example 437</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo<span class="space"> </span>[bar](/url)](/url2)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url2&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Though this spec is concerned with parsing, not rendering, it is recommended that in rendering to HTML, only the plain string content of the <a href="#image-description">image description</a> be used. Note that in the above example, the alt attribute’s value is <code>foo bar</code>, not <code>foo [bar](/url)</code> or <code>foo &lt;a href=&quot;/url&quot;&gt;bar&lt;/a&gt;</code>. Only the plain string content is rendered, without formatting.</p>
-<div id="example-439" class="example" data-section="Images">
+<div id="example-438" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-439">Example 439</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-438">Example 438</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo<span class="space"> </span>*bar*][]
 
 [foo<span class="space"> </span>*bar*]:<span class="space"> </span>train.jpg<span class="space"> </span>&quot;train<span class="space"> </span>&amp;<span class="space"> </span>tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;train.jpg&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;train<span class="space"> </span>&amp;amp;<span class="space"> </span>tracks&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-440" class="example" data-section="Images">
+<div id="example-439" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-440">Example 440</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-439">Example 439</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo<span class="space"> </span>*bar*][foobar]
 
 [FOOBAR]:<span class="space"> </span>train.jpg<span class="space"> </span>&quot;train<span class="space"> </span>&amp;<span class="space"> </span>tracks&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;train.jpg&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;train<span class="space"> </span>&amp;amp;<span class="space"> </span>tracks&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
+<div id="example-440" class="example" data-section="Images">
+<div class="examplenum">
+<a href="#example-440">Example 440</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>![foo](train.jpg)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;train.jpg&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-441" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-441">Example 441</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo](train.jpg)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;train.jpg&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>My<span class="space"> </span>![foo<span class="space"> </span>bar](/path/to/train.jpg<span class="space"> </span><span class="space"> </span>&quot;title&quot;<span class="space"> </span><span class="space"> </span><span class="space"> </span>)</code></pre>
+<pre class="html"><code>&lt;p&gt;My<span class="space"> </span>&lt;img<span class="space"> </span>src=&quot;/path/to/train.jpg&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-442" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-442">Example 442</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>My<span class="space"> </span>![foo<span class="space"> </span>bar](/path/to/train.jpg<span class="space"> </span><span class="space"> </span>&quot;title&quot;<span class="space"> </span><span class="space"> </span><span class="space"> </span>)</code></pre>
-<pre class="html"><code>&lt;p&gt;My<span class="space"> </span>&lt;img<span class="space"> </span>src=&quot;/path/to/train.jpg&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-443" class="example" data-section="Images">
 <div class="examplenum">
 <a href="#example-443">Example 443</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>![foo](&lt;url&gt;)</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-444" class="example" data-section="Images">
-<div class="examplenum">
-<a href="#example-444">Example 444</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>![](/url)</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Reference-style:</p>
-<div id="example-445" class="example" data-section="Images">
+<div id="example-444" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-445">Example 445</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-444">Example 444</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo]<span class="space"> </span>[bar]
 
 [bar]:<span class="space"> </span>/url</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-446" class="example" data-section="Images">
+<div id="example-445" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-446">Example 446</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-445">Example 445</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo]<span class="space"> </span>[bar]
 
@@ -5354,18 +5239,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Collapsed:</p>
-<div id="example-447" class="example" data-section="Images">
+<div id="example-446" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-447">Example 447</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-446">Example 446</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo][]
 
 [foo]:<span class="space"> </span>/url<span class="space"> </span>&quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-448" class="example" data-section="Images">
+<div id="example-447" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-448">Example 448</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-447">Example 447</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![*foo*<span class="space"> </span>bar][]
 
@@ -5373,9 +5258,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>The labels are case-insensitive:</p>
-<div id="example-449" class="example" data-section="Images">
+<div id="example-448" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-449">Example 449</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-448">Example 448</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![Foo][]
 
@@ -5383,9 +5268,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;Foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>As with full reference links, whitespace is allowed between the two sets of brackets:</p>
-<div id="example-450" class="example" data-section="Images">
+<div id="example-449" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-450">Example 450</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-449">Example 449</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo]<span class="space"> </span>
 []
@@ -5394,18 +5279,18 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Shortcut:</p>
-<div id="example-451" class="example" data-section="Images">
+<div id="example-450" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-451">Example 451</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-450">Example 450</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![foo]
 
 [foo]:<span class="space"> </span>/url<span class="space"> </span>&quot;title&quot;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-452" class="example" data-section="Images">
+<div id="example-451" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-452">Example 452</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-451">Example 451</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![*foo*<span class="space"> </span>bar]
 
@@ -5413,9 +5298,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;foo<span class="space"> </span>bar&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Note that link labels cannot contain unescaped brackets:</p>
-<div id="example-453" class="example" data-section="Images">
+<div id="example-452" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-453">Example 453</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-452">Example 452</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![[foo]]
 
@@ -5424,9 +5309,9 @@ bar)&lt;/p&gt;</code></pre>
 &lt;p&gt;[[foo]]:<span class="space"> </span>/url<span class="space"> </span>&amp;quot;title&amp;quot;&lt;/p&gt;</code></pre>
 </div>
 <p>The link labels are case-insensitive:</p>
-<div id="example-454" class="example" data-section="Images">
+<div id="example-453" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-454">Example 454</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-453">Example 453</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>![Foo]
 
@@ -5434,9 +5319,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;img<span class="space"> </span>src=&quot;/url&quot;<span class="space"> </span>alt=&quot;Foo&quot;<span class="space"> </span>title=&quot;title&quot;<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>If you just want bracketed text, you can backslash-escape the opening <code>!</code> and <code>[</code>:</p>
-<div id="example-455" class="example" data-section="Images">
+<div id="example-454" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-455">Example 455</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-454">Example 454</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\!\[foo]
 
@@ -5444,9 +5329,9 @@ bar)&lt;/p&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;![foo]&lt;/p&gt;</code></pre>
 </div>
 <p>If you want a link after a literal <code>!</code>, backslash-escape the <code>!</code>:</p>
-<div id="example-456" class="example" data-section="Images">
+<div id="example-455" class="example" data-section="Images">
 <div class="examplenum">
-<a href="#example-456">Example 456</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-455">Example 455</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>\![foo]
 
@@ -5459,39 +5344,39 @@ bar)&lt;/p&gt;</code></pre>
 <p>An <a id="absolute-uri" href="#absolute-uri" class="definition">absolute URI</a>, for these purposes, consists of a <a href="#scheme">scheme</a> followed by a colon (<code>:</code>) followed by zero or more characters other than ASCII whitespace and control characters, <code>&lt;</code>, and <code>&gt;</code>. If the URI includes these characters, you must use percent-encoding (e.g. <code>%20</code> for a space).</p>
 <p>The following <a id="scheme" href="#scheme" class="definition">schemes</a> are recognized (case-insensitive): <code>coap</code>, <code>doi</code>, <code>javascript</code>, <code>aaa</code>, <code>aaas</code>, <code>about</code>, <code>acap</code>, <code>cap</code>, <code>cid</code>, <code>crid</code>, <code>data</code>, <code>dav</code>, <code>dict</code>, <code>dns</code>, <code>file</code>, <code>ftp</code>, <code>geo</code>, <code>go</code>, <code>gopher</code>, <code>h323</code>, <code>http</code>, <code>https</code>, <code>iax</code>, <code>icap</code>, <code>im</code>, <code>imap</code>, <code>info</code>, <code>ipp</code>, <code>iris</code>, <code>iris.beep</code>, <code>iris.xpc</code>, <code>iris.xpcs</code>, <code>iris.lwz</code>, <code>ldap</code>, <code>mailto</code>, <code>mid</code>, <code>msrp</code>, <code>msrps</code>, <code>mtqp</code>, <code>mupdate</code>, <code>news</code>, <code>nfs</code>, <code>ni</code>, <code>nih</code>, <code>nntp</code>, <code>opaquelocktoken</code>, <code>pop</code>, <code>pres</code>, <code>rtsp</code>, <code>service</code>, <code>session</code>, <code>shttp</code>, <code>sieve</code>, <code>sip</code>, <code>sips</code>, <code>sms</code>, <code>snmp</code>,<code>soap.beep</code>, <code>soap.beeps</code>, <code>tag</code>, <code>tel</code>, <code>telnet</code>, <code>tftp</code>, <code>thismessage</code>, <code>tn3270</code>, <code>tip</code>, <code>tv</code>, <code>urn</code>, <code>vemmi</code>, <code>ws</code>, <code>wss</code>, <code>xcon</code>, <code>xcon-userid</code>, <code>xmlrpc.beep</code>, <code>xmlrpc.beeps</code>, <code>xmpp</code>, <code>z39.50r</code>, <code>z39.50s</code>, <code>adiumxtra</code>, <code>afp</code>, <code>afs</code>, <code>aim</code>, <code>apt</code>,<code>attachment</code>, <code>aw</code>, <code>beshare</code>, <code>bitcoin</code>, <code>bolo</code>, <code>callto</code>, <code>chrome</code>,<code>chrome-extension</code>, <code>com-eventbrite-attendee</code>, <code>content</code>, <code>cvs</code>,<code>dlna-playsingle</code>, <code>dlna-playcontainer</code>, <code>dtn</code>, <code>dvb</code>, <code>ed2k</code>, <code>facetime</code>, <code>feed</code>, <code>finger</code>, <code>fish</code>, <code>gg</code>, <code>git</code>, <code>gizmoproject</code>, <code>gtalk</code>, <code>hcp</code>, <code>icon</code>, <code>ipn</code>, <code>irc</code>, <code>irc6</code>, <code>ircs</code>, <code>itms</code>, <code>jar</code>, <code>jms</code>, <code>keyparc</code>, <code>lastfm</code>, <code>ldaps</code>, <code>magnet</code>, <code>maps</code>, <code>market</code>,<code>message</code>, <code>mms</code>, <code>ms-help</code>, <code>msnim</code>, <code>mumble</code>, <code>mvn</code>, <code>notes</code>, <code>oid</code>, <code>palm</code>, <code>paparazzi</code>, <code>platform</code>, <code>proxy</code>, <code>psyc</code>, <code>query</code>, <code>res</code>, <code>resource</code>, <code>rmi</code>, <code>rsync</code>, <code>rtmp</code>, <code>secondlife</code>, <code>sftp</code>, <code>sgn</code>, <code>skype</code>, <code>smb</code>, <code>soldat</code>, <code>spotify</code>, <code>ssh</code>, <code>steam</code>, <code>svn</code>, <code>teamspeak</code>, <code>things</code>, <code>udp</code>, <code>unreal</code>, <code>ut2004</code>, <code>ventrilo</code>, <code>view-source</code>, <code>webcal</code>, <code>wtai</code>, <code>wyciwyg</code>, <code>xfire</code>, <code>xri</code>, <code>ymsgr</code>.</p>
 <p>Here are some valid autolinks:</p>
+<div id="example-456" class="example" data-section="Autolinks">
+<div class="examplenum">
+<a href="#example-456">Example 456</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>&lt;http://foo.bar.baz&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;http://foo.bar.baz&quot;&gt;http://foo.bar.baz&lt;/a&gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-457" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-457">Example 457</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;http://foo.bar.baz&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;http://foo.bar.baz&quot;&gt;http://foo.bar.baz&lt;/a&gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;http://foo.bar.baz?q=hello&amp;id=22&amp;boolean&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&quot;&gt;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-458" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-458">Example 458</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;http://foo.bar.baz?q=hello&amp;id=22&amp;boolean&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&quot;&gt;http://foo.bar.baz?q=hello&amp;amp;id=22&amp;amp;boolean&lt;/a&gt;&lt;/p&gt;</code></pre>
-</div>
-<div id="example-459" class="example" data-section="Autolinks">
-<div class="examplenum">
-<a href="#example-459">Example 459</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
 <pre class="markdown"><code>&lt;irc://foo.bar:2233/baz&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;irc://foo.bar:2233/baz&quot;&gt;irc://foo.bar:2233/baz&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Uppercase is also fine:</p>
-<div id="example-460" class="example" data-section="Autolinks">
+<div id="example-459" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-460">Example 460</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-459">Example 459</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;MAILTO:FOO@BAR.BAZ&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;MAILTO:FOO@BAR.BAZ&quot;&gt;MAILTO:FOO@BAR.BAZ&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces are not allowed in autolinks:</p>
-<div id="example-461" class="example" data-section="Autolinks">
+<div id="example-460" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-461">Example 461</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-460">Example 460</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;http://foo.bar/baz<span class="space"> </span>bim&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;http://foo.bar/baz<span class="space"> </span>bim&amp;gt;&lt;/p&gt;</code></pre>
@@ -5501,66 +5386,66 @@ bar)&lt;/p&gt;</code></pre>
 <pre><code>/^[a-zA-Z0-9.!#$%&amp;&#39;*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?
 (?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/</code></pre>
 <p>Examples of email autolinks:</p>
-<div id="example-462" class="example" data-section="Autolinks">
+<div id="example-461" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-462">Example 462</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-461">Example 461</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;foo@bar.example.com&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;mailto:foo@bar.example.com&quot;&gt;foo@bar.example.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-463" class="example" data-section="Autolinks">
+<div id="example-462" class="example" data-section="Autolinks">
 <div class="examplenum">
-<a href="#example-463">Example 463</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-462">Example 462</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;foo+special@Bar.baz-bar0.com&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;mailto:foo+special@Bar.baz-bar0.com&quot;&gt;foo+special@Bar.baz-bar0.com&lt;/a&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>These are not autolinks:</p>
+<div id="example-463" class="example" data-section="Autolinks">
+<div class="examplenum">
+<a href="#example-463">Example 463</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>&lt;&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
+</div>
 <div id="example-464" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-464">Example 464</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-465" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-465">Example 465</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;heck://bing.bong&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;heck://bing.bong&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;<span class="space"> </span>http://foo.bar<span class="space"> </span>&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;<span class="space"> </span>http://foo.bar<span class="space"> </span>&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-466" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-466">Example 466</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;<span class="space"> </span>http://foo.bar<span class="space"> </span>&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;<span class="space"> </span>http://foo.bar<span class="space"> </span>&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-467" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-467">Example 467</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;foo.bar.baz&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;foo.bar.baz&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
+<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <div id="example-468" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-468">Example 468</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>&lt;localhost:5001/foo&gt;</code></pre>
-<pre class="html"><code>&lt;p&gt;&amp;lt;localhost:5001/foo&amp;gt;&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>http://example.com</code></pre>
+<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
 </div>
 <div id="example-469" class="example" data-section="Autolinks">
 <div class="examplenum">
 <a href="#example-469">Example 469</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>http://example.com</code></pre>
-<pre class="html"><code>&lt;p&gt;http://example.com&lt;/p&gt;</code></pre>
-</div>
-<div id="example-470" class="example" data-section="Autolinks">
-<div class="examplenum">
-<a href="#example-470">Example 470</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo@bar.example.com</code></pre>
 <pre class="html"><code>&lt;p&gt;foo@bar.example.com&lt;/p&gt;</code></pre>
@@ -5584,25 +5469,25 @@ bar)&lt;/p&gt;</code></pre>
 <p>A <a id="cdata-section" href="#cdata-section" class="definition">CDATA section</a> consists of the string <code>&lt;![CDATA[</code>, a string of characters not including the string <code>]]&gt;</code>, and the string <code>]]&gt;</code>.</p>
 <p>An <a id="html-tag" href="#html-tag" class="definition">HTML tag</a> consists of an <a href="#open-tag">open tag</a>, a <a href="#closing-tag">closing tag</a>, an <a href="#html-comment">HTML comment</a>, a <a href="#processing-instruction">processing instruction</a>, an <a href="#element-type-declaration">element type declaration</a>, or a <a href="#cdata-section">CDATA section</a>.</p>
 <p>Here are some simple open tags:</p>
-<div id="example-471" class="example" data-section="Raw HTML">
+<div id="example-470" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-471">Example 471</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-470">Example 470</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a&gt;&lt;bab&gt;&lt;c2c&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Empty elements:</p>
-<div id="example-472" class="example" data-section="Raw HTML">
+<div id="example-471" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-472">Example 472</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-471">Example 471</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a/&gt;&lt;b2/&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a/&gt;&lt;b2/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Whitespace is allowed:</p>
-<div id="example-473" class="example" data-section="Raw HTML">
+<div id="example-472" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-473">Example 473</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-472">Example 472</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span><span class="space"> </span>/&gt;&lt;b2
 data=&quot;foo&quot;<span class="space"> </span>&gt;</code></pre>
@@ -5610,9 +5495,9 @@ data=&quot;foo&quot;<span class="space"> </span>&gt;</code></pre>
 data=&quot;foo&quot;<span class="space"> </span>&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>With attributes:</p>
-<div id="example-474" class="example" data-section="Raw HTML">
+<div id="example-473" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-474">Example 474</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-473">Example 473</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>foo=&quot;bar&quot;<span class="space"> </span>bam<span class="space"> </span>=<span class="space"> </span>&#39;baz<span class="space"> </span>&lt;em&gt;&quot;&lt;/em&gt;&#39;
 _boolean<span class="space"> </span>zoop:33=zoop:33<span class="space"> </span>/&gt;</code></pre>
@@ -5620,33 +5505,33 @@ _boolean<span class="space"> </span>zoop:33=zoop:33<span class="space"> </span>/
 _boolean<span class="space"> </span>zoop:33=zoop:33<span class="space"> </span>/&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal tag names, not parsed as HTML:</p>
-<div id="example-475" class="example" data-section="Raw HTML">
+<div id="example-474" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-475">Example 475</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-474">Example 474</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;33&gt;<span class="space"> </span>&lt;__&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;33&amp;gt;<span class="space"> </span>&amp;lt;__&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute names:</p>
-<div id="example-476" class="example" data-section="Raw HTML">
+<div id="example-475" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-476">Example 476</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-475">Example 475</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>h*#ref=&quot;hi&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a<span class="space"> </span>h*#ref=&amp;quot;hi&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attribute values:</p>
-<div id="example-477" class="example" data-section="Raw HTML">
+<div id="example-476" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-477">Example 477</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-476">Example 476</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;hi&#39;&gt;<span class="space"> </span>&lt;a<span class="space"> </span>href=hi&#39;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a<span class="space"> </span>href=&amp;quot;hi&#39;&amp;gt;<span class="space"> </span>&amp;lt;a<span class="space"> </span>href=hi&#39;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal whitespace:</p>
-<div id="example-478" class="example" data-section="Raw HTML">
+<div id="example-477" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-478">Example 478</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-477">Example 477</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;<span class="space"> </span>a&gt;&lt;
 foo&gt;&lt;bar/<span class="space"> </span>&gt;</code></pre>
@@ -5654,17 +5539,17 @@ foo&gt;&lt;bar/<span class="space"> </span>&gt;</code></pre>
 foo&amp;gt;&amp;lt;bar/<span class="space"> </span>&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Missing whitespace:</p>
-<div id="example-479" class="example" data-section="Raw HTML">
+<div id="example-478" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-479">Example 479</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-478">Example 478</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&#39;bar&#39;title=title&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a<span class="space"> </span>href=&#39;bar&#39;title=title&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Closing tags:</p>
-<div id="example-480" class="example" data-section="Raw HTML">
+<div id="example-479" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-480">Example 480</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-479">Example 479</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;/a&gt;
 &lt;/foo<span class="space"> </span>&gt;</code></pre>
@@ -5672,82 +5557,82 @@ foo&amp;gt;&amp;lt;bar/<span class="space"> </span>&amp;gt;&lt;/p&gt;</code></pr
 &lt;/foo<span class="space"> </span>&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Illegal attributes in closing tag:</p>
-<div id="example-481" class="example" data-section="Raw HTML">
+<div id="example-480" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-481">Example 481</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-480">Example 480</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;/a<span class="space"> </span>href=&quot;foo&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;/a<span class="space"> </span>href=&amp;quot;foo&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Comments:</p>
-<div id="example-482" class="example" data-section="Raw HTML">
+<div id="example-481" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-482">Example 482</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-481">Example 481</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>&lt;!--<span class="space"> </span>this<span class="space"> </span>is<span class="space"> </span>a
 comment<span class="space"> </span>-<span class="space"> </span>with<span class="space"> </span>hyphen<span class="space"> </span>--&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo<span class="space"> </span>&lt;!--<span class="space"> </span>this<span class="space"> </span>is<span class="space"> </span>a
 comment<span class="space"> </span>-<span class="space"> </span>with<span class="space"> </span>hyphen<span class="space"> </span>--&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-483" class="example" data-section="Raw HTML">
+<div id="example-482" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-483">Example 483</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-482">Example 482</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>&lt;!--<span class="space"> </span>not<span class="space"> </span>a<span class="space"> </span>comment<span class="space"> </span>--<span class="space"> </span>two<span class="space"> </span>hyphens<span class="space"> </span>--&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo<span class="space"> </span>&amp;lt;!--<span class="space"> </span>not<span class="space"> </span>a<span class="space"> </span>comment<span class="space"> </span>--<span class="space"> </span>two<span class="space"> </span>hyphens<span class="space"> </span>--&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Processing instructions:</p>
-<div id="example-484" class="example" data-section="Raw HTML">
+<div id="example-483" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-484">Example 484</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-483">Example 483</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>&lt;?php<span class="space"> </span>echo<span class="space"> </span>$a;<span class="space"> </span>?&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo<span class="space"> </span>&lt;?php<span class="space"> </span>echo<span class="space"> </span>$a;<span class="space"> </span>?&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Declarations:</p>
-<div id="example-485" class="example" data-section="Raw HTML">
+<div id="example-484" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-485">Example 485</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-484">Example 484</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>&lt;!ELEMENT<span class="space"> </span>br<span class="space"> </span>EMPTY&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo<span class="space"> </span>&lt;!ELEMENT<span class="space"> </span>br<span class="space"> </span>EMPTY&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>CDATA sections:</p>
-<div id="example-486" class="example" data-section="Raw HTML">
+<div id="example-485" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-486">Example 486</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-485">Example 485</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>&lt;![CDATA[&gt;&amp;&lt;]]&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;foo<span class="space"> </span>&lt;![CDATA[&gt;&amp;&lt;]]&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Entities are preserved in HTML attributes:</p>
-<div id="example-487" class="example" data-section="Raw HTML">
+<div id="example-486" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-487">Example 487</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-486">Example 486</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;&amp;ouml;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;&amp;ouml;&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Backslash escapes do not work in HTML attributes:</p>
-<div id="example-488" class="example" data-section="Raw HTML">
+<div id="example-487" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-488">Example 488</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-487">Example 487</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;\*&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;\*&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-489" class="example" data-section="Raw HTML">
+<div id="example-488" class="example" data-section="Raw HTML">
 <div class="examplenum">
-<a href="#example-489">Example 489</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-488">Example 488</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;\&quot;&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&amp;lt;a<span class="space"> </span>href=&amp;quot;&amp;quot;&amp;quot;&amp;gt;&lt;/p&gt;</code></pre>
 </div>
 <h2 id="hard-line-breaks"><span class="header-section-number">6.9</span> Hard line breaks</h2>
 <p>A line break (not in a code span or HTML tag) that is preceded by two or more spaces and does not occur at the end of a block is parsed as a <a id="hard-line-break" href="#hard-line-break" class="definition">hard line break</a> (rendered in HTML as a <code>&lt;br /&gt;</code> tag):</p>
-<div id="example-490" class="example" data-section="Hard line breaks">
+<div id="example-489" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-490">Example 490</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-489">Example 489</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span><span class="space"> </span>
 baz</code></pre>
@@ -5755,9 +5640,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>For a more visible alternative, a backslash before the newline may be used instead of two spaces:</p>
-<div id="example-491" class="example" data-section="Hard line breaks">
+<div id="example-490" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-491">Example 491</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-490">Example 490</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo\
 baz</code></pre>
@@ -5765,9 +5650,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>More than two spaces can be used:</p>
-<div id="example-492" class="example" data-section="Hard line breaks">
+<div id="example-491" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-492">Example 492</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-491">Example 491</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>
 baz</code></pre>
@@ -5775,18 +5660,18 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Leading spaces at the beginning of the next line are ignored:</p>
-<div id="example-493" class="example" data-section="Hard line breaks">
+<div id="example-492" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-493">Example 493</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-492">Example 492</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span><span class="space"> </span>
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>bar</code></pre>
 <pre class="html"><code>&lt;p&gt;foo&lt;br<span class="space"> </span>/&gt;
 bar&lt;/p&gt;</code></pre>
 </div>
-<div id="example-494" class="example" data-section="Hard line breaks">
+<div id="example-493" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-494">Example 494</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-493">Example 493</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo\
 <span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>bar</code></pre>
@@ -5794,18 +5679,18 @@ bar&lt;/p&gt;</code></pre>
 bar&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks can occur inside emphasis, links, and other constructs that allow inline content:</p>
-<div id="example-495" class="example" data-section="Hard line breaks">
+<div id="example-494" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-495">Example 495</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-494">Example 494</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo<span class="space"> </span><span class="space"> </span>
 bar*</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;em&gt;foo&lt;br<span class="space"> </span>/&gt;
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-496" class="example" data-section="Hard line breaks">
+<div id="example-495" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-496">Example 496</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-495">Example 495</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>*foo\
 bar*</code></pre>
@@ -5813,35 +5698,35 @@ bar*</code></pre>
 bar&lt;/em&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Line breaks do not occur inside code spans</p>
-<div id="example-497" class="example" data-section="Hard line breaks">
+<div id="example-496" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-497">Example 497</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-496">Example 496</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>`code<span class="space"> </span><span class="space"> </span>
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code<span class="space"> </span>span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-498" class="example" data-section="Hard line breaks">
+<div id="example-497" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-498">Example 498</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-497">Example 497</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>`code\
 span`</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;code&gt;code\<span class="space"> </span>span&lt;/code&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>or HTML tags:</p>
-<div id="example-499" class="example" data-section="Hard line breaks">
+<div id="example-498" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-499">Example 499</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-498">Example 498</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;foo<span class="space"> </span><span class="space"> </span>
 bar&quot;&gt;</code></pre>
 <pre class="html"><code>&lt;p&gt;&lt;a<span class="space"> </span>href=&quot;foo<span class="space"> </span><span class="space"> </span>
 bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
-<div id="example-500" class="example" data-section="Hard line breaks">
+<div id="example-499" class="example" data-section="Hard line breaks">
 <div class="examplenum">
-<a href="#example-500">Example 500</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-499">Example 499</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>&lt;a<span class="space"> </span>href=&quot;foo\
 bar&quot;&gt;</code></pre>
@@ -5849,39 +5734,39 @@ bar&quot;&gt;</code></pre>
 bar&quot;&gt;&lt;/p&gt;</code></pre>
 </div>
 <p>Hard line breaks are for separating inline content within a block. Neither syntax for hard line breaks works at the end of a paragraph or other block element:</p>
+<div id="example-500" class="example" data-section="Hard line breaks">
+<div class="examplenum">
+<a href="#example-500">Example 500</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+</div>
+<pre class="markdown"><code>foo\</code></pre>
+<pre class="html"><code>&lt;p&gt;foo\&lt;/p&gt;</code></pre>
+</div>
 <div id="example-501" class="example" data-section="Hard line breaks">
 <div class="examplenum">
 <a href="#example-501">Example 501</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>foo\</code></pre>
-<pre class="html"><code>&lt;p&gt;foo\&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>foo</code></pre>
+<pre class="html"><code>&lt;p&gt;foo&lt;/p&gt;</code></pre>
 </div>
 <div id="example-502" class="example" data-section="Hard line breaks">
 <div class="examplenum">
 <a href="#example-502">Example 502</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
-<pre class="markdown"><code>foo</code></pre>
-<pre class="html"><code>&lt;p&gt;foo&lt;/p&gt;</code></pre>
+<pre class="markdown"><code>###<span class="space"> </span>foo\</code></pre>
+<pre class="html"><code>&lt;h3&gt;foo\&lt;/h3&gt;</code></pre>
 </div>
 <div id="example-503" class="example" data-section="Hard line breaks">
 <div class="examplenum">
 <a href="#example-503">Example 503</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
-</div>
-<pre class="markdown"><code>###<span class="space"> </span>foo\</code></pre>
-<pre class="html"><code>&lt;h3&gt;foo\&lt;/h3&gt;</code></pre>
-</div>
-<div id="example-504" class="example" data-section="Hard line breaks">
-<div class="examplenum">
-<a href="#example-504">Example 504</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>###<span class="space"> </span>foo</code></pre>
 <pre class="html"><code>&lt;h3&gt;foo&lt;/h3&gt;</code></pre>
 </div>
 <h2 id="soft-line-breaks"><span class="header-section-number">6.10</span> Soft line breaks</h2>
 <p>A regular line break (not in a code span or HTML tag) that is not preceded by two or more spaces is parsed as a softbreak. (A softbreak may be rendered in HTML either as a newline or as a space. The result will be the same in browsers. In the examples here, a newline will be used.)</p>
-<div id="example-505" class="example" data-section="Soft line breaks">
+<div id="example-504" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-<a href="#example-505">Example 505</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-504">Example 504</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo
 baz</code></pre>
@@ -5889,9 +5774,9 @@ baz</code></pre>
 baz&lt;/p&gt;</code></pre>
 </div>
 <p>Spaces at the end of the line and beginning of the next line are removed:</p>
-<div id="example-506" class="example" data-section="Soft line breaks">
+<div id="example-505" class="example" data-section="Soft line breaks">
 <div class="examplenum">
-<a href="#example-506">Example 506</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-505">Example 505</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>foo<span class="space"> </span>
 <span class="space"> </span>baz</code></pre>
@@ -5900,26 +5785,26 @@ baz&lt;/p&gt;</code></pre>
 </div>
 <p>A conforming parser may render a soft line break in HTML either as a line break or as a space.</p>
 <p>A renderer may also provide an option to render soft line breaks as hard line breaks.</p>
-<h2 id="textual-content"><span class="header-section-number">6.11</span> Textual content</h2>
-<p>Any characters not given an interpretation by the above rules will be parsed as plain textual content.</p>
-<div id="example-507" class="example" data-section="Textual content">
+<h2 id="strings"><span class="header-section-number">6.11</span> Strings</h2>
+<p>Any characters not given an interpretation by the above rules will be parsed as string content.</p>
+<div id="example-506" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-507">Example 507</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-506">Example 506</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>hello<span class="space"> </span>$.;&#39;there</code></pre>
 <pre class="html"><code>&lt;p&gt;hello<span class="space"> </span>$.;&#39;there&lt;/p&gt;</code></pre>
 </div>
-<div id="example-508" class="example" data-section="Textual content">
+<div id="example-507" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-508">Example 508</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-507">Example 507</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>Foo<span class="space"> </span>χρῆν</code></pre>
 <pre class="html"><code>&lt;p&gt;Foo<span class="space"> </span>χρῆν&lt;/p&gt;</code></pre>
 </div>
 <p>Internal spaces are preserved verbatim:</p>
-<div id="example-509" class="example" data-section="Textual content">
+<div id="example-508" class="example" data-section="Strings">
 <div class="examplenum">
-<a href="#example-509">Example 509</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
+<a href="#example-508">Example 508</a>  <a class="dingus" title="open in interactive dingus">(interact)</a>
 </div>
 <pre class="markdown"><code>Multiple<span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>spaces</code></pre>
 <pre class="html"><code>&lt;p&gt;Multiple<span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span><span class="space"> </span>spaces&lt;/p&gt;</code></pre>
