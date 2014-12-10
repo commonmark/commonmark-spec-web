@@ -6,11 +6,12 @@ VERSIONS=`ls -d -1 0.* | sort -r -g`
 echo "% CommonMark Spec"
 echo ""
 date=`grep '<div class="version">' $SPECVERSION/index.html | perl  -pe 's/^.*(\d\d\d\d-\d\d-\d\d).*$/\1/'`
-echo "[**Latest version ($SPECVERSION)**](/$SPECVERSION/) ($date) ([changes](/$SPECVERSION/changes.html 'See changes from previous version'))"
+echo "[**Latest version ($SPECVERSION)**](/$SPECVERSION/) ($date) ([view changes](/$SPECVERSION/changes.html 'See changes from previous version'))"
 echo ""
 echo "[discussion forum](http://talk.commonmark.org/) | "
 echo "[interactive dingus](/dingus.html) | "
-echo "[repository](https://github.com/jgm/CommonMark/)"
+echo "[repository](https://github.com/jgm/CommonMark/) | "
+echo "[changelog](/changelog.spec.txt)"
 echo ""
 echo "Older versions:"
 echo ""
@@ -20,7 +21,7 @@ for vers in $VERSIONS
     if [ "$vers" != "$SPECVERSION" ]; then
 	perl -p -i -e 's/<div id="watermark">.*?<\/div>/<div id="watermark" style="background-color:black">This is an older version of the spec. For the most recent version, see <a href="http:\/\/spec.commonmark.org">http:\/\/spec.commonmark.org<\/a>.<\/div>/' $vers/index.html
         changes=""
-        [ -f $vers/changes.html ] && changes=" ([changes]($vers/changes.html 'See changes from previous version'))"
+        [ -f $vers/changes.html ] && changes=" ([view changes]($vers/changes.html 'See changes from previous version'))"
         echo "- [$vers](/$vers/) ($date)$changes"
     fi
   done | sort -r -k3 | tee PREVIOUS
