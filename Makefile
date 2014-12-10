@@ -8,7 +8,10 @@ upload:
 
 index.html: $(MAINREPO)/spec.txt
 	./make_site_index.sh $(SPECVERSION) | \
-	  pandoc --template $(MAINREPO)/template.html -S -s -t html5 -o $@
+	  pandoc --template $(MAINREPO)/template.html -S -s -t html5 -o $@ ; \
+	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt ; \
+	git commit -a -m "Added version $(SPECVERSION) of spec"; \
+	git tag $(SPECVERSION) HEAD
 
 $(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO)/changelog.spec.txt
 	git tag --list | grep -q -v $(SPECVERSION) ; \
@@ -16,9 +19,7 @@ $(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO
 	cp $(MAINREPO)/spec.html $@ ; \
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
 	rm spec.html; \
-	cp $(SPECVERSION)/index.html spec.html; \
-	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt; git commit -a -m "Added version $(SPECVERSION) of spec"; \
-	git tag $(SPECVERSION) HEAD
+	cp $(SPECVERSION)/index.html spec.html
 
 js/commonmark.js: $(MAINREPO)/js/commonmark.js
 	cp $< $@
