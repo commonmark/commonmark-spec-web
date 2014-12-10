@@ -11,8 +11,7 @@ index.html: $(MAINREPO)/spec.txt
 	  pandoc --template $(MAINREPO)/template.html -S -s -t html5 -o $@
 
 $(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO)/changelog.spec.txt
-	git tag --list | grep $(SPECVERSION) || \
-	  (echo "Version is already tagged." && exit 1; \
+	git tag --list | grep -v $(SPECVERSION) >/dev/null ; \
 	mkdir -p $(SPECVERSION) ; \
 	cp $(MAINREPO)/spec.html $@ ; \
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
