@@ -23,6 +23,24 @@ function getQueryVariable(variable)
        return null;
 }
 
+// via http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area
+function setSelectionRange(input, selectionStart, selectionEnd) {
+  if (input.setSelectionRange) {
+    input.focus();
+    input.setSelectionRange(selectionStart, selectionEnd);
+  }
+  else if (input.createTextRange) {
+    var range = input.createTextRange();
+    range.collapse(true);
+    range.moveEnd('character', selectionEnd);
+    range.moveStart('character', selectionStart);
+    range.select();
+  }
+}
+// via http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area
+function setCaretToPos (input, pos) {
+  setSelectionRange(input, pos, pos);
+}
 
 $(document).ready(function() {
   var timer;
@@ -74,7 +92,14 @@ $(document).ready(function() {
   $("#text").keydown(function (e) {
     if (e.which == 9) {
         e.preventDefault();
-        this.value += "\t";
+
+        if (this.selectionStart !== undefined) {
+          var pos = this.selectionStart;
+          this.value = this.value.substring(0, pos) + "\t" + this.value.substring(pos);
+          setCaretToPos(this, pos + 1);
+        } else {
+          this.value += "\t";
+        }
     }
   });
   parseAndRender();
