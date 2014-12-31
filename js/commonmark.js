@@ -13,7 +13,7 @@ var isBlank = function(s) {
 
 // Convert tabs to spaces on each line using a 4-space tab stop.
 var detabLine = function(text) {
-    if (text.indexOf('\t') == -1) {
+    if (text.indexOf('\t') === -1) {
         return text;
     } else {
         var lastStop = 0;
@@ -66,17 +66,17 @@ var makeBlock = function(tag, start_line, start_column) {
 
 // Returns true if parent block can contain child block.
 var canContain = function(parent_type, child_type) {
-    return ( parent_type == 'Document' ||
-             parent_type == 'BlockQuote' ||
-             parent_type == 'ListItem' ||
-             (parent_type == 'List' && child_type == 'ListItem') );
+    return ( parent_type === 'Document' ||
+             parent_type === 'BlockQuote' ||
+             parent_type === 'ListItem' ||
+             (parent_type === 'List' && child_type === 'ListItem') );
 };
 
 // Returns true if block type can accept lines of text.
 var acceptsLines = function(block_type) {
-    return ( block_type == 'Paragraph' ||
-             block_type == 'IndentedCode' ||
-             block_type == 'FencedCode' );
+    return ( block_type === 'Paragraph' ||
+             block_type === 'IndentedCode' ||
+             block_type === 'FencedCode' );
 };
 
 // Returns true if block ends with a blank line, descending if needed
@@ -85,7 +85,7 @@ var endsWithBlankLine = function(block) {
     if (block.last_line_blank) {
         return true;
     }
-    if ((block.t == 'List' || block.t == 'ListItem') && block.children.length > 0) {
+    if ((block.t === 'List' || block.t === 'ListItem') && block.children.length > 0) {
         return endsWithBlankLine(block.children[block.children.length - 1]);
     } else {
         return false;
@@ -107,7 +107,7 @@ var breakOutOfLists = function(block, line_number) {
     } while (b);
 
     if (last_list) {
-        while (block != last_list) {
+        while (block !== last_list) {
             this.finalize(block, line_number);
             block = block.parent;
         }
@@ -121,7 +121,7 @@ var breakOutOfLists = function(block, line_number) {
 var addLine = function(ln, offset) {
     var s = ln.slice(offset);
     if (!(this.tip.open)) {
-        throw({ msg: "Attempted to add line (" + ln + ") to closed container." });
+        throw { msg: "Attempted to add line (" + ln + ") to closed container." };
     }
     this.tip.strings.push(s);
 };
@@ -311,12 +311,13 @@ var incorporateLine = function(ln, line_number) {
     // want to close unmatched blocks.  So we store this closure for
     // use later, when we have more information.
     var closeUnmatchedBlocks = function(mythis) {
+        var already_done = false;
         // finalize any blocks not matched
-        while (!already_done && oldtip != last_matched_container) {
+        while (!already_done && oldtip !== last_matched_container) {
             mythis.finalize(oldtip, line_number);
             oldtip = oldtip.parent;
         }
-        var already_done = true;
+        already_done = true;
     };
 
     // Check to see if we've hit 2nd blank line; if so break out of list:
@@ -326,11 +327,11 @@ var incorporateLine = function(ln, line_number) {
 
     // Unless last matched container is a code block, try new container starts,
     // adding children to the last matched container:
-    while (container.t != 'FencedCode' &&
-           container.t != 'IndentedCode' &&
-           container.t != 'HtmlBlock' &&
+    while (container.t !== 'FencedCode' &&
+           container.t !== 'IndentedCode' &&
+           container.t !== 'HtmlBlock' &&
            // this is a little performance optimization:
-           matchAt(/^[ #`~*+_=<>0-9-]/,ln,offset) !== -1) {
+           matchAt(/^[ #`~*+_=<>0-9-]/, ln, offset) !== -1) {
 
         match = matchAt(/[^ ]/, ln, offset);
         if (match === -1) {
@@ -344,7 +345,7 @@ var incorporateLine = function(ln, line_number) {
 
         if (indent >= CODE_INDENT) {
             // indented code
-            if (this.tip.t != 'Paragraph' && !blank) {
+            if (this.tip.t !== 'Paragraph' && !blank) {
                 offset += CODE_INDENT;
                 closeUnmatchedBlocks(this);
                 container = this.addChild('IndentedCode', line_number, offset);
@@ -370,7 +371,7 @@ var incorporateLine = function(ln, line_number) {
             container.level = match[0].trim().length; // number of #s
             // remove trailing ###s:
             container.strings =
-                [ln.slice(offset).replace(/^ *#+ *$/, '').replace(/ +#+ *$/,'')];
+                [ln.slice(offset).replace(/^ *#+ *$/, '').replace(/ +#+ *$/, '')];
             break;
 
         } else if ((match = ln.slice(first_nonspace).match(/^`{3,}(?!.*`)|^~{3,}(?!.*~)/))) {
@@ -391,7 +392,7 @@ var incorporateLine = function(ln, line_number) {
             // note, we don't adjust offset because the tag is part of the text
             break;
 
-        } else if (container.t == 'Paragraph' &&
+        } else if (container.t === 'Paragraph' &&
                    container.strings.length === 1 &&
                    ((match = ln.slice(first_nonspace).match(/^(?:=+|-+) *$/)))) {
             // setext header line
@@ -451,7 +452,7 @@ var incorporateLine = function(ln, line_number) {
     // First check for a lazy paragraph continuation:
     if (this.tip !== last_matched_container &&
         !blank &&
-        this.tip.t == 'Paragraph' &&
+        this.tip.t === 'Paragraph' &&
         this.tip.strings.length > 0) {
         // lazy paragraph continuation
 
@@ -468,12 +469,12 @@ var incorporateLine = function(ln, line_number) {
         // lists or breaking out of lists.  We also don't set last_line_blank
         // on an empty list item.
         container.last_line_blank = blank &&
-            !(container.t == 'BlockQuote' ||
-              container.t == 'Header' ||
-              container.t == 'FencedCode' ||
-              (container.t == 'ListItem' &&
+            !(container.t === 'BlockQuote' ||
+              container.t === 'Header' ||
+              container.t === 'FencedCode' ||
+              (container.t === 'ListItem' &&
                container.children.length === 0 &&
-               container.start_line == line_number));
+               container.start_line === line_number));
 
         var cont = container;
         while (cont.parent) {
@@ -490,7 +491,7 @@ var incorporateLine = function(ln, line_number) {
         case 'FencedCode':
             // check for closing code fence:
             match = (indent <= 3 &&
-                     ln.charAt(first_nonspace) == container.fence_char &&
+                     ln.charAt(first_nonspace) === container.fence_char &&
                      ln.slice(first_nonspace).match(/^(?:`{3,}|~{3,})(?= *$)/));
             if (match && match[0].length >= container.fence_length) {
                 // don't add closing fence to container; instead, close it:
@@ -509,9 +510,9 @@ var incorporateLine = function(ln, line_number) {
             if (acceptsLines(container.t)) {
                 this.addLine(ln, first_nonspace);
             } else if (blank) {
-                // do nothing
-            } else if (container.t != 'HorizontalRule' &&
-                       container.t != 'Header') {
+                break;
+            } else if (container.t !== 'HorizontalRule' &&
+                       container.t !== 'Header') {
                 // create paragraph container for line
                 container = this.addChild('Paragraph', line_number, first_nonspace);
                 this.addLine(ln, first_nonspace);
@@ -545,7 +546,7 @@ var finalize = function(block, line_number) {
 
     switch (block.t) {
     case 'Paragraph':
-        block.string_content = block.strings.join('\n').replace(/^  */m,'');
+        block.string_content = block.strings.join('\n').replace(/^ {2,}/m, '');
         // delete block.strings;
 
         // try parsing the beginning as link reference definitions:
@@ -566,14 +567,14 @@ var finalize = function(block, line_number) {
         break;
 
     case 'IndentedCode':
-        block.string_content = block.strings.join('\n').replace(/(\n *)*$/,'\n');
+        block.string_content = block.strings.join('\n').replace(/(\n *)*$/, '\n');
         block.t = 'CodeBlock';
         break;
 
     case 'FencedCode':
         // first line becomes info string
         block.info = unescapeString(block.strings[0].trim());
-        if (block.strings.length == 1) {
+        if (block.strings.length === 1) {
             block.string_content = '';
         } else {
             block.string_content = block.strings.slice(1).join('\n') + '\n';
@@ -589,7 +590,7 @@ var finalize = function(block, line_number) {
         while (i < numitems) {
             var item = block.children[i];
             // check for non-final list item ending with blank line:
-            var last_item = i == numitems - 1;
+            var last_item = i === numitems - 1;
             if (endsWithBlankLine(item) && !last_item) {
                 block.tight = false;
                 break;
@@ -600,7 +601,7 @@ var finalize = function(block, line_number) {
             var j = 0;
             while (j < numsubitems) {
                 var subitem = item.children[j];
-                var last_subitem = j == numsubitems - 1;
+                var last_subitem = j === numsubitems - 1;
                 if (endsWithBlankLine(subitem) && !(last_item && last_subitem)) {
                     block.tight = false;
                     break;
@@ -667,10 +668,10 @@ var parse = function(input) {
     this.doc = makeBlock('Document', 1, 1);
     this.tip = this.doc;
     this.refmap = {};
-    var lines = input.replace(/\n$/,'').split(/\r\n|\n|\r/);
+    var lines = input.replace(/\n$/, '').split(/\r\n|\n|\r/);
     var len = lines.length;
     for (var i = 0; i < len; i++) {
-        this.incorporateLine(lines[i], i+1);
+        this.incorporateLine(lines[i], i + 1);
     }
     while (this.tip) {
         this.finalize(this.tip, len - 1);
@@ -702,8 +703,8 @@ module.exports = DocParser;
 // derived from https://github.com/mathiasbynens/String.fromCodePoint
 /*! http://mths.be/fromcodepoint v0.2.1 by @mathias */
 if (String.fromCodePoint) {
-
     module.exports = function (_) {
+        "use strict";
         try {
             return String.fromCodePoint(_);
         } catch (e) {
@@ -712,13 +713,14 @@ if (String.fromCodePoint) {
             }
             throw e;
         }
-    }
+    };
 
 } else {
 
   var stringFromCharCode = String.fromCharCode;
   var floor = Math.floor;
-  var fromCodePoint = function(_) {
+  var fromCodePoint = function() {
+      "use strict";
       var MAX_SIZE = 0x4000;
       var codeUnits = [];
       var highSurrogate;
@@ -735,7 +737,7 @@ if (String.fromCodePoint) {
               !isFinite(codePoint) || // `NaN`, `+Infinity`, or `-Infinity`
                   codePoint < 0 || // not a valid Unicode code point
                   codePoint > 0x10FFFF || // not a valid Unicode code point
-                  floor(codePoint) != codePoint // not an integer
+                  floor(codePoint) !== codePoint // not an integer
           ) {
               return String.fromCharCode(0xFFFD);
           }
@@ -748,7 +750,7 @@ if (String.fromCodePoint) {
               lowSurrogate = (codePoint % 0x400) + 0xDC00;
               codeUnits.push(highSurrogate, lowSurrogate);
           }
-          if (index + 1 == length || codeUnits.length > MAX_SIZE) {
+          if (index + 1 === length || codeUnits.length > MAX_SIZE) {
               result += stringFromCharCode.apply(null, codeUnits);
               codeUnits.length = 0;
           }
@@ -789,7 +791,7 @@ var renderInline = function(inline) {
     case 'Softbreak':
         return this.softbreak;
     case 'Hardbreak':
-        return inTags('br',[],"",true) + '\n';
+        return inTags('br', [], "", true) + '\n';
     case 'Emph':
         return inTags('em', [], this.renderInlines(inline.c));
     case 'Strong':
@@ -806,7 +808,7 @@ var renderInline = function(inline) {
         attrs = [['src', this.escape(inline.destination, true)],
                  ['alt', this.renderInlines(inline.label).
                     replace(/\<[^>]*alt="([^"]*)"[^>]*\>/g, '$1').
-                    replace(/\<[^>]*\>/g,'')]];
+                    replace(/\<[^>]*\>/g, '')]];
         if (inline.title) {
             attrs.push(['title', this.escape(inline.title, true)]);
         }
@@ -822,7 +824,7 @@ var renderInline = function(inline) {
 // Render a list of inlines.
 var renderInlines = function(inlines) {
     var result = '';
-    for (var i=0; i < inlines.length; i++) {
+    for (var i = 0; i < inlines.length; i++) {
         result = result + this.renderInline(inlines[i]);
     }
     return result;
@@ -858,8 +860,8 @@ var renderBlock = function(block, in_tight_list) {
         }
         return inTags('li', [], contents, false).trim();
     case 'List':
-        tag = block.list_data.type == 'Bullet' ? 'ul' : 'ol';
-        attr = (!block.list_data.start || block.list_data.start == 1) ?
+        tag = block.list_data.type === 'Bullet' ? 'ul' : 'ol';
+        attr = (!block.list_data.start || block.list_data.start === 1) ?
             [] : [['start', block.list_data.start.toString()]];
         return inTags(tag, attr, this.innersep +
                       this.renderBlocks(block.children, block.tight) +
@@ -870,7 +872,7 @@ var renderBlock = function(block, in_tight_list) {
     case 'CodeBlock':
         info_words = block.info ? block.info.split(/ +/) : [];
         attr = (info_words.length === 0 || info_words[0].length === 0) ?
-            [] : [['class','language-' + this.escape(info_words[0],true)]];
+            [] : [['class', 'language-' + this.escape(info_words[0], true)]];
         return inTags('pre', [],
                       inTags('code', attr, this.escape(block.string_content)));
     case 'HtmlBlock':
@@ -878,7 +880,7 @@ var renderBlock = function(block, in_tight_list) {
     case 'ReferenceDef':
         return "";
     case 'HorizontalRule':
-        return inTags('hr',[],"",true);
+        return inTags('hr', [], "", true);
     default:
         console.log("Unknown block type " + block.t);
         return "";
@@ -888,7 +890,7 @@ var renderBlock = function(block, in_tight_list) {
 // Render a list of block elements, separated by this.blocksep.
 var renderBlocks = function(blocks, in_tight_list) {
     var result = [];
-    for (var i=0; i < blocks.length; i++) {
+    for (var i = 0; i < blocks.length; i++) {
         if (blocks[i].t !== 'ReferenceDef') {
             result.push(this.renderBlock(blocks[i], in_tight_list));
         }
@@ -907,15 +909,15 @@ function HtmlRenderer(){
         // set to " " if you want to ignore line wrapping in source
         escape: function(s, preserve_entities) {
             if (preserve_entities) {
-                return s.replace(/[&](?![#](x[a-f0-9]{1,8}|[0-9]{1,8});|[a-z][a-z0-9]{1,31};)/gi,'&amp;')
-                    .replace(/[<]/g,'&lt;')
-                    .replace(/[>]/g,'&gt;')
-                    .replace(/["]/g,'&quot;');
+                return s.replace(/[&](?![#](x[a-f0-9]{1,8}|[0-9]{1,8});|[a-z][a-z0-9]{1,31};)/gi, '&amp;')
+                    .replace(/[<]/g, '&lt;')
+                    .replace(/[>]/g, '&gt;')
+                    .replace(/["]/g, '&quot;');
             } else {
                 return s.replace(/[&]/g,'&amp;')
-                    .replace(/[<]/g,'&lt;')
-                    .replace(/[>]/g,'&gt;')
-                    .replace(/["]/g,'&quot;');
+                    .replace(/[<]/g, '&lt;')
+                    .replace(/[>]/g, '&gt;')
+                    .replace(/["]/g, '&quot;');
             }
         },
         renderInline: renderInline,
@@ -3056,9 +3058,10 @@ var entities = {
   Zscr: 55349,
   zscr: 55349,
   zwj: 8205,
-  zwnj: 8204 }
+  zwnj: 8204 };
 
 var entityToChar = function(m) {
+    "use strict";
     var isNumeric = /^&#/.test(m);
     var isHex = /^&#[Xx]/.test(m);
     var uchar;
@@ -3066,15 +3069,15 @@ var entityToChar = function(m) {
     if (isNumeric) {
         var num;
         if (isHex) {
-            num = parseInt(m.slice(3,-1), 16);
+            num = parseInt(m.slice(3, -1), 16);
         } else {
-            num = parseInt(m.slice(2,-1), 10);
+            num = parseInt(m.slice(2, -1), 10);
         }
         uchar = fromCodePoint(num);
     } else {
-        ucode = entities[m.slice(1,-1)];
+        ucode = entities[m.slice(1, -1)];
         if (ucode) {
-            uchar = fromCodePoint(entities[m.slice(1,-1)]);
+            uchar = fromCodePoint(entities[m.slice(1, -1)]);
         }
     }
     return (uchar || m);
@@ -3093,6 +3096,8 @@ module.exports.entityToChar = entityToChar;
 // var parser = new commonmark.DocParser();
 // var renderer = new commonmark.HtmlRenderer();
 // console.log(renderer.render(parser.parse('Hello *world*')));
+
+"use strict";
 
 var util = require('util');
 
@@ -3118,7 +3123,6 @@ var C_BACKTICK = 96;
 var C_OPEN_BRACKET = 91;
 var C_CLOSE_BRACKET = 93;
 var C_LESSTHAN = 60;
-var C_GREATERTHAN = 62;
 var C_BANG = 33;
 var C_BACKSLASH = 92;
 var C_AMPERSAND = 38;
@@ -3129,9 +3133,6 @@ var C_COLON = 58;
 
 var ESCAPABLE = '[!"#$%&\'()*+,./:;<=>?@[\\\\\\]^_`{|}~-]';
 var ESCAPED_CHAR = '\\\\' + ESCAPABLE;
-var IN_DOUBLE_QUOTES = '"(' + ESCAPED_CHAR + '|[^"\\x00])*"';
-var IN_SINGLE_QUOTES = '\'(' + ESCAPED_CHAR + '|[^\'\\x00])*\'';
-var IN_PARENS = '\\((' + ESCAPED_CHAR + '|[^)\\x00])*\\)';
 var REG_CHAR = '[^\\\\()\\x00-\\x20]';
 var IN_PARENS_NOSP = '\\((' + REG_CHAR + '|' + ESCAPED_CHAR + ')*\\)';
 var TAGNAME = '[A-Za-z][A-Za-z0-9]*';
@@ -3152,6 +3153,8 @@ var HTMLTAG = "(?:" + OPENTAG + "|" + CLOSETAG + "|" + HTMLCOMMENT + "|" +
         PROCESSINGINSTRUCTION + "|" + DECLARATION + "|" + CDATA + ")";
 var ENTITY = "&(?:#x[a-f0-9]{1,8}|#[0-9]{1,8}|[a-z][a-z0-9]{1,31});";
 
+var rePunctuation = new RegExp(/^[\u2000-\u206F\u2E00-\u2E7F\\'!"#\$%&\(\)\*\+,\-\.\/:;<=>\?@\[\]\^_`\{\|\}~]/);
+
 var reHtmlTag = new RegExp('^' + HTMLTAG, 'i');
 
 var reLinkTitle = new RegExp(
@@ -3170,8 +3173,6 @@ var reLinkDestination = new RegExp(
 var reEscapable = new RegExp(ESCAPABLE);
 
 var reAllEscapedChar = new RegExp('\\\\(' + ESCAPABLE + ')', 'g');
-
-var reEscapedChar = new RegExp('^\\\\(' + ESCAPABLE + ')');
 
 var reEntityHere = new RegExp('^' + ENTITY, 'i');
 
@@ -3192,7 +3193,7 @@ var unescapeString = function(s) {
 // to single space, remove leading/trailing whitespace, case fold.
 var normalizeReference = function(s) {
     return s.trim()
-        .replace(/\s+/,' ')
+        .replace(/\s+/, ' ')
         .toUpperCase();
 };
 
@@ -3205,10 +3206,10 @@ var normalizeReference = function(s) {
 // If re matches at current position in the subject, advance
 // position in subject and return the match; otherwise return null.
 var match = function(re) {
-    var match = re.exec(this.subject.slice(this.pos));
-    if (match) {
-        this.pos += match.index + match[0].length;
-        return match[0];
+    var m = re.exec(this.subject.slice(this.pos));
+    if (m) {
+        this.pos += m.index + m[0].length;
+        return m[0];
     } else {
         return null;
     }
@@ -3237,19 +3238,18 @@ var spnl = function() {
 // Attempt to parse backticks, returning either a backtick code span or a
 // literal sequence of backticks.
 var parseBackticks = function(inlines) {
-    var startpos = this.pos;
     var ticks = this.match(/^`+/);
     if (!ticks) {
         return 0;
     }
     var afterOpenTicks = this.pos;
     var foundCode = false;
-    var match;
-    while (!foundCode && (match = this.match(/`+/m))) {
-        if (match === ticks) {
+    var matched;
+    while (!foundCode && (matched = this.match(/`+/m))) {
+        if (matched === ticks) {
             inlines.push({ t: 'Code', c: this.subject.slice(afterOpenTicks,
                                                       this.pos - ticks.length)
-                     .replace(/[ \n]+/g,' ')
+                     .replace(/[ \n]+/g, ' ')
                       .trim() });
             return true;
         }
@@ -3265,7 +3265,7 @@ var parseBackticks = function(inlines) {
 // or a literal backslash to the 'inlines' list.
 var parseBackslash = function(inlines) {
     var subj = this.subject,
-        pos  = this.pos;
+        pos = this.pos;
     if (subj.charCodeAt(pos) === C_BACKSLASH) {
         if (subj.charAt(pos + 1) === '\n') {
             this.pos = this.pos + 2;
@@ -3288,14 +3288,14 @@ var parseAutolink = function(inlines) {
     var m;
     var dest;
     if ((m = this.match(/^<([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/))) {  // email autolink
-        dest = m.slice(1,-1);
+        dest = m.slice(1, -1);
         inlines.push(
                 {t: 'Link',
                  label: [{ t: 'Text', c: dest }],
                  destination: 'mailto:' + encodeURI(unescape(dest)) });
         return true;
     } else if ((m = this.match(/^<(?:coap|doi|javascript|aaa|aaas|about|acap|cap|cid|crid|data|dav|dict|dns|file|ftp|geo|go|gopher|h323|http|https|iax|icap|im|imap|info|ipp|iris|iris.beep|iris.xpc|iris.xpcs|iris.lwz|ldap|mailto|mid|msrp|msrps|mtqp|mupdate|news|nfs|ni|nih|nntp|opaquelocktoken|pop|pres|rtsp|service|session|shttp|sieve|sip|sips|sms|snmp|soap.beep|soap.beeps|tag|tel|telnet|tftp|thismessage|tn3270|tip|tv|urn|vemmi|ws|wss|xcon|xcon-userid|xmlrpc.beep|xmlrpc.beeps|xmpp|z39.50r|z39.50s|adiumxtra|afp|afs|aim|apt|attachment|aw|beshare|bitcoin|bolo|callto|chrome|chrome-extension|com-eventbrite-attendee|content|cvs|dlna-playsingle|dlna-playcontainer|dtn|dvb|ed2k|facetime|feed|finger|fish|gg|git|gizmoproject|gtalk|hcp|icon|ipn|irc|irc6|ircs|itms|jar|jms|keyparc|lastfm|ldaps|magnet|maps|market|message|mms|ms-help|msnim|mumble|mvn|notes|oid|palm|paparazzi|platform|proxy|psyc|query|res|resource|rmi|rsync|rtmp|secondlife|sftp|sgn|skype|smb|soldat|spotify|ssh|steam|svn|teamspeak|things|udp|unreal|ut2004|ventrilo|view-source|webcal|wtai|wyciwyg|xfire|xri|ymsgr):[^<>\x00-\x20]*>/i))) {
-        dest = m.slice(1,-1);
+        dest = m.slice(1, -1);
         inlines.push({
                   t: 'Link',
                   label: [{ t: 'Text', c: dest }],
@@ -3323,7 +3323,6 @@ var parseHtmlTag = function(inlines) {
 // function for strong/emph parsing.
 var scanDelims = function(cc) {
     var numdelims = 0;
-    var first_close_delims = 0;
     var char_before, char_after, cc_after;
     var startpos = this.pos;
 
@@ -3342,8 +3341,14 @@ var scanDelims = function(cc) {
         char_after = fromCodePoint(cc_after);
     }
 
-    var can_open = numdelims > 0 && !(/\s/.test(char_after));
-    var can_close = numdelims > 0 && !(/\s/.test(char_before));
+    var can_open = numdelims > 0 && !(/\s/.test(char_after)) &&
+            !(rePunctuation.test(char_after) &&
+             !(/\s/.test(char_before)) &&
+             !(rePunctuation.test(char_before)));
+    var can_close = numdelims > 0 && !(/\s/.test(char_before)) &&
+            !(rePunctuation.test(char_before) &&
+              !(/\s/.test(char_after)) &&
+              !(rePunctuation.test(char_after)));
     if (cc === C_UNDERSCORE) {
         can_open = can_open && !((/[a-z0-9]/i).test(char_before));
         can_close = can_close && !((/[a-z0-9]/i).test(char_after));
@@ -3367,7 +3372,7 @@ var Str = function(s) {
 };
 
 // Attempt to parse emphasis or strong emphasis.
-var parseEmphasis = function(cc,inlines) {
+var parseEmphasis = function(cc, inlines) {
 
     var res = this.scanDelims(cc);
     var numdelims = res.numdelims;
@@ -3387,7 +3392,8 @@ var parseEmphasis = function(cc,inlines) {
                         previous: this.delimiters,
                         next: null,
                         can_open: res.can_open,
-                        can_close: res.can_close};
+                        can_close: res.can_close,
+                        active: true };
     if (this.delimiters.previous !== null) {
         this.delimiters.previous.next = this.delimiters;
     }
@@ -3422,14 +3428,14 @@ var removeGaps = function(inlines) {
 };
 
 var processEmphasis = function(inlines, stack_bottom) {
+    "use strict";
     var opener, closer;
     var opener_inl, closer_inl;
     var nextstack, tempstack;
     var use_delims;
     var contents;
-    var tmp;
     var emph;
-    var i,j;
+    var i;
 
     // find first closer above stack_bottom:
     closer = this.delimiters;
@@ -3512,7 +3518,7 @@ var processEmphasis = function(inlines, stack_bottom) {
     removeGaps(inlines);
 
     // remove all delimiters
-    while (this.delimiters != stack_bottom) {
+    while (this.delimiters !== stack_bottom) {
         this.removeDelimiter(this.delimiters);
     }
 };
@@ -3547,16 +3553,8 @@ var parseLinkDestination = function() {
 
 // Attempt to parse a link label, returning number of characters parsed.
 var parseLinkLabel = function() {
-    var match = this.match(/^\[(?:[^\\\[\]]|\\[\[\]]){0,1000}\]/);
-    return match === null ? 0 : match.length;
-};
-
-// Parse raw link label, including surrounding [], and return
-// inline contents.  (Note:  this is not a method of InlineParser.)
-var parseRawLabel = function(s) {
-    // note:  parse without a refmap; we don't want links to resolve
-    // in nested brackets!
-    return new InlineParser().parse(s.substr(1, s.length - 2), {});
+    var m = this.match(/^\[(?:[^\\\[\]]|\\[\[\]]){0,1000}\]/);
+    return m === null ? 0 : m.length;
 };
 
 // Add open bracket to delimiter stack and add a Str to inlines.
@@ -3564,6 +3562,7 @@ var parseOpenBracket = function(inlines) {
 
     var startpos = this.pos;
     this.pos += 1;
+
     inlines.push(Str("["));
 
     // Add entry to stack for this opener
@@ -3574,10 +3573,12 @@ var parseOpenBracket = function(inlines) {
                         next: null,
                         can_open: true,
                         can_close: false,
-                        index: startpos };
+                        index: startpos,
+                        active: true };
     if (this.delimiters.previous !== null) {
         this.delimiters.previous.next = this.delimiters;
     }
+
     return true;
 
 };
@@ -3600,7 +3601,8 @@ var parseBang = function(inlines) {
                             next: null,
                             can_open: true,
                             can_close: false,
-                            index: startpos + 1 };
+                            index: startpos + 1,
+                            active: true };
         if (this.delimiters.previous !== null) {
             this.delimiters.previous.next = this.delimiters;
         }
@@ -3622,13 +3624,15 @@ var parseCloseBracket = function(inlines) {
     var matched = false;
     var link_text;
     var i;
-    var opener, closer_above, tempstack;
+    var reflabel;
+    var opener;
 
     this.pos += 1;
     startpos = this.pos;
 
-    // look through stack of delimiters for a [ or !
+    // look through stack of delimiters for a [ or ![
     opener = this.delimiters;
+
     while (opener !== null) {
         if (opener.cc === C_OPEN_BRACKET || opener.cc === C_BANG) {
             break;
@@ -3639,6 +3643,14 @@ var parseCloseBracket = function(inlines) {
     if (opener === null) {
         // no matched opener, just return a literal
         inlines.push(Str("]"));
+        return true;
+    }
+
+    if (!opener.active) {
+        // no matched opener, just return a literal
+        inlines.push(Str("]"));
+        // take opener off emphasis stack
+        this.removeDelimiter(opener);
         return true;
     }
 
@@ -3675,7 +3687,7 @@ var parseCloseBracket = function(inlines) {
         var savepos = this.pos;
         this.spnl();
         var beforelabel = this.pos;
-        n = this.parseLinkLabel();
+        var n = this.parseLinkLabel();
         if (n === 0 || n === 2) {
             // empty or missing second label
             reflabel = this.subject.slice(opener.index, startpos);
@@ -3706,20 +3718,13 @@ var parseCloseBracket = function(inlines) {
         }
 
         // processEmphasis will remove this and later delimiters.
-        // Now, for a link, we also remove earlier link openers.
+        // Now, for a link, we also deactivate earlier link openers.
         // (no links in links)
         if (!is_image) {
           opener = this.delimiters;
-          closer_above = null;
           while (opener !== null) {
             if (opener.cc === C_OPEN_BRACKET) {
-              if (closer_above) {
-                closer_above.previous = opener.previous;
-              } else {
-                this.delimiters = opener.previous;
-              }
-            } else {
-              closer_above = opener;
+                opener.active = false; // deactivate this opener
             }
             opener = opener.previous;
           }
@@ -3779,23 +3784,6 @@ var parseNewline = function(inlines) {
     return false;
 };
 
-// Attempt to parse an image.  If the opening '!' is not followed
-// by a link, return a literal '!'.
-var parseImage = function(inlines) {
-    if (this.match(/^!/)) {
-        var link = this.parseLink(inlines);
-        if (link) {
-            inlines[inlines.length - 1].t = 'Image';
-            return true;
-        } else {
-            inlines.push({ t: 'Text', c: '!' });
-            return true;
-        }
-    } else {
-        return false;
-    }
-};
-
 // Attempt to parse a link reference, modifying refmap.
 var parseReference = function(s, refmap) {
     this.subject = s;
@@ -3806,7 +3794,6 @@ var parseReference = function(s, refmap) {
     var title;
     var matchChars;
     var startpos = this.pos;
-    var match;
 
     // label:
     matchChars = this.parseLinkLabel();
@@ -3860,9 +3847,7 @@ var parseReference = function(s, refmap) {
 // On success, add the result to the inlines list, and return true.
 // On failure, return false.
 var parseInline = function(inlines) {
-    var startpos = this.pos;
-    var origlen = inlines.length;
-
+    "use strict";
     var c = this.peek();
     if (c === -1) {
         return false;
@@ -3925,6 +3910,7 @@ var parseInlines = function(s, refmap) {
 
 // The InlineParser object.
 function InlineParser(){
+    "use strict";
     return {
         subject: '',
         label_nest_level: 0, // used by parseLinkLabel method
@@ -3959,6 +3945,7 @@ function InlineParser(){
 }
 
 module.exports = InlineParser;
+
 
 },{"./from-code-point.js":2,"./html5-entities.js":4}],7:[function(require,module,exports){
 if (typeof Object.create === 'function') {
