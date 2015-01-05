@@ -8,7 +8,7 @@ upload:
 
 index.html: $(MAINREPO)/spec.txt
 	./make_site_index.sh $(SPECVERSION) | \
-	  pandoc --template $(MAINREPO)/template.html -S -s -t html5 -o $@ ; \
+	  pandoc --template template.html -S -s -t html5 -o $@ ; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt ; \
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
