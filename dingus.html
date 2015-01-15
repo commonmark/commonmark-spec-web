@@ -10,6 +10,7 @@
   <script type="text/javascript">
 
 var writer = new commonmark.HtmlRenderer();
+var xmlwriter = new commonmark.XmlRenderer({ sourcepos: true });
 var reader = new commonmark.DocParser();
 
 function getQueryVariable(variable) {
@@ -52,12 +53,12 @@ $(document).ready(function() {
       return;
     }
     var startTime = new Date().getTime();
-    var result = writer.renderBlock(parsed);
+    var result = writer.render(parsed);
     var endTime = new Date().getTime();
     var renderTime = endTime - startTime;
     $("#preview").html(result);
     $("#html").text(result);
-    $("#ast").text(commonmark.ASTRenderer(parsed));
+    $("#ast").text(xmlwriter.render(parsed));
     $("#rendertime").text(renderTime);
   };
   var parseAndRender = function() {
