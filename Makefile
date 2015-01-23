@@ -20,7 +20,7 @@ $(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
 	cp $(SPECVERSION)/index.html spec.html
 
-js/commonmark.js: $(MAINREPO)/js/commonmark.js
+js/commonmark.js: $(MAINREPO)/js/dist/commonmark.js
 	cp $< $@
 
 %: $(MAINREPO)/%
