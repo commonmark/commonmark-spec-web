@@ -1,5 +1,6 @@
 SPECVERSION=$(shell grep version: ../spec.txt | sed -e 's/version: *//')
-MAINREPO=..
+MAINREPO?=..
+JSREPO?=../../commonmark.js
 
 update: dingus.html js/commonmark.js $(SPECVERSION)/index.html js/LICENSE changelog.spec.txt index.html
 
@@ -20,7 +21,10 @@ $(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
 	cp $(SPECVERSION)/index.html spec.html
 
-js/commonmark.js: $(MAINREPO)/js/dist/commonmark.js
+js/commonmark.js: $(JSREPO)/dist/commonmark.js
+	cp $< $@
+
+dingus.html: $(JSREPO)/dingus.html
 	cp $< $@
 
 %: $(MAINREPO)/%
