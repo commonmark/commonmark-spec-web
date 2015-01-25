@@ -16,7 +16,7 @@ all: update
 	git tag $(SPECVERSION) HEAD
 
 update:
-	cp $(JSREPO)/dingus.html dingus.html; \
+	sed -e 's/dist\/commonmark/js\/commonmark/g' $(JSREPO)/dingus.html > dingus.html; \
 	cp $(JSREPO)/dist/commonmark.js js/commonmark.js; \
 	cp $(JSREPO)/LICENSE js/LICENSE; \
 	cp $(MAINREPO)/changelog.txt changelog.txt; \
