@@ -2,7 +2,7 @@ SPECVERSION=$(shell grep version: ../spec.txt | sed -e 's/version: *//')
 MAINREPO?=..
 JSREPO?=../../commonmark.js
 
-update: dingus.html js/commonmark.js $(SPECVERSION)/index.html js/LICENSE changelog.spec.txt index.html
+update: dingus.html js/commonmark.js $(SPECVERSION)/index.html js/LICENSE changelog.txt index.html
 
 upload:
 	git pull; git push; git push --tags
@@ -14,7 +14,7 @@ index.html: $(MAINREPO)/spec.txt
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
 
-$(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO)/changelog.spec.txt
+$(SPECVERSION)/index.html: $(MAINREPO)/spec.txt $(MAINREPO)/spec.html $(MAINREPO)/changelog.txt
 	git tag --list | grep -q -v $(SPECVERSION) ; \
 	mkdir -p $(SPECVERSION) ; \
 	cp $(MAINREPO)/spec.html $@ ; \
