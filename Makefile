@@ -17,6 +17,7 @@ all: update
 
 update:
 	sed -e 's/dist\/commonmark/js\/commonmark/g' $(JSREPO)/dingus.html > dingus.html; \
+	cp $(JSREPO)/dingus.js dingus.js; \
 	cp $(JSREPO)/dist/commonmark.js js/commonmark.js; \
 	cp $(JSREPO)/LICENSE js/LICENSE; \
 	cp $(MAINREPO)/changelog.txt changelog.txt; \
