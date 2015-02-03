@@ -49,7 +49,7 @@ $(document).ready(function() {
         if (elt.offset()) {
             var curTop = $("#preview").scrollTop();
             $("#preview").animate({
-                scrollTop: curTop + elt.offset().top - 150
+                scrollTop: curTop + elt.offset().top - 100
             }, 50);
         }
     }
@@ -75,7 +75,7 @@ $(document).ready(function() {
       $("#parsetime").text(parseTime);
       $(".timing").css('visibility', 'visible');
       render();
-      syncScroll();
+      markSelection();
     }, 0); // ms delay
   };
   var initial_text = getQueryVariable("text");
