@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>markdown-it demo</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.0.5/es5-shim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/lodash/2.4.1/lodash.js"></script>
+    <script src="https://cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.css">
+    <script src="https://cdn.jsdelivr.net/highlight.js/8.4.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/8.4.0/styles/solarized_light.min.css">
+    <script src="commonmark.js"></script>
+    <link rel="stylesheet" href="dingus.css">
+    <script src="dingus.js"></script>
+    <!-- Ancient IE support - load shiv & kill broken highlighter--><!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script>window.hljs = null;</script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="title">commonmark.js dingus</h1>
+    </div>
+    <div class="container full-height">
+      <div class="row full-height">
+        <div class="col-xs-6 full-height">
+          <div class="demo-control"><a href="#" class="source-clear">clear</a><a id="permalink" href="./" title="Share this snippet as link"><strong>permalink</strong></a></div>
+          <textarea class="source full-height">## Welcome to CommonMark
+
+You can play with CommonMark by editing the text on
+the left and seeing how it renders on the right.
+
+&gt; Here's a *block quote with a **list***:
+&gt;
+&gt; 1. foo
+&gt; 2. bar
+
+Some inline code: `x &gt;&gt;= y`.
+
+Fenced code:
+
+``` haskell
+fibs = 0 : 1 : next fibs
+  where
+      next (a : t@(b:_)) = (a+b) : next t
+```
+</textarea>
+        </div>
+        <section class="col-xs-6 full-height">
+          <div class="demo-control"><a href="#" data-result-as="html">preview</a><a href="#" data-result-as="src">html</a><a href="#" data-result-as="debug">xml</a></div>
+          <div class="result-html full-height"></div>
+          <pre class="result-src full-height"><code class="result-src-content full-height language-html"></code></pre>
+          <pre class="result-debug full-height"><code class="result-debug-content full-height language-xml"></code></pre>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
