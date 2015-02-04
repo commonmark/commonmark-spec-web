@@ -9,7 +9,7 @@ date=`grep '<div class="version">' $SPECVERSION/index.html | perl  -pe 's/^.*(\d
 echo "[**Latest version ($SPECVERSION)**]($SPECVERSION/) ($date) ([view changes]($SPECVERSION/changes.html 'See changes from previous version'))"
 echo ""
 echo "[discussion forum](http://talk.commonmark.org/) | "
-echo "[interactive dingus](dingus.html) | "
+echo "[interactive dingus](dingus/) | "
 echo "[repository](https://github.com/jgm/CommonMark/) | "
 echo "[changelog](changelog.txt)"
 echo ""
