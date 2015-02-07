@@ -77,11 +77,11 @@ $(document).ready(function() {
   $("div.example").each(function(e) {
     var t = $(this).find('pre.markdown > code').text();
     $(this).find('a.dingus').click(function(f) {
-      window.open('/dingus.html?text=' +
+      window.open('/dingus/?text=' +
         encodeURIComponent(t.replace(/→/g,"\t")));
     });
   });
-  $("pre.markdown").dblclick(function(e) { window.open('/dingus.html?text=' +
+  $("pre.markdown").dblclick(function(e) { window.open('/dingus/?text=' +
       encodeURIComponent($(this).find('code').text()));
   });
 });
