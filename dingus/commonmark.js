@@ -1096,7 +1096,7 @@ var renderNodes = function(block) {
             tagname = node.listType === 'Bullet' ? 'ul' : 'ol';
             if (entering) {
                 var start = node.listStart;
-                if (start && start > 1) {
+                if (start !== null && start !== 1) {
                     attrs.push(['start', start.toString()]);
                 }
                 cr();
@@ -3373,8 +3373,6 @@ var C_CLOSE_PAREN = 41;
 var C_COLON = 58;
 var C_SINGLEQUOTE = 39;
 var C_DOUBLEQUOTE = 34;
-var C_PERIOD = 46;
-var C_HYPHEN = 45;
 
 // Some regexps used in inline parser:
 
@@ -3636,6 +3634,7 @@ var handleDelim = function(cc, block) {
     var res = this.scanDelims(cc);
     var numdelims = res.numdelims;
     var startpos = this.pos;
+    var contents;
 
     if (numdelims === 0) {
         return false;
@@ -3643,11 +3642,11 @@ var handleDelim = function(cc, block) {
 
     this.pos += numdelims;
     if (cc === C_SINGLEQUOTE) {
-        var contents = "\u2019";
+        contents = "\u2019";
     } else if (cc === C_DOUBLEQUOTE) {
-        var contents = "\u201D";
+        contents = "\u201D";
     } else {
-        var contents = this.subject.slice(startpos, this.pos);
+        contents = this.subject.slice(startpos, this.pos);
     }
     var node = text(contents);
     block.appendChild(node);
@@ -4027,19 +4026,6 @@ var parseEntity = function(block) {
     }
 };
 
-var parseEllipses = function(block) {
-    if (!this.options.smart) {
-        return false;
-    }
-    if (this.match(reEllipses)) {
-        this.pos += 3;
-        block.appendChild(text("\u2026"));
-        return true;
-    } else {
-        return false;
-    }
-}
-
 // Parse a run of ordinary characters, or a single character with
 // a special meaning in markdown, as a plain string.
 var parseString = function(block) {
@@ -4329,9 +4315,9 @@ var Node = function(nodeType, sourcepos) {
 
 var proto = Node.prototype;
 
-Node.prototype.isContainer = function() {
-    return isContainer(this);
-};
+Object.defineProperty(proto, 'isContainer', {
+    get: function () { return isContainer(this); }
+});
 
 Object.defineProperty(proto, 'type', {
     get: function() { return this._type; }
@@ -4490,7 +4476,7 @@ module.exports = Node;
  var event;
 
  while (event = walker.next()) {
- console.log(event.entering, event.node.type());
+ console.log(event.entering, event.node.type);
  }
 
  */
@@ -4616,7 +4602,7 @@ var renderNodes = function(block) {
         node = event.node;
         nodetype = node.type;
 
-        container = node.isContainer();
+        container = node.isContainer;
         selfClosing = nodetype === 'HorizontalRule' || nodetype === 'Hardbreak' ||
             nodetype === 'Softbreak' || nodetype === 'Image';
         unescapedContents = nodetype === 'Html' || nodetype === 'HtmlInline';
