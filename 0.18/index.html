@@ -73,7 +73,7 @@ $(document).ready(function() {
   $("div.example").each(function(e) {
     var t = $(this).find('code.language-markdown').text();
     $(this).find('a.dingus').click(function(f) {
-      window.open('/dingus.html?text=' +
+      window.open('/dingus/?text=' +
         encodeURIComponent(t.replace(/→/g,"\t")));
     });
   });
@@ -339,8 +339,8 @@ choice of HTML for the tests makes it possible to run the tests against
 an implementation without writing an abstract syntax tree renderer.</p>
 <p>This document is generated from a text file, <code>spec.txt</code>, written
 in Markdown with a small extension for the side-by-side tests.
-The script <code>spec2md.pl</code> can be used to turn <code>spec.txt</code> into pandoc
-Markdown, which can then be converted into other formats.</p>
+The script <code>tools/makespec.py</code> can be used to convert <code>spec.txt</code> into
+HTML or CommonMark (which can then be converted into other formats).</p>
 <p>In the examples, the <code>→</code> character is used to represent tabs.</p>
 <h1 id="preliminaries">2 Preliminaries</h1>
 <h2 id="characters-and-lines">2.1 Characters and lines</h2>
