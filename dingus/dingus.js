@@ -9,28 +9,20 @@ var xmlwriter = new commonmark.XmlRenderer({ sourcepos: true });
 var reader = new commonmark.Parser();
 
 function getQueryVariable(variable) {
-  var query = window.location.search.substring(1);
-  var vars = query.split("&");
-  for (var i = 0; i < vars.length; i++) {
-    var pair = vars[i].split("=");
-    if (pair[0] === variable){
-      return decodeURIComponent(pair[1]);
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] === variable){
+            return decodeURIComponent(pair[1]);
+        }
     }
-  }
-  return null;
+    return null;
 }
 
-$(document).ready(function() {
-  var editor = window.ace.edit("text");
-  editor.getSession().setUseWrapMode(true);
-  editor.renderer.setShowGutter(false);
-  // editor.setBehavioursEnabled(false);
-  var timer;
-  var x;
-  var parsed;
-  var render = function() {
+var render = function(parsed) {
     if (parsed === undefined) {
-      return;
+        return;
     }
     var startTime = new Date().getTime();
     var result = writer.render(parsed);
@@ -40,10 +32,14 @@ $(document).ready(function() {
     $("#html").text(result);
     $("#ast").text(xmlwriter.render(parsed));
     $("#rendertime").text(renderTime);
-  };
-  var syncScroll = function(e) {
-    var lineHeight = editor.renderer.lineHeight;
-    var lineNumber = editor.getSession().screenToDocumentRow(Math.floor(e / lineHeight) + 1);
+};
+
+var syncScroll = function() {
+    var textarea = $("#text");
+    var lineHeight = parseFloat(textarea.css('line-height'));
+    // NOTE this assumes we don't have wrapped lines,
+    // so we set white-space: nowrap on the textarea:
+    var lineNumber = Math.floor(textarea.scrollTop() / lineHeight) + 1;
     var elt = $("#preview [data-sourcepos^='" + lineNumber + ":']").last();
     if (elt.length > 0) {
         if (elt.offset()) {
@@ -53,51 +49,67 @@ $(document).ready(function() {
             }, 50);
         }
     }
-  };
-  var markSelection = function() {
-    var lineNumber = editor.selection.getCursor().row + 1;
+};
+
+var markSelection = function() {
+    var cursorPos = $("#text").prop("selectionStart");
+    // now count newline up to this pos
+    var textval = $("#text").val();
+    var lineNumber = 1;
+    for (var i = 0; i < cursorPos; i++) {
+        if (textval.charAt(i) === '\n') {
+            lineNumber++;
+        }
+    }
     var elt = $("#preview [data-sourcepos^='" + lineNumber + ":']").last();
     if (elt.length > 0) {
         $("#preview .selected").removeClass("selected");
         elt.addClass("selected");
-        syncScroll(editor.getSession().getScrollTop());
+        syncScroll();
     }
-  };
-  var parseAndRender = function() {
-    if (x) { x.abort(); } // If there is an existing XHR, abort it.
-    clearTimeout(timer); // Clear the timer so we don't end up with dupes.
-    timer = setTimeout(function() { // assign timer a new timeout
-      var startTime = new Date().getTime();
-      parsed = reader.parse(editor.getValue());
-      var endTime = new Date().getTime();
-      var parseTime = endTime - startTime;
-      $("#parsetime").text(parseTime);
-      $(".timing").css('visibility', 'visible');
-      render();
-      markSelection();
-    }, 0); // ms delay
-  };
-  var initial_text = getQueryVariable("text");
-  if (initial_text) {
-    editor.setValue(initial_text);
-    // show HTML tab if text is from query
-    $('#result-tabs a[href="#result"]').tab('show');
-  }
+};
 
-  parseAndRender();
-  $("#clear-text-box").click(function() {
-    editor.setValue('');
+var parseAndRender = function() {
+    var textarea = $("#text");
+    var startTime = new Date().getTime();
+    var parsed = reader.parse(textarea.val());
+    var endTime = new Date().getTime();
+    var parseTime = endTime - startTime;
+    $("#parsetime").text(parseTime);
+    $(".timing").css('visibility', 'visible');
+    render(parsed);
+    markSelection();
+};
+
+$(document).ready(function() {
+    var textarea = $("#text");
+    var initial_text = getQueryVariable("text");
+    if (initial_text) {
+        textarea.val(initial_text);
+        // show HTML tab if text is from query
+        $('#result-tabs a[href="#result"]').tab('show');
+    }
+
     parseAndRender();
-  });
-  $("#permalink").click(function() {
-    window.location.pathname = "/index.html";
-    window.location.search = "text=" + encodeURIComponent(editor.getValue());
-  });
-  editor.getSession().on('change', _.debounce(parseAndRender, 50, { maxWait: 100 }));
-  editor.getSession().on('changeScrollTop', _.debounce(syncScroll, 50, { maxWait: 50 }));
-  editor.getSession().selection.on('changeCursor', _.debounce(markSelection, 50, { maxWait: 100}));
-  $("#smart").click(function() {
-      reader = new commonmark.Parser({smart: $("#smart").is(":checked")});
-      parseAndRender();
-  });
+
+    $("#clear-text-box").click(function() {
+        textarea.val('');
+        parseAndRender();
+    });
+
+    $("#permalink").click(function() {
+        window.location.pathname = "/index.html";
+        window.location.search = "text=" + encodeURIComponent(textarea.val());
+    });
+
+    textarea.bind('input propertychange',
+                  _.debounce(parseAndRender, 50, { maxWait: 100 }));
+    textarea.on('scroll', _.debounce(syncScroll, 50, { maxWait: 50 }));
+    textarea.on('keydown click focus',
+                _.debounce(markSelection, 50, { maxWait: 100}));
+
+    $("#smart").click(function() {
+        reader = new commonmark.Parser({smart: $("#smart").is(":checked")});
+        parseAndRender();
+    });
 });
