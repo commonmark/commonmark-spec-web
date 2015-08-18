@@ -1,5 +1,5 @@
 ---
 title:  CommonMark Spec
 redirect_to:
-  - '/0.21/'
+  - '//spec.commonmark.org/0.21/'
 ---
