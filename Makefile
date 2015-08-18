@@ -8,6 +8,8 @@ all: update
 	make -C $(MAINREPO) spec.html ; \
 	cp $(MAINREPO)/spec.html $(SPECVERSION)/index.html; \
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
+	sed -e "s/VERSION/$(SPECVERSION)/" current/index.markdown.in > \
+		current/index.markdown; \
 	cp $(SPECVERSION)/index.html spec.html; \
 	./make_site_index.sh $(SPECVERSION) | \
 	  pandoc --template template.html -S -s -t html5 -o index.html ; \
