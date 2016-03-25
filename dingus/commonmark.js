@@ -845,7 +845,6 @@ var parse = function(input) {
     if (this.options.time) { console.time("inline parsing"); }
     this.processInlines(this.doc);
     if (this.options.time) { console.timeEnd("inline parsing"); }
-    this.doc.refmap = this.refmap;
     return this.doc;
 };
 
@@ -1070,7 +1069,7 @@ if (String.fromCodePoint) {
 // var renderer = new commonmark.HtmlRenderer();
 // console.log(renderer.render(parser.parse('Hello *world*')));
 
-module.exports.version = '0.24.0';
+module.exports.version = '0.25.0';
 module.exports.Node = require('./node');
 module.exports.Parser = require('./blocks');
 // module.exports.HtmlRenderer = require('./html');
