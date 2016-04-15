@@ -584,11 +584,18 @@ var advanceOffset = function(count, columns) {
     while (count > 0 && (c = currentLine[this.offset])) {
         if (c === '\t') {
             charsToTab = 4 - (this.column % 4);
-            this.partiallyConsumedTab = columns && charsToTab > count;
-            charsToAdvance = charsToTab > count ? count : charsToTab;
-            this.column += charsToAdvance;
-            this.offset += this.partiallyConsumedTab ? 0 : 1;
-            count -= (columns ? charsToAdvance : 1);
+            if (columns) {
+                this.partiallyConsumedTab = charsToTab > count;
+                charsToAdvance = charsToTab > count ? count : charsToTab;
+                this.column += charsToAdvance;
+                this.offset += this.partiallyConsumedTab ? 0 : 1;
+                count -= (columns ? charsToAdvance : 1);
+            } else {
+                this.partiallyConsumedTab = false;
+                this.column += charsToTab;
+                this.offset += 1;
+                this.count -= 1;
+            }
         } else {
             this.partiallyConsumedTab = false;
             cols += 1;
@@ -602,6 +609,7 @@ var advanceOffset = function(count, columns) {
 var advanceNextNonspace = function() {
     this.offset = this.nextNonspace;
     this.column = this.nextNonspaceColumn;
+    this.partiallyConsumedTab = false;
 };
 
 var findNextNonspace = function() {
@@ -639,6 +647,8 @@ var incorporateLine = function(ln) {
     this.oldtip = this.tip;
     this.offset = 0;
     this.column = 0;
+    this.blank = false;
+    this.partiallyConsumedTab = false;
     this.lineNumber += 1;
 
     // replace NUL characters for security
@@ -1069,7 +1079,7 @@ if (String.fromCodePoint) {
 // var renderer = new commonmark.HtmlRenderer();
 // console.log(renderer.render(parser.parse('Hello *world*')));
 
-module.exports.version = '0.25.0';
+module.exports.version = '0.25.1';
 module.exports.Node = require('./node');
 module.exports.Parser = require('./blocks');
 // module.exports.HtmlRenderer = require('./html');
