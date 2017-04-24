@@ -2,7 +2,7 @@ MAINREPO?=../CommonMark
 JSREPO?=../commonmark.js
 SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//')
 
-all: update current/index.html
+all: update
 	git tag --list | grep -q -v $(SPECVERSION) ; \
 	mkdir -p $(SPECVERSION) ; \
 	make -C $(MAINREPO) spec.html ; \
@@ -12,11 +12,9 @@ all: update current/index.html
 	./make_site_index.sh $(SPECVERSION) | \
 	  pandoc --template template.html -S -s -t html5 -o index.html ; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt ; \
+	sed -e "s/VERSION/$(SPECVERSION)/g" current/index.html.in > current/index.html ; \
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
-
-current/index.html: current/index.html.in
-	sed -e "s/VERSION/$(SPECVERSION)/g" $< > $@
 
 update:
 	make -C $(JSREPO)/dingus ; \
