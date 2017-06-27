@@ -6,7 +6,7 @@ VERSIONS=`ls -d -1 0.* | sort -r -g`
 echo "% CommonMark Spec"
 echo ""
 date=`grep '<div class="version">' $SPECVERSION/index.html | perl  -pe 's/^.*(\d\d\d\d-\d\d-\d\d).*$/\1/'`
-echo "[**Latest version ($SPECVERSION)**]($SPECVERSION/) ($date) ([view changes]($SPECVERSION/changes.html 'See changes from previous version'))"
+echo "[**Latest version ($SPECVERSION)**]($SPECVERSION/) ($date) ([view changes]($SPECVERSION/changes.html 'See changes from previous version') | [test cases]($SPECVERSION/spec.json))"
 echo ""
 echo "[discussion forum](http://talk.commonmark.org/) | "
 echo "[interactive dingus](dingus/) | "

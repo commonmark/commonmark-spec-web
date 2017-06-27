@@ -8,10 +8,13 @@ all: update
 	make -C $(MAINREPO) spec.html ; \
 	cp $(MAINREPO)/spec.html $(SPECVERSION)/index.html; \
 	cp $(MAINREPO)/spec.txt $(SPECVERSION)/spec.txt; \
+	python3 $(MAINREPO)/test/spec_tests.py \
+	  --spec $(SPECVERSION)/spec.txt \
+	  --dump-tests > $(SPECVERSION)/spec.json; \
 	cp $(SPECVERSION)/index.html spec.html; \
 	./make_site_index.sh $(SPECVERSION) | \
 	  pandoc --template template.html -S -s -t html5 -o index.html ; \
-	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt ; \
+	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt $(SPECVERSION)/spec.json ; \
 	sed -e "s/VERSION/$(SPECVERSION)/g" current/index.html.in > current/index.html ; \
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
