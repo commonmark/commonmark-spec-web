@@ -13,7 +13,7 @@ all: update
 	  --dump-tests > $(SPECVERSION)/spec.json; \
 	cp $(SPECVERSION)/index.html spec.html; \
 	./make_site_index.sh $(SPECVERSION) | \
-	  pandoc --template template.html -S -s -t html5 -o index.html ; \
+	  pandoc --template template.html -s -t html5 -o index.html ; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt $(SPECVERSION)/spec.json ; \
 	sed -e "s/VERSION/$(SPECVERSION)/g" current/index.html.in > current/index.html ; \
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
