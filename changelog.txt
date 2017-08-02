@@ -1,3 +1,53 @@
+[0.28]
+
+  * Allow unlimited balanced pairs of parentheses in link URLs
+    (@kivikakk, jgm/cmark#166).  The rationale is that there are many URLs
+    containing unescaped nested parentheses.  Note that
+    implementations are allowed to impose limits on parentheses
+    nesting for performance reasons, but at least three levels
+    of nesting should be supported.
+  * Change Rule 14 for Emphasis.  Previously the nesting
+    Strong (Emph (...)) was preferred over Emph (Strong (...)).
+    This change makes Emph (Strong (...)) preferred.
+    Note that the commonmark reference implementations
+    were not entirely consistent about this rule, giving
+    different results for
+
+        ***hi***
+
+    and
+
+        ***hi****
+
+    This change simplifies parsing.  It goes against the majority
+    of implementations, but only on something utterly trivial.
+  * Clarify definition of delimiter runs (Aidan Woods, #485).
+  * Clarify precedence of thematic breaks over list items
+    in the list spec, not just the thematic break spec (Aidan Woods).
+  * Clarify definition of link labels and normalization
+    procedure (Matthias Geier, #479).
+  * Clarify that the end of an HTML block is determined by its
+    start, and is not changed by HTML tags encountered inside
+    the block.  Give an example of a case where a block ends
+    before an interior element has been closed (Yuki Izumi, #459).
+    In the future we might consider changing the spec to handle
+    this case more intuitively; this change just documents more
+    explicitly what the spec requires.
+  * Acknowledge Aaron Swartz's role in developing Markdown.
+  * Remove misleading backslash in example for disabling image markup
+    (Matthias Geier).
+  * Fix Unicode terminology (general category, not class)
+    (Philipp Matthias Schaefer).
+  * Add another illustrative case for code spans (#463).
+  * Remove possibly misleading 'either's (#467).
+  * Fix typo (Aidan Woods).
+  * Clarify that some blocks can contain code spans (Matthias Geier).
+  * Fix typo and clarified tab expansion rule (Scott Abbey).
+  * Add a missing "iff" (Matthias Geier).
+  * Add release checklist.
+  * Added npm package for spec (Vitaly Puzrin).
+  * Remove SPEC variable from Makefile.
+
 [0.27]
 
   * Update statement on blank lines and lists (Jesse Rosenthal).
