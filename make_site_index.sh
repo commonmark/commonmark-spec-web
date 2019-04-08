@@ -3,6 +3,9 @@
 SPECVERSION=$1
 VERSIONS=`ls -d -1 0.* | sort -r -g`
 
+PREV_VERSION=`head -1 PREVIOUS | perl -pe 's/- \[([^]]*).*/\1/'`
+rfcdiff --html --width 80 --stdout $PREV_VERSION/spec.txt $SPECVERSION/spec.txt | perl -pe 's/charset=iso-8859-1/charset=utf-8/' > $SPECVERSION/changes.html
+
 echo "% CommonMark Spec"
 echo ""
 date=`grep '<div class="version">' $SPECVERSION/index.html | perl  -pe 's/^.*(\d\d\d\d-\d\d-\d\d).*$/\1/'`
@@ -25,5 +28,3 @@ for vers in $VERSIONS
         [ -f $vers/changes.html ] && changes=" ([view changes]($vers/changes.html 'See changes from previous version') | [test cases]($vers/spec.json 'JSON test cases'))"
         echo "- [$vers]($vers/) ($date)$changes"
   done | sort -r -k3 | tee PREVIOUS
-PREV_VERSION=`head -1 PREVIOUS | perl -pe 's/- \[([^]]*).*/\1/'`
-rfcdiff --html --width 80 --stdout $PREV_VERSION/spec.txt $SPECVERSION/spec.txt | perl -pe 's/charset=iso-8859-1/charset=utf-8/' > $SPECVERSION/changes.html
