@@ -1,9 +1,11 @@
 MAINREPO?=../commonmark-spec
 JSREPO?=../commonmark.js
-OLDSPECVERSION=$(shell head -1 changelog.txt | sed -e 's/[\[\]]//')
+OLDSPECVERSION=$(shell head -1 changelog.txt | sed -e 's/[^0-9.]//g')
 SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//')
 
 all: update
+	echo "Spec version = $(SPECVERSION)"
+	echo "Old spec version = $(OLDSPECVERSION)"
 	git tag --list | grep -q -v $(SPECVERSION) ; \
 	mkdir -p $(SPECVERSION) ; \
 	make -C $(MAINREPO) spec.html ; \
