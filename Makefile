@@ -1,4 +1,4 @@
-MAINREPO?=../CommonMark
+MAINREPO?=../commonmark-spec
 JSREPO?=../commonmark.js
 SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//')
 
