@@ -1,5 +1,6 @@
 MAINREPO?=../commonmark-spec
 JSREPO?=../commonmark.js
+OLDSPECVERSION=$(shell head -1 changelog.txt | sed -e 's/[\[\]]//')
 SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//')
 
 all: update
@@ -12,7 +13,7 @@ all: update
 	  --spec $(SPECVERSION)/spec.txt \
 	  --dump-tests > $(SPECVERSION)/spec.json; \
 	cp $(SPECVERSION)/index.html spec.html; \
-	./make_site_index.sh $(SPECVERSION) | \
+	./make_site_index.sh $(OLDSPECVERSION) $(SPECVERSION) | \
 	  pandoc --template template.html -s -t html5 -o index.html ; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt $(SPECVERSION)/spec.json ; \
 	sed -e "s/VERSION/$(SPECVERSION)/g" current/index.html.in > current/index.html ; \

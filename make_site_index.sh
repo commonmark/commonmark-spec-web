@@ -1,10 +1,11 @@
 #!/bin/sh
 
-SPECVERSION=$1
+OLDSPECVERSION=$1
+SPECVERSION=$2
+
 VERSIONS=`ls -d -1 0.* | sort -r -g`
 
-PREV_VERSION=`head -1 PREVIOUS | perl -pe 's/- \[([^]]*).*/\1/'`
-rfcdiff --html --width 80 --stdout $PREV_VERSION/spec.txt $SPECVERSION/spec.txt | perl -pe 's/charset=iso-8859-1/charset=utf-8/' > $SPECVERSION/changes.html
+rfcdiff --html --width 80 --stdout $OLDSPECVERSION/spec.txt $SPECVERSION/spec.txt | perl -pe 's/charset=iso-8859-1/charset=utf-8/' > $SPECVERSION/changes.html
 
 echo "% CommonMark Spec"
 echo ""
@@ -27,4 +28,4 @@ for vers in $VERSIONS
         changes=""
         [ -f $vers/changes.html ] && changes=" ([view changes]($vers/changes.html 'See changes from previous version') | [test cases]($vers/spec.json 'JSON test cases'))"
         echo "- [$vers]($vers/) ($date)$changes"
-  done | sort -r -k3 | tee PREVIOUS
+  done | sort -r -k3
