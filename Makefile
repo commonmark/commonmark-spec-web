@@ -19,6 +19,7 @@ all: update
 	  pandoc --template template.html -s -t html5 -o index.html ; \
 	git add spec.html $(SPECVERSION)/index.html $(SPECVERSION)/changes.html $(SPECVERSION)/spec.txt $(SPECVERSION)/spec.json ; \
 	sed -e "s/VERSION/$(SPECVERSION)/g" current/index.html.in > current/index.html ; \
+	ln -s ./$(SPECVERSION) ./latest ; \
 	git commit -a -m "Updated to version $(SPECVERSION) of spec"; \
 	git tag $(SPECVERSION) HEAD
 
