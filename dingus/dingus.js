@@ -14,7 +14,7 @@ function getQueryVariable(variable) {
     var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
         var pair = vars[i].split("=");
-        if (pair[0] === variable){
+        if (pair[0] === variable) {
             return decodeURIComponent(pair[1]);
         }
     }
@@ -29,7 +29,9 @@ var render = function(parsed) {
     var result = writer.render(parsed);
     var endTime = new Date().getTime();
     var renderTime = endTime - startTime;
-    var preview = $("#preview iframe").contents().find('body');
+    var preview = $("#preview iframe")
+        .contents()
+        .find("body");
     preview.get(0).innerHTML = result;
     $("#html").text(htmlwriter.render(parsed));
     $("#ast").text(xmlwriter.render(parsed));
@@ -38,17 +40,22 @@ var render = function(parsed) {
 
 var syncScroll = function() {
     var textarea = $("#text");
-    var preview = $("#preview iframe").contents().find('body');
-    var lineHeight = parseFloat(textarea.css('line-height'));
+    var preview = $("#preview iframe")
+        .contents()
+        .find("body");
+    var lineHeight = parseFloat(textarea.css("line-height"));
     // NOTE this assumes we don't have wrapped lines,
     // so we have set white-space:nowrap on the textarea:
     var lineNumber = Math.floor(textarea.scrollTop() / lineHeight) + 1;
     var elt = preview.find("*[data-sourcepos^='" + lineNumber + ":']").last();
     if (elt.length > 0) {
         if (elt.offset()) {
-            preview.animate({
-                scrollTop: elt.offset().top - 100
-            }, 50);
+            preview.animate(
+                {
+                    scrollTop: elt.offset().top - 100
+                },
+                50
+            );
         }
     }
 };
@@ -59,11 +66,13 @@ var markSelection = function() {
     var textval = $("#text").val();
     var lineNumber = 1;
     for (var i = 0; i < cursorPos; i++) {
-        if (textval.charAt(i) === '\n') {
+        if (textval.charAt(i) === "\n") {
             lineNumber++;
         }
     }
-    var preview = $("#preview iframe").contents().find('body');
+    var preview = $("#preview iframe")
+        .contents()
+        .find("body");
     var elt = preview.find("[data-sourcepos^='" + lineNumber + ":']").last();
     if (elt.length > 0) {
         preview.find(".selected").removeClass("selected");
@@ -79,17 +88,16 @@ var parseAndRender = function() {
     var endTime = new Date().getTime();
     var parseTime = endTime - startTime;
     $("#parsetime").text(parseTime);
-    $(".timing").css('visibility', 'visible');
+    $(".timing").css("visibility", "visible");
     render(parsed);
     markSelection();
 };
 
-$(document).ready(function() {
-  $('iframe').on('load', function() {
+var onIframeLoad = function() {
     var textarea = $("#text");
     var initial_text = getQueryVariable("text");
     var smartSelected = getQueryVariable("smart") === "1";
-    $("#smart").prop('checked', smartSelected);
+    $("#smart").prop("checked", smartSelected);
     reader.options.smart = smartSelected;
     if (initial_text) {
         textarea.val(initial_text);
@@ -98,27 +106,46 @@ $(document).ready(function() {
     parseAndRender();
 
     $("#clear-text-box").click(function() {
-        textarea.val('');
+        textarea.val("");
         parseAndRender();
     });
 
     $("#permalink").click(function() {
-        var smart = $("#smart").prop('checked');
+        var smart = $("#smart").prop("checked");
         window.location.pathname = "/index.html";
-        window.location.search = "text=" + encodeURIComponent(textarea.val()) +
-                (smart ? '&smart=1' : '');
+        window.location.search =
+            "text=" +
+            encodeURIComponent(textarea.val()) +
+            (smart ? "&smart=1" : "");
     });
 
-    textarea.bind('input propertychange',
-                  _.debounce(parseAndRender, 50, { maxWait: 100 }));
+    textarea.bind(
+        "input propertychange",
+        _.debounce(parseAndRender, 50, { maxWait: 100 })
+    );
     //textarea.on('scroll', _.debounce(syncScroll, 50, { maxWait: 50 }));
-    textarea.on('scroll', syncScroll);
-    textarea.on('keydown click focus',
-                _.debounce(markSelection, 50, { maxWait: 100}));
+    textarea.on("scroll", syncScroll);
+    textarea.on(
+        "keydown click focus",
+        _.debounce(markSelection, 50, { maxWait: 100 })
+    );
 
     $("#smart").click(function() {
-        reader.options.smart = $("#smart").prop('checked');
+        reader.options.smart = $("#smart").prop("checked");
         parseAndRender();
     });
-  });
+};
+
+var iframeLoaded = false;
+
+$("iframe").on("load", function() {
+    iframeLoaded = true;
+});
+
+$(document).ready(function() {
+    if (iframeLoaded) {
+        onIframeLoad();
+    } else {
+        $("iframe").on("load", onIframeLoad);
+    }
 });

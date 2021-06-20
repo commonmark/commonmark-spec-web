@@ -1,8 +1,7 @@
 ALL=commonmark.js
 COMPONENTS=lodash.min.js jquery.min.js jquery.min.map bootstrap.min.js bootstrap.min.css
-LIBFILES=../lib/blocks.js ../lib/common.js ../lib/from-code-point.js ../lib/inlines.js ../lib/index.js ../lib/node.js ../lib/normalize-reference.js ../lib/render/xml.js ../lib/render/html.js ../lib/render/renderer.js
+LIBFILES=../lib/blocks.js ../lib/common.js ../lib/from-code-point.js ../lib/inlines.js ../lib/index.js ../lib/node.js ../lib/render/xml.js ../lib/render/html.js ../lib/render/renderer.js
 BOWER=../node_modules/.bin/bower
-BROWSERIFY=../node_modules/.bin/browserify
 HTTPSERVER=../node_modules/.bin/http-server
 
 all: $(ALL) components
@@ -34,7 +33,8 @@ clean:
 	rm -r bower_components
 
 commonmark.js: ../lib/index.js $(LIBFILES)
-	$(BROWSERIFY) --standalone commonmark $< -o $@
+	make -C .. test ;\
+	cp ../dist/commonmark.js commonmark.js
 
 dingus: all
 	echo "Starting dingus server at http://localhost:9000/"; \
