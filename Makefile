@@ -1,7 +1,7 @@
 MAINREPO?=../commonmark-spec
 JSREPO?=../commonmark.js
 OLDSPECVERSION:=$(shell head -1 changelog.txt | sed -e 's/[^0-9.]//g')
-SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//')
+SPECVERSION=$(shell grep version: $(MAINREPO)/spec.txt | sed -e 's/version: *//' | sed -e "s/'//g")
 
 all: update
 	echo "Spec version = $(SPECVERSION)"
