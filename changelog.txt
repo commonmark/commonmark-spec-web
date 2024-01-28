@@ -1,3 +1,37 @@
+[0.31.2]
+
+  * Fix packaging bug (date not updated in spec.txt).
+
+[0.31.1]
+
+  * Fix packaging bug (spec version not updated in spec.txt).
+
+[0.31]
+
+  * Relicense npm package under CC-BY-SA (Yukai Chou).
+  * Use archived vfmd link (Yukai Chou).
+  * Link to babelmark2 legacy page.
+  * Use https scheme in spec (including examples) (#751, Yukai Chou).
+  * Fix unicode symbols example in emphasis syntax (rhysd).
+  * Remove confusing "first" before "link label."
+  * Add symbols to unicode punctuation (Titus Wormer).
+  * Update link to AsciiDoc (Jarno Elovirta).
+  * Add `search` element to list of known block elements (Titus Wormer).
+  * Terminology: compact -> collapsed reference link.
+  * Correct emphasis typo (Mike Pennisi).
+  * Remove restrictive limitation on inline comments; now we match
+    the HTML spec (Titus Wormer).
+  * Fix spelling of "down side" to "downside" (Erik Duveblad).
+  * Fix typo (missing words) (Denis Howe).
+  * Remove `source` element as HTML block start condition (Lukas Spieß).
+  * Fix typo (Nicolas Hedger).
+  * `spec_tests.py` improvements (Martin Fischer): introduce `--track` option,
+    simplify code, show diffs of normalized HTML, fix UnicodeDecodeError catching.
+  * Use archived gmane links.
+  * Fix typo (#693, Salim B).
+  * Remove unnecessary lines from commonmark/commonmark-spec#95.
+  * Fix typo (#683, nadashin).
+
 [0.30]
 
   * Add note clarifying that not every feature of HTML examples is normative
