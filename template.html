@@ -18,6 +18,16 @@ h2 { font-size: 120%; font-weight: bold; }
 h3 { font-size: 110%; font-weight: bold; }
 h4 { font-size: 100%; font-weight: bold; }
 a.definition { font-weight: bold; }
+@media (min-width: 60rem) /* body is 48em wide */ {
+  a[id]::before {
+    content: "#" attr(id);
+    font-weight: normal;
+    color: #555555;
+    width: 10em;
+    position: absolute;
+    left: 1em;
+  }
+}
 span.space { position: relative; }
 span.space:after {
   content: "·";
@@ -31,11 +41,11 @@ p { text-align: justify; }
 pre { padding: 0.5em; margin-left: 0; margin-right: 0; margin-top: 0.2em;
   margin-bottom: 0.5em; font-size: 88%; }
 pre {
- white-space: pre-wrap;       /* css-3 */
  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
  white-space: -pre-wrap;      /* Opera 4-6 */
  white-space: -o-pre-wrap;    /* Opera 7 */
  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+ white-space: pre-wrap;       /* css-3 */
 }
 code { font-family: monospace; background-color: #D3E1E4; }
 pre > code { background-color: transparent; }
